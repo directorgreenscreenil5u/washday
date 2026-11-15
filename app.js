@@ -31,6 +31,7 @@ const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','
 const MON_L = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 const KEY = 'washday_v2';
+const SITE_URL = 'https://directorgreenscreenil5u.github.io/washday/';
 let DB;
 function blank(){ return { users:{}, session:null, orders:[], waitlist:[], quotes:[], seq:1000, tickets:200 }; }
 function load(){ try{ DB = JSON.parse(localStorage.getItem(KEY)) || blank(); }catch(e){ DB = blank(); } }
@@ -128,9 +129,9 @@ function refresh(){ const u = me(); if(!u) return; rollBilling(u); ensureUpcomin
 
 /* ---------- Router ---------- */
 let UI = {};
-const TITLES = { login:'Log in', signup:'Create account', subscribe:'Start your plan', app:'Dashboard', 'app/schedule':'Schedule a pickup', 'app/track':'Track order', 'app/orders':'Orders', 'app/billing':'Plan and billing', staff:'Staff' };
+const TITLES = { login:'Log in', signup:'Create account', subscribe:'Start your plan', app:'Dashboard', 'app/schedule':'Schedule a pickup', 'app/track':'Track order', 'app/orders':'Orders', 'app/billing':'Plan and billing', staff:'Staff', scan:'Tag station' };
 function go(path){ location.hash = '#/' + path; }
-function splitRoute(h){ if (h.startsWith('app/track/')) return ['app/track', h.slice(10)]; if (h.startsWith('home/')) return ['', h.slice(5)]; return [h, null]; }
+function splitRoute(h){ if (h.startsWith('scan/')) return ['scan', h.slice(5)]; if (h.startsWith('app/track/')) return ['app/track', h.slice(10)]; if (h.startsWith('home/')) return ['', h.slice(5)]; return [h, null]; }
 function route(){
   const h = location.hash.replace(/^#\/?/,''); const [path, arg] = splitRoute(h);
   if (path.startsWith('app')){ if (!me()) { UI.after = h; return go('login'); } if (!me().plan) return go('subscribe'); refresh(); }
@@ -325,9 +326,9 @@ const USES = [
   ['tagging','Businesses','Uniforms, towels and linen for salons, spas, gyms and small hotels, counted in and out every time.','quote']
 ];
 const HL = [
-  ['img/rider.jpg','Counted at your door.','Your rider counts every piece with you before leaving, and the full list lands on WhatsApp straight away. No weighing, no guessing.','Pickup · Tue 8:14 am','Counting at pickup','Washday rider arriving for a pickup'],
-  ['img/tagging.jpg','Tagged and counted again.','Every piece gets a tag tied to you. We count again at the studio and before delivery, and the final number is printed on your sealed bag.','Studio · Lekki · 10:02','Tagging','Washday staff tagging and folding clothes at the studio'],
-  ['img/basket.jpg','Never mixed with anyone else&rsquo;s clothes.','Your clothes go into a machine on their own, never in a shared load with other customers. Your detergent and folding preferences are saved and used every time.','Your clothes · WD-1042','Washing','A basket of laundry waiting to be collected'],
+  ['img/bts-rider.jpg','Counted at your door.','Your rider counts every piece with you before leaving, and the full list lands on WhatsApp straight away. No weighing, no guessing.','Pickup · Tue 8:14 am','Counting at pickup','Washday rider in uniform at a customer gate'],
+  ['img/bts-tag.jpg','Tagged and counted again.','Every piece gets a QR tag tied to you. We count again at the studio and before delivery, and the final number is printed on your sealed bag.','Studio · Lekki · 10:02','Tagging','Washday technician attaching a QR tag to a folded shirt'],
+  ['img/bts-wash.jpg','Never mixed with anyone else&rsquo;s clothes.','Your clothes go into a machine on their own, never in a shared load with other customers. Your detergent and folding preferences are saved and used every time.','Your clothes · WD-1042','Washing','Technician loading one customer bag into its own machine'],
   ['img/woman.jpg','Backed in writing.','Lost or damaged? We pay you back on a published scale, and every complaint gets a reply within 24 hours.','Delivered · Thu 10:41 am','Guarantee','A customer receiving her clean laundry at the door']
 ];
 const HLUI = [`<div class="pc">
@@ -342,7 +343,7 @@ const HLUI = [`<div class="pc">
               ${[['Shirts',8],['Trousers',5],['T-shirts',6],['Native wear',3],['Towels',2],['Underwear',8]].map((r,k)=>`<div class="cnt-r" style="--k:${k}"><span>${r[0]}</span><span>${r[1]}</span><span>${r[1]}</span></div>`).join('')}
               <div class="cnt-r cnt-t"><span>Total</span><span>32</span><span>32</span></div>
             </div>
-            <div class="tagx"><span class="tagx-hole"></span><p class="tagx-b">washday</p><p class="tagx-n">WD-1042</p><p class="tagx-c">32 items · sealed</p><span class="tagx-bar"></span></div>`,`<div class="mc">
+            <div class="tagx"><span class="tagx-hole"></span><p class="tagx-b">washday</p><span class="tagx-qr" data-qr="${SITE_URL}#/scan/WD-T-0007"></span><p class="tagx-n">WD-T-0007</p><p class="tagx-c">Ada O. · Shirt</p></div>`,`<div class="mc">
               <div class="mc-top"><span class="mc-id">Machine 03</span><span class="mc-live"><i></i>Running</span></div>
               <div class="mc-door"><svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="92" class="mc-trk"/><circle cx="100" cy="100" r="92" class="mc-ring" pathLength="1"/></svg><div class="mc-glass"><span class="mc-w"></span></div><div class="mc-c"><b>24</b><span>min left</span></div></div>
               <div class="mc-own"><span class="mc-av">AO</span><div><b>Only your clothes</b><span>WD-1042 · Ada O.</span></div></div>
@@ -997,7 +998,7 @@ function viewStaff(){
   const users = Object.values(DB.users); const subs = users.filter(u=>u.plan && u.status!=='cancelled');
   const mrr = subs.filter(u=>u.status==='active').reduce((s,u)=>s+plan(u).price,0);
   return `<div style="min-height:100vh;background:var(--app)">
-    <header style="background:var(--ink);color:#fff"><div class="wrap between" style="padding-top:14px;padding-bottom:14px"><a class="logo" href="#/" style="color:#fff">${LOGO('#4C93D1')}<span>${CONFIG.brand} · Operations</span></a><div class="row" style="gap:8px"><button class="btn btn-ghost btn-sm" data-act="staff-export">Export CSV</button><button class="btn btn-ghost btn-sm" data-act="staff-out">Lock</button></div></div></header>
+    <header style="background:var(--ink);color:#fff"><div class="wrap between" style="padding-top:14px;padding-bottom:14px"><a class="logo" href="#/" style="color:#fff">${LOGO('#4C93D1')}<span>${CONFIG.brand} · Operations</span></a><div class="row" style="gap:8px"><a class="btn btn-ghost btn-sm" href="#/scan">Tag station</a><button class="btn btn-ghost btn-sm" data-act="staff-export">Export CSV</button><button class="btn btn-ghost btn-sm" data-act="staff-out">Lock</button></div></div></header>
     <main class="wrap" style="padding-top:28px;padding-bottom:64px">
       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
         <div class="stat"><p class="xs soft">Active subscribers</p><b>${subs.filter(u=>u.status==='active').length}</b></div>
@@ -1023,7 +1024,7 @@ function viewStaff(){
 /* =========================================================
    EVENTS
    ========================================================= */
-const ROUTES = { '': viewHome, login: viewAuth, signup: viewAuth, subscribe: viewSubscribe, app: viewDashboard, 'app/schedule': viewSchedule, 'app/track': viewTrack, 'app/orders': viewOrders, 'app/billing': viewBilling, staff: viewStaff };
+const ROUTES = { '': viewHome, login: viewAuth, signup: viewAuth, subscribe: viewSubscribe, app: viewDashboard, 'app/schedule': viewSchedule, 'app/track': viewTrack, 'app/orders': viewOrders, 'app/billing': viewBilling, staff: viewStaff, scan: (a)=>viewScan(a) };
 const quoteForm = () => modal(`<form data-form="quote" style="display:flex;flex-direction:column;gap:14px"><h2 class="cardh" style="font-size:24px">Request a business or estate quote</h2><label class="field">Business or estate name<input class="input" name="org"></label><label class="field">Contact phone<input class="input" name="phone" type="tel"></label><label class="field">What do you need washed?<textarea class="input" name="need" rows="3" placeholder="e.g. 20 staff uniforms weekly, 60 towels"></textarea></label><div class="row" style="gap:10px"><button class="btn btn-dark">Send request</button><button type="button" class="btn btn-light" data-act="modal-close">Cancel</button></div></form>`);
 document.addEventListener('click', e=>{
   const t = e.target.closest('[data-act]'); if(!t) return;
@@ -1096,7 +1097,7 @@ document.addEventListener('click', e=>{
     print: ()=> window.print(),
     'pay-confirm': ()=>{ const f=UI.payDone; UI.payDone=null; closeModal(); if(f) f(); },
     sfilter: ()=>{ UI.sfilter=t.dataset.f; rerender(); },
-    'staff-out': ()=>{ UI.staff=false; rerender(); },
+    'staff-out': ()=>{ UI.staff=false; try{localStorage.removeItem('wd_staff')}catch(e){} rerender(); },
     advance: ()=>{ const o=DB.orders.find(x=>x.id===t.dataset.id); if(o.status===0) return pickupModal(o); if(o.status===1) return countModal(o); setStatus(o,o.status+1); },
     flag: ()=>{ const o=DB.orders.find(x=>x.id===t.dataset.id); modal(`<form data-form="flag" data-id="${o.id}" style="display:flex;flex-direction:column;gap:14px"><h2 class="cardh" style="font-size:24px">Flag an item on ${o.id}</h2><label class="field">What did you find?<input class="input" name="text" placeholder="Stain on blue shirt collar, photographed"></label><div class="row" style="gap:10px"><button class="btn btn-dark">Add flag</button><button type="button" class="btn btn-light" data-act="modal-close">Cancel</button></div></form>`); },
     resolve: ()=>{ const o=DB.orders.find(x=>x.id===t.dataset.id); o.issue.status='resolved'; save(); rerender(); toast('Issue marked resolved', true); },
@@ -1230,3 +1231,133 @@ function hlCount(){ var t0=performance.now(); (function f(t){ var p=Math.min(1,(
   var tm; document.addEventListener('scroll',function(e){ var tr=e.target; if(!tr.classList||!tr.classList.contains('hl-track')) return; clearTimeout(tm); tm=setTimeout(function(){ var root=tr.closest('.hl'); if(root._prog&&Date.now()-root._prog<900) return; var cs=[].slice.call(tr.querySelectorAll('.hl-card')); var pl=parseFloat(getComputedStyle(tr).paddingLeft); var best=0,bd=1e9; cs.forEach(function(c,k){ var d=Math.abs(c.offsetLeft-pl-tr.scrollLeft); if(d<bd){bd=d;best=k;} }); if(best!==(UI.hl||0)) hlGo(best,'noscroll'); },140); },true);
   setInterval(function(){ document.querySelectorAll('.hl').forEach(function(el){ var r=el.getBoundingClientRect(); var v=r.top<innerHeight*.75&&r.bottom>innerHeight*.25; el.classList.toggle('play',v&&!UI.hlPaused); el.classList.toggle('paused',!!UI.hlPaused); var tr=el.querySelector('.hl-track'); if(tr&&!tr.dataset.sync){ tr.dataset.sync=1; if(UI.hl){ var c=tr.querySelectorAll('.hl-card')[UI.hl]; tr.scrollLeft=c.offsetLeft-parseFloat(getComputedStyle(tr).paddingLeft); } } }); },300);
 })();
+
+/* =========================================================
+   TAG STATION · QR clothing tags
+   ========================================================= */
+const TAG_TYPES = ['Shirt','Trousers','T-shirt','Native wear','Suit','Dress','Skirt','Jeans','Underwear','Towel','Bedsheet','Duvet','Curtain','Other'];
+const BULKY = ['Duvet','Curtain'];
+function tagsDB(){ if(!DB.tags) DB.tags={}; if(!DB.tagSeq) DB.tagSeq=1; return DB.tags; }
+function normTag(s){ s=String(s||'').trim(); const m=s.match(/#\/scan\/([A-Za-z0-9-]+)/); if(m) s=m[1]; return s.toUpperCase().replace(/\s+/g,''); }
+function tagUrl(code){ return SITE_URL+'#/scan/'+code; }
+function loadScript(src){ return new Promise(function(res,rej){ var s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
+var QRLIB='https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js', QRREAD='https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js', _qrP=null, _rdP=null;
+function qrReady(){ if(window.qrcode) return Promise.resolve(); return _qrP||(_qrP=loadScript(QRLIB)); }
+function qrSvg(text){ var q=qrcode(0,'M'); q.addData(text); q.make(); return q.createSvgTag({cellSize:4,margin:0,scalable:true}); }
+function fillQR(){ var els=document.querySelectorAll('[data-qr]:not([data-qrd])'); if(!els.length) return; qrReady().then(function(){ els.forEach(function(el){ if(el.dataset.qrd) return; el.dataset.qrd=1; el.innerHTML=qrSvg(el.dataset.qr); }); }).catch(function(){}); }
+new MutationObserver(fillQR).observe(document.documentElement,{childList:true,subtree:true}); fillQR();
+
+var SCAN={stream:null,raf:0,det:null,busy:false};
+function scanStop(){ if(SCAN.stream){ SCAN.stream.getTracks().forEach(function(t){t.stop();}); } SCAN.stream=null; cancelAnimationFrame(SCAN.raf); var v=$('.scan-cam video'); if(v) v.srcObject=null; var c=$('.scan-cam'); if(c) c.classList.remove('live'); }
+function scanHit(raw){ var code=normTag(raw); if(!code) return; scanStop(); try{ navigator.vibrate&&navigator.vibrate(60); }catch(e){} UI.tagCode=code; UI.tagForm=null; rerender(); toast('Tag '+code+' scanned', true); }
+async function scanStart(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ toast('This browser cannot open the camera. Type the tag code instead.'); return; }
+  try{ SCAN.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false}); }catch(e){ toast('Camera blocked. Allow camera access, or type the tag code.'); return; }
+  var v=$('.scan-cam video'); if(!v){ scanStop(); return; } v.srcObject=SCAN.stream; v.setAttribute('playsinline',''); await v.play().catch(function(){}); $('.scan-cam').classList.add('live');
+  if('BarcodeDetector' in window){ try{ SCAN.det=new BarcodeDetector({formats:['qr_code']}); }catch(e){ SCAN.det=null; } }
+  if(!SCAN.det){ try{ await (_rdP||(_rdP=loadScript(QRREAD))); }catch(e){ toast('Could not load the scanner. Type the tag code instead.'); scanStop(); return; } }
+  var cv=document.createElement('canvas'), cx=cv.getContext('2d',{willReadFrequently:true});
+  (async function loop(){
+    if(!SCAN.stream) return; var vid=$('.scan-cam video');
+    if(vid&&vid.readyState>=2&&!SCAN.busy){ SCAN.busy=true;
+      try{ if(SCAN.det){ var r=await SCAN.det.detect(vid); if(r&&r[0]){ SCAN.busy=false; return scanHit(r[0].rawValue); } }
+        else { var w=vid.videoWidth,h=vid.videoHeight,s=Math.min(1,640/w); cv.width=w*s; cv.height=h*s; cx.drawImage(vid,0,0,cv.width,cv.height); var d=cx.getImageData(0,0,cv.width,cv.height); var q=jsQR(d.data,d.width,d.height,{inversionAttempts:'dontInvert'}); if(q&&q.data){ SCAN.busy=false; return scanHit(q.data); } } }catch(e){}
+      SCAN.busy=false; }
+    SCAN.raf=requestAnimationFrame(loop);
+  })();
+}
+function custOpts(sel){ var us=Object.values(DB.users).sort(function(a,b){return (a.name||'').localeCompare(b.name||'');}); return us.map(function(u){ return '<option value="'+u.phone+'" '+(u.phone===sel?'selected':'')+'>'+esc(u.name||'Customer')+' · 0'+u.phone+'</option>'; }).join(''); }
+function custItems(phone){ return Object.values(tagsDB()).filter(function(t){return t.phone===phone;}).sort(function(a,b){return b.at-a.at;}); }
+function viewScan(arg){
+  tagsDB();
+  try{ if(!UI.staff && localStorage.getItem('wd_staff')) UI.staff=true; if(UI.staff) localStorage.setItem('wd_staff','1'); }catch(e){}
+  if(arg && UI.tagArg!==arg){ UI.tagArg=arg; UI.tagCode=normTag(arg); }
+  if(!UI.staff){
+    return `<div class="authwrap"><div class="authside"><img src="img/tagging.jpg" alt=""><a class="logo" href="#/" style="color:#fff">${LOGO('#fff')}<span>${CONFIG.brand}</span></a><h1 class="h1" style="font-size:clamp(34px,4vw,54px);color:#fff">Tag station</h1></div>
+      <div class="authmain"><form data-form="staff-pin" style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:16px">
+      <h2 class="flowh1">Staff login</h2><p class="muted">Enter the staff PIN to scan tags and register clothes.${UI.tagCode?` You scanned <b>${esc(UI.tagCode)}</b>.`:''}</p>
+      <label class="field">Staff PIN<input class="input" name="pin" type="password" inputmode="numeric" autocomplete="off"></label>
+      ${UI.staffErr?'<p class="err" role="alert">Wrong PIN.</p>':''}
+      <button class="btn btn-dark btn-lg">Open tag station</button>
+      <p class="demo-note">Demo PIN: <b>${CONFIG.staffPin}</b>. Replace with real staff accounts before launch.</p>
+    </form></div></div>`;
+  }
+  const code=UI.tagCode; const T=code?DB.tags[code]:null; const F=UI.tagForm||(UI.tagForm={type:'Shirt',phone:UI.dirPhone||'',newc:false});
+  const dir=UI.dirPhone||(T&&T.phone)||''; const items=dir?custItems(dir):[]; const du=DB.users[dir];
+  const counts={}; items.forEach(function(t){counts[t.type]=(counts[t.type]||0)+1;});
+  const right = !code ? `<div class="ts-empty"><span class="ts-eico">${SI.camera}</span><h2 class="cardh">Scan a tag to start</h2><p class="muted">Point the camera at a Washday QR tag, or type the code printed under it. New tags get registered to a customer. Tags already in use show the item they belong to.</p></div>`
+   : T ? `<div class="ts-item">
+        <div class="between" style="align-items:flex-start"><div><p class="xs soft">Tag</p><h2 class="apph1" style="font-size:28px">${esc(code)}</h2></div><span class="pill ${T.out?'pill-green':'pill-blue'}">${T.out?'Counted out':'In the studio'}</span></div>
+        <div class="ts-card">${T.photo?`<img src="${T.photo}" alt="">`:`<span class="ts-ph">${SI.hanger||SI.tag}</span>`}<div><b>${esc(T.type)}${T.color?' · '+esc(T.color):''}</b><span>${esc(DB.users[T.phone]?.name||'Customer')} · 0${T.phone}</span>${T.order?`<span>Order ${esc(T.order)}</span>`:''}${T.note?`<span class="ts-note">${esc(T.note)}</span>`:''}</div></div>
+        <ol class="ts-tl"><li class="done"><b>Registered</b><span>${fmtTime(T.at)}</span></li><li class="${T.out?'done':''}"><b>Counted out</b><span>${T.out?fmtTime(T.out):'Not yet'}</span></li></ol>
+        <div class="row" style="gap:8px;margin-top:18px">${T.out?'':`<button class="btn btn-dark" data-act="tag-out">${SI.check}Mark counted out</button>`}<button class="btn btn-light" data-act="tag-next">Scan next tag</button><button class="btn btn-ghost" style="color:var(--red)" data-act="tag-unlink">Unlink tag</button></div>
+      </div>`
+   : `<form data-form="tag-reg" class="ts-reg">
+        <div class="between" style="align-items:flex-start"><div><p class="xs soft">New tag</p><h2 class="apph1" style="font-size:28px">${esc(code)}</h2></div><span class="pill pill-orange">Not registered</span></div>
+        <label class="field">Customer${F.newc?'':`<select class="input" name="phone" data-act="noop"><option value="">Choose a customer</option>${custOpts(F.phone)}</select>`}</label>
+        ${F.newc?`<div class="row" style="gap:10px"><label class="field" style="flex:1 1 180px">Full name<input class="input" name="cname" placeholder="Ada Okafor" value="${esc(F.cname||'')}"></label><label class="field" style="flex:1 1 160px">Phone<input class="input" name="cphone" type="tel" placeholder="0803 000 0000" value="${esc(F.cphone||'')}"></label></div><button type="button" class="linkbtn" data-act="tag-oldc">Choose an existing customer instead</button>`:`<button type="button" class="linkbtn" data-act="tag-newc">+ New customer</button>`}
+        <div class="field">Item<div class="ts-types">${TAG_TYPES.map(function(x){return `<button type="button" class="ts-ty ${F.type===x?'on':''}" data-act="tag-type" data-t="${x}">${x}${BULKY.includes(x)?'<i>bulky</i>':''}</button>`;}).join('')}</div></div>
+        <div class="row" style="gap:10px"><label class="field" style="flex:1 1 160px">Colour or brand<input class="input" name="color" placeholder="White, Zara" value="${esc(F.color||'')}"></label><label class="field" style="flex:1 1 160px">Order (optional)<input class="input" name="order" placeholder="WD-1042" value="${esc(F.order||'')}"></label></div>
+        <label class="field">Condition notes<input class="input" name="note" placeholder="Small ink mark on left cuff" value="${esc(F.note||'')}"></label>
+        <label class="field">Photo<input class="input" name="photo" type="file" accept="image/*" capture="environment"></label>
+        <div class="row" style="gap:8px"><button class="btn btn-dark btn-lg">Register item</button><button type="button" class="btn btn-light btn-lg" data-act="tag-next">Cancel</button></div>
+      </form>`;
+  return `<div class="ts" style="min-height:100vh;background:var(--app)">
+    <header style="background:var(--ink);color:#fff"><div class="wrap between" style="padding-top:14px;padding-bottom:14px"><a class="logo" href="#/" style="color:#fff">${LOGO('#4C93D1')}<span>${CONFIG.brand} · Tag station</span></a><div class="row" style="gap:8px"><button class="btn btn-ghost btn-sm" data-act="tag-print">Print new tags</button><a class="btn btn-ghost btn-sm" href="#/staff">Orders console</a></div></div></header>
+    <main class="wrap" style="padding-top:28px;padding-bottom:64px">
+      <div class="ts-grid">
+        <section class="card ts-left">
+          <h1 class="apph1" style="font-size:26px">Scan a tag</h1>
+          <div class="scan-cam"><video muted playsinline></video><div class="scan-frame"><i></i><i></i><i></i><i></i></div><div class="scan-idle"><span>${SI.camera}</span><p>Camera is off</p></div></div>
+          <div class="row" style="gap:8px;margin-top:12px"><button class="btn btn-dark" style="flex:1" data-act="scan-start">${SI.camera}Start camera</button><button class="btn btn-light" data-act="scan-stop">Stop</button></div>
+          <form data-form="tag-open" class="row" style="gap:8px;margin-top:16px;flex-wrap:nowrap"><input class="input" name="code" placeholder="Or type a tag code, e.g. WD-T-0007" style="flex:1;min-width:0;text-transform:uppercase"><button class="btn btn-light">Open</button></form>
+          <p class="xs soft" style="margin-top:12px">${Object.keys(DB.tags).length} items tagged so far.</p>
+        </section>
+        <section class="card ts-right">${right}</section>
+      </div>
+      <section class="card" style="margin-top:16px">
+        <div class="between" style="flex-wrap:wrap;gap:12px"><div><h2 class="cardh">Customer directory</h2><p class="muted small">Every tagged item, filed under its owner.</p></div>
+          <select class="input" style="max-width:320px" data-act="noop" id="dirSel"><option value="">Choose a customer</option>${custOpts(dir)}</select></div>
+        ${dir?`<div class="ts-sum"><div><b>${items.length}</b><span>items registered to ${esc(du?.name||'this customer')}</span></div>${Object.keys(counts).map(function(k){return `<span class="ts-chip">${counts[k]} ${esc(k)}</span>`;}).join('')}</div>
+        <div class="tablebox" style="margin-top:12px"><table><thead><tr><th>Tag</th><th>Item</th><th>Order</th><th>Notes</th><th>Status</th><th></th></tr></thead><tbody>${items.map(function(t){return `<tr><td><b>${t.code}</b></td><td>${t.photo?`<img class="ts-thumb" src="${t.photo}" alt="">`:''}${esc(t.type)}${t.color?` <span class="soft">· ${esc(t.color)}</span>`:''}</td><td>${esc(t.order||'—')}</td><td class="small muted">${esc(t.note||'—')}</td><td><span class="pill ${t.out?'pill-green':'pill-blue'}">${t.out?'Counted out':'In the studio'}</span></td><td style="text-align:right"><button class="linkbtn" data-act="tag-open" data-c="${t.code}">Open</button></td></tr>`;}).join('')||'<tr><td colspan="6" class="muted" style="text-align:center;padding:24px">No items tagged for this customer yet.</td></tr>'}</tbody></table></div>`
+        :'<p class="muted" style="padding:24px 0 6px">Choose a customer to see every item registered to them.</p>'}
+      </section>
+    </main></div>`;
+}
+function tagSheet(){
+  tagsDB(); const codes=[]; while(codes.length<12){ const c='WD-T-'+String(DB.tagSeq++).padStart(4,'0'); if(!DB.tags[c]) codes.push(c); } save();
+  modal(`<div class="tagsheet-wrap"><h2 class="cardh" style="font-size:22px">12 new tags</h2><p class="muted small" style="margin:6px 0 14px">Print on sticker paper or card, then attach one to each item at pickup. Scanning a tag with any phone opens it here.</p>
+    <div class="tagsheet">${codes.map(function(c){return `<div class="tagp"><p class="tagp-b">washday</p><span class="tagp-q" data-qr="${tagUrl(c)}"></span><p class="tagp-c">${c}</p></div>`;}).join('')}</div>
+    <div class="row" style="gap:8px;margin-top:16px"><button class="btn btn-dark" data-act="tag-doprint">Print</button><button class="btn btn-light" data-act="modal-close">Close</button></div></div>`);
+}
+document.addEventListener('click',function(e){
+  const t=e.target.closest('[data-act]'); if(!t) return; const a=t.dataset.act;
+  const F=UI.tagForm||{};
+  const keep=function(){ const f=$('form[data-form="tag-reg"]'); if(!f) return; const v=Object.fromEntries(new FormData(f).entries()); ['phone','cname','cphone','color','order','note'].forEach(function(k){ if(v[k]!==undefined) F[k]=v[k]; }); UI.tagForm=F; };
+  const H={
+    'scan-start':()=>scanStart(), 'scan-stop':()=>scanStop(),
+    'tag-next':()=>{ scanStop(); UI.tagCode=null; UI.tagForm=null; if(location.hash.indexOf('#/scan/')===0){ UI.tagArg=null; location.hash='#/scan'; } else rerender(); setTimeout(scanStart,150); },
+    'tag-type':()=>{ keep(); F.type=t.dataset.t; UI.tagForm=F; rerender(); },
+    'tag-newc':()=>{ keep(); F.newc=true; UI.tagForm=F; rerender(); },
+    'tag-oldc':()=>{ keep(); F.newc=false; UI.tagForm=F; rerender(); },
+    'tag-open':()=>{ UI.tagCode=t.dataset.c; UI.tagForm=null; rerender(); window.scrollTo({top:0,behavior:'smooth'}); },
+    'tag-out':()=>{ const T=DB.tags[UI.tagCode]; if(!T) return; T.out=Date.now(); save(); rerender(); toast(T.type+' counted out', true); },
+    'tag-unlink':()=> confirmModal('Unlink this tag?', 'The item is removed from the customer directory and the tag can be used again.', 'Unlink tag', ()=>{ delete DB.tags[UI.tagCode]; save(); UI.tagForm=null; rerender(); toast('Tag unlinked'); }),
+    'tag-print':()=>tagSheet(),
+    'tag-doprint':()=>{ document.body.classList.add('printing-tags'); setTimeout(function(){ window.print(); document.body.classList.remove('printing-tags'); },300); }
+  };
+  if(H[a]){ e.preventDefault(); H[a](); }
+});
+document.addEventListener('change',function(e){ if(e.target.id==='dirSel'){ UI.dirPhone=e.target.value; rerender(); } else if(e.target.name==='phone'&&e.target.closest('form[data-form="tag-reg"]')){ UI.tagForm=UI.tagForm||{}; UI.tagForm.phone=e.target.value; } });
+function shrinkPhoto(file){ return new Promise(function(res){ if(!file||!file.size) return res(''); const r=new FileReader(); r.onload=function(){ const im=new Image(); im.onload=function(){ const s=Math.min(1,320/Math.max(im.width,im.height)); const c=document.createElement('canvas'); c.width=Math.round(im.width*s); c.height=Math.round(im.height*s); c.getContext('2d').drawImage(im,0,0,c.width,c.height); res(c.toDataURL('image/jpeg',.72)); }; im.onerror=function(){res('');}; im.src=r.result; }; r.readAsDataURL(file); }); }
+document.addEventListener('submit',async function(e){
+  const f=e.target, k=f.dataset.form; if(k!=='tag-open'&&k!=='tag-reg') return; e.preventDefault();
+  const v=Object.fromEntries(new FormData(f).entries());
+  if(k==='tag-open'){ const c=normTag(v.code); if(!c){ toast('Type the code printed under the QR'); return; } scanStop(); UI.tagCode=c; UI.tagForm=null; rerender(); return; }
+  const F=UI.tagForm||{}; let phone=v.phone;
+  if(F.newc){ phone=normPhone(v.cphone); if(!(v.cname||'').trim()||phone.length<10){ toast('Add the customer name and a valid phone number'); return; } if(!DB.users[phone]) DB.users[phone]={name:v.cname.trim(),phone:phone,created:Date.now(),walkin:true}; }
+  if(!phone||!DB.users[phone]){ toast('Choose who this item belongs to'); return; }
+  const photo=await shrinkPhoto(f.querySelector('input[name="photo"]').files[0]);
+  tagsDB()[UI.tagCode]={code:UI.tagCode,phone:phone,type:F.type||'Other',color:(v.color||'').trim(),order:(v.order||'').trim().toUpperCase(),note:(v.note||'').trim(),photo:photo,at:Date.now()};
+  save(); UI.dirPhone=phone; UI.tagForm={type:F.type,phone:phone}; rerender(); toast((F.type||'Item')+' registered to '+DB.users[phone].name, true);
+});
