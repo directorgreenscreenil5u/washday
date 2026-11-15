@@ -189,6 +189,15 @@ function pxDetail(n){ const k=prPick(n), p=CONFIG.plans[k], over=Math.max(0,n-p.
   return `<div class="pxd-a"><p class="pxd-k">${p.name}</p><p class="pxd-price"><b>${naira(p.price)}</b><span>/ month</span></p><p class="pxd-per">${naira(per)} per item${over?` · <em>+${naira(over*CONFIG.extraItem)} for ${over} extra</em>`:''}</p></div>
   <ul class="pxd-b"><li>${SI.bag2}<span><b>${p.pickups} pickup${p.pickups>1?'s':''} · ${p.pickups} deliver${p.pickups>1?'ies':'y'}</b> a month</span></li><li>${SI.drop}<span>${p.service}</span></li><li>${SI.tag}<span>Every item tagged and counted</span></li></ul>
   <div class="pxd-c"><button class="btn btn-lg px-cta" data-act="pick-plan" data-plan="${k}">Choose ${p.name}</button><p>Pause or change any month</p></div>`; }
+function pzFit(k,n){ const p=CONFIG.plans[k], over=Math.max(0,n-p.items); return over?`${n} items · +${naira(over*CONFIG.extraItem)} for ${over} extra`:`Fits your ${n} items`; }
+function pzCard(k,n){ const p=CONFIG.plans[k], on=prPick(n)===k, per=Math.round(p.price/p.items);
+  const rows=[['Clothes',`${p.items} items`],['Pickups',`${p.pickups} a month`],['Deliveries',`${p.pickups} a month`],['Care',k==='fresh'?'Wash, dry, fold':'Wash, iron, hang'],['Updates',p.extra.includes('Live order tracking')?'Live tracking':'WhatsApp'],['Pickup slots',p.extra.includes('Priority pickup windows')?'Priority':'Standard']];
+  return `<article class="pz-card ${on?'on':''}" data-pz="${k}" data-n="${p.items}" role="radio" aria-checked="${on}" tabindex="0">
+    <p class="pz-fit">${on?pzFit(k,n):''}</p>
+    <h3 class="pz-name">${p.name}</h3><p class="pz-blurb">${p.blurb}</p>
+    <p class="pz-price"><b>${naira(p.price)}</b><span>/month</span></p><p class="pz-per">${naira(per)} per item</p>
+    <dl class="pz-rows">${rows.map(r=>`<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join('')}</dl>
+    <button class="btn pz-cta" data-act="pick-plan" data-plan="${k}">Choose ${p.name}</button></article>`; }
 function prPick(n){ return n<=50?'fresh':n<=100?'weekly':'household'; }
 function prRec(n){ const k=prPick(n), p=CONFIG.plans[k]; const over=Math.max(0,n-p.items); return `Best fit: <b>${p.name}</b> · ${naira(p.price)} a month${over?` + about ${naira(over*CONFIG.extraItem)} for ${over} extra items`:''}`; }
 function prCard(k){
@@ -479,19 +488,18 @@ function viewHome(){
         <h2 class="pr-h">Pay for your clothes.<br><span>Not the kilos.</span></h2>
         <p class="pr-sub">Every piece is counted with you at the door. Pickup and delivery always included. Pause or change your plan any month.</p>
       </div>
-      <div class="px">
-        <div class="px-top">
-          <p class="px-q">How many clothes do you wash in a month?</p>
-          <p class="px-big"><b class="pr-n">${UI.prN||100}</b><span>items</span></p>
+      <div class="pz" style="--sel:${PLAN_KEYS.indexOf(prPick(UI.prN||100))}">
+        <div class="pz-q">
+          <div class="pz-qt"><p class="pz-ql">How many clothes do you wash in a month?</p><p class="pz-n"><b class="pr-n">${UI.prN||100}</b><span>items</span></p></div>
+          <input class="pr-range px-range" type="range" min="20" max="250" step="5" value="${UI.prN||100}" aria-label="Clothes per month" style="--p:${(((UI.prN||100)-20)/230*100).toFixed(1)}%">
+          <div class="px-scale"><span>20</span><span>250+</span></div>
         </div>
-        <input class="pr-range px-range" type="range" min="20" max="250" step="5" value="${UI.prN||100}" aria-label="Clothes per month" style="--p:${(((UI.prN||100)-20)/230*100).toFixed(1)}%">
-        <div class="px-scale"><span>20 items</span><span>250 items</span></div>
-        <div class="px-plans" role="radiogroup" aria-label="Plans" style="--i:${PLAN_KEYS.indexOf(prPick(UI.prN||100))}"><span class="px-ind" aria-hidden="true"></span>${PLAN_KEYS.map(k=>{ const q=CONFIG.plans[k]; const on=prPick(UI.prN||100)===k; return `<button type="button" class="px-plan ${on?'on':''}" role="radio" aria-checked="${on}" data-px="${k}" data-n="${q.items}"><span class="px-pn">${q.name}</span><span class="px-pi">${q.items} items</span><span class="px-pp">${naira(q.price)}<small>/mo</small></span></button>`; }).join('')}</div>
-        <div class="px-detail">${pxDetail(UI.prN||100)}</div>
+        <div class="pz-track" role="radiogroup" aria-label="Plans">${PLAN_KEYS.map(k=>pzCard(k,UI.prN||100)).join('')}</div>
+        <div class="pz-dots" aria-hidden="true">${PLAN_KEYS.map((k,i)=>`<i class="${prPick(UI.prN||100)===k?'on':''}"></i>`).join('')}</div>
       </div>
-      <div class="pr-xt">
-        <div class="pr-xh"><h3>Priced separately</h3><p>Big or delicate pieces that need their own care.</p></div>
-        <div class="pr-xg">${[['layers','Duvets and comforters',naira(CONFIG.duvet),'each'],['hanger','Curtains',naira(CONFIG.curtain),'per panel'],['sparkle','Suits and native attire',naira(CONFIG.dryCleanItem),'dry cleaned, per item'],['clock','Express 24-hour return','+'+naira(CONFIG.express),'per pickup'],['tag','Extra items',naira(CONFIG.extraItem),'per item over your plan']].map(x=>`<div class="pr-xi"><span class="pr-xic">${SI[x[0]]}</span><div><b>${x[1]}</b><span>${x[3]}</span></div><em>${x[2]}</em></div>`).join('')}</div>
+      <div class="pz-x">
+        <div class="pz-xh"><h3>Priced separately</h3><p>Big or delicate pieces get their own wash, so they're charged on their own.</p></div>
+        <dl class="pz-xl">${[['Duvet or comforter','each',naira(CONFIG.duvet)],['Curtains','per panel',naira(CONFIG.curtain)],['Suits and native attire','dry cleaned, per piece',naira(CONFIG.dryCleanItem)],['Express 24-hour return','per pickup','+'+naira(CONFIG.express)],['Extra clothes','per item over your plan',naira(CONFIG.extraItem)]].map(x=>`<div class="pz-xi"><dt>${x[0]}<span>${x[1]}</span></dt><dd>${x[2]}</dd></div>`).join('')}</dl>
       </div>
     </div>
   </section>
@@ -1415,13 +1423,18 @@ document.addEventListener('click',function(e){ var c=e.target.closest('.hl-card:
 setInterval(function(){ document.querySelectorAll('.hl:not(.seen)').forEach(function(el){ var r=el.getBoundingClientRect(); if(r.top<innerHeight*.7&&r.bottom>innerHeight*.3){ el.classList.add('seen'); UI.hlSeen=1; hlNum(); } }); },250);
 
 /* Pricing selector */
-function pxSet(root,n,fromTile){ const prevK=prPick(UI.prN||100); UI.prN=n; const r=root.querySelector('.pr-range'); if(fromTile) r.value=n;
+function pzSet(root,n,opts){ opts=opts||{}; const prevK=prPick(UI.prN||100); UI.prN=n; const r=root.querySelector('.pr-range'); if(opts.sync) r.value=n;
   r.style.setProperty('--p',((n-20)/230*100).toFixed(1)+'%'); root.querySelector('.pr-n').textContent=n;
-  const k=prPick(n); const pl=root.querySelector('.px-plans'); pl.style.setProperty('--i',PLAN_KEYS.indexOf(k));
-  pl.querySelectorAll('.px-plan').forEach(function(b){ const on=b.dataset.px===k; b.classList.toggle('on',on); b.setAttribute('aria-checked',on); });
-  const d=root.querySelector('.px-detail'); d.innerHTML=pxDetail(n); if(k!==prevK){ d.classList.remove('sw'); void d.offsetWidth; d.classList.add('sw'); } }
-document.addEventListener('input',function(e){ const r=e.target; if(!r.classList||!r.classList.contains('px-range')) return; pxSet(r.closest('.px'),+r.value); });
-document.addEventListener('click',function(e){ const b=e.target.closest('.px-plan'); if(!b) return; pxSet(b.closest('.px'),+b.dataset.n,true); });
+  const k=prPick(n), i=PLAN_KEYS.indexOf(k); root.style.setProperty('--sel',i);
+  root.querySelectorAll('.pz-card').forEach(function(c){ const on=c.dataset.pz===k; c.classList.toggle('on',on); c.setAttribute('aria-checked',on); const f=c.querySelector('.pz-fit'); f.textContent=on?pzFit(c.dataset.pz,n):''; });
+  root.querySelectorAll('.pz-dots i').forEach(function(d,j){ d.classList.toggle('on',j===i); });
+  if(k!==prevK && !opts.noScroll){ const t=root.querySelector('.pz-track'), c=t.children[i]; if(t.scrollWidth>t.clientWidth+4) t.scrollTo({left:c.offsetLeft-t.offsetLeft-(t.clientWidth-c.offsetWidth)/2,behavior:'smooth'}); } }
+document.addEventListener('input',function(e){ const r=e.target; if(!r.classList||!r.classList.contains('px-range')) return; const root=r.closest('.pz'); if(root) pzSet(root,+r.value); });
+document.addEventListener('click',function(e){ if(e.target.closest('.pz-cta')) return; const c=e.target.closest('.pz-card'); if(!c) return; pzSet(c.closest('.pz'),+c.dataset.n,{sync:true}); });
+document.addEventListener('keydown',function(e){ const c=e.target.closest&&e.target.closest('.pz-card'); if(!c||(e.key!=='Enter'&&e.key!==' ')||e.target.closest('.pz-cta')) return; e.preventDefault(); pzSet(c.closest('.pz'),+c.dataset.n,{sync:true}); });
+setInterval(function(){ document.querySelectorAll('.pz-track:not([data-init])').forEach(function(t){ t.dataset.init=1; const c=t.querySelector('.pz-card.on'); if(c&&t.scrollWidth>t.clientWidth+4) t.scrollLeft=c.offsetLeft-t.offsetLeft-(t.clientWidth-c.offsetWidth)/2; }); },300);
+/* swipe on mobile selects the card in view */
+document.addEventListener('scroll',function(e){ const t=e.target; if(!t.classList||!t.classList.contains('pz-track')) return; clearTimeout(t._st); t._st=setTimeout(function(){ if(t.scrollWidth<=t.clientWidth+4) return; const mid=t.scrollLeft+t.clientWidth/2; let best=0,bd=1e9; [...t.children].forEach(function(c,j){ const d=Math.abs(c.offsetLeft-t.offsetLeft+c.offsetWidth/2-mid); if(d<bd){bd=d;best=j;} }); const k=PLAN_KEYS[best]; if(k!==prPick(UI.prN||100)){ pzSet(t.closest('.pz'),CONFIG.plans[k].items,{sync:true,noScroll:true}); } },140); },true);
 
 /* Opening intro v3: cinematic drum film, logo, then match-cut into the hero machine */
 (function(){
@@ -1454,9 +1467,10 @@ document.addEventListener('click',function(e){ const b=e.target.closest('.px-pla
     film.animate([{transform:'scale(1)'},{transform:'scale(1.05)'}],{duration:650,easing:'ease-in',fill:'forwards'});
     cl.animate([{opacity:0,transform:T0},{opacity:1,transform:T0}],{duration:620,easing:'ease-in-out',fill:'forwards'}).onfinish=function(){
       ov.style.background='transparent'; film.style.visibility='hidden'; var vg=ov.querySelector('.i3-vig'); if(vg) vg.style.visibility='hidden'; ov.style.cursor='default';
-      var pull=cl.animate([{transform:T0},{transform:'translate(0,0) scale(1)'}],{duration:1700,easing:'cubic-bezier(.7,0,.2,1)',fill:'forwards'});
+      root.style.overflowY='auto'; var r2=real.getBoundingClientRect(), T1='translate('+(r2.left-r.left)+'px,'+(r2.top-r.top)+'px) scale('+(r2.width/r.width)+')';
+      var pull=cl.animate([{transform:T0},{transform:T1}],{duration:1700,easing:'cubic-bezier(.7,0,.2,1)',fill:'forwards'});
       setTimeout(function(){ root.classList.add('intro-reveal'); root.classList.remove('intro-on'); },800);
-      pull.onfinish=function(){ try{ if(rv&&cv) rv.currentTime=cv.currentTime; }catch(e){} root.classList.remove('i3-hide'); requestAnimationFrame(function(){ ov.remove(); }); setTimeout(function(){ root.classList.remove('intro-reveal'); },1600); };
+      pull.onfinish=function(){ root.style.overflowY=''; try{ if(rv&&cv) rv.currentTime=cv.currentTime; }catch(e){} root.classList.remove('i3-hide'); requestAnimationFrame(function(){ ov.remove(); }); setTimeout(function(){ root.classList.remove('intro-reveal'); },1600); };
     }; }
   var t=setTimeout(end,4300); ov.addEventListener('click',function(){ clearTimeout(t); end(); });
 })();
