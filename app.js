@@ -151,6 +151,7 @@ window.addEventListener('hashchange', ()=>route());
 Object.assign(IMG, { hero3d:'img/hero3d.webp', moon:'img/moon.webp', shirtpink:'img/shirtpink.webp', bagpink:'img/bagpink.webp', iron:'img/iron.webp', towels:'img/towels.webp' });
 Object.assign(IMG, { hero:'img/hero.jpg', moon:'img/hero.jpg', hero3d:'img/hero.jpg', bagpink:'img/basket.jpg', iron:'img/iron.jpg', native:'img/native.jpg', towels:'img/bed.jpg', woman:'img/woman.jpg', family:'img/family.jpg', rider:'img/rider.jpg', tagging:'img/tagging.jpg', folded:'img/folded.jpg', shirt:'img/shirts.jpg', shirtpink:'img/shirts.jpg', heroVid:'img/hero-wm.mp4', heroPoster:'img/hero-wm.jpg' });
 Object.assign(IMG, { bagpink:'img/svc-wash.jpg', iron:'img/svc-iron.jpg', native:'img/svc-dry.jpg', towels:'img/svc-bed.jpg' });
+Object.assign(IMG, { rider:'img/rider-pro.jpg' });
 const ARR = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 const ARR_UP = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg>';
 function siteHeader(){
@@ -1344,3 +1345,17 @@ document.addEventListener('submit',async function(e){
   tagsDB()[UI.tagCode]={code:UI.tagCode,phone:phone,type:F.type||'Other',color:(v.color||'').trim(),order:(v.order||'').trim().toUpperCase(),note:(v.note||'').trim(),photo:photo,at:Date.now()};
   save(); UI.dirPhone=phone; UI.tagForm={type:F.type,phone:phone}; rerender(); toast((F.type||'Item')+' registered to '+DB.users[phone].name, true);
 });
+
+/* Auto-update: when a new version is published, refresh to it (beats browser cache) */
+(function(){
+  function cur(){ var s=[].slice.call(document.scripts).map(function(x){return x.src||'';}).filter(function(x){return /app\.js\?v=/.test(x);})[0]; return s?s.split('v=')[1]:''; }
+  function check(){ fetch('index.html?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(h){
+    var m=h.match(/app\.js\?v=([a-z0-9]+)/), c=cur(); if(!m||!c||m[1]===c) return;
+    var k='wd_up_'+m[1]; try{ if(sessionStorage.getItem(k)) return; sessionStorage.setItem(k,'1'); }catch(e){}
+    var busy=document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
+    if(busy||$('#modal').innerHTML) { toast('A new version of the site is ready. Refresh to see it.'); return; }
+    var u=new URL(location.href); u.searchParams.set('u',m[1]); location.replace(u.toString());
+  }).catch(function(){}); }
+  setTimeout(check,1500); setInterval(check,45000);
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden) check(); });
+})();
