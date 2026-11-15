@@ -18,6 +18,7 @@ const CONFIG = {
   // PLACEHOLDER PRICES: set before launch
   extraPickup: 7000, duvet: 5000, dryCleanItem: 3000, express: 5000,
   foundingDiscount: 0.30,
+  paystackKey: '', // Paystack PUBLIC key (pk_test_... or pk_live_...)
   foundingDeadline: '2027-01-04',
   windows: ['7:00 – 9:00am','9:00 – 11:00am','11:00am – 1:00pm','1:00 – 3:00pm','3:00 – 5:00pm','6:00 – 8:00pm'],
   staffPin: '2468'
@@ -600,7 +601,7 @@ function viewAuth(){
 /* ---------- Subscribe ---------- */
 function nextDateFor(dow){ let d=addDays(today(),1); while(d.getDay()!==dow) d=addDays(d,1); return d; }
 function radio(on){ return `<span style="flex:none;width:22px;height:22px;border-radius:50%;border:2px solid ${on?'var(--ink)':'#C9DCEA'};display:flex;align-items:center;justify-content:center"><span style="width:10px;height:10px;border-radius:50%;background:${on?'var(--ink)':'transparent'}"></span></span>`; }
-function viewSubscribe(){
+function viewSubscribeOld(){
   const u = me();
   if (!UI.sub){ UI.sub = { step:0, plan: UI.pickedPlan || u.plan || 'weekly', area: CONFIG.areas.find(a=>a.open).name, label:'Home', street:'', building:'', landmark:'', notes:'', contact: '0'+u.phone, day:2, window:0, shirts:'On hangers', detergent:'Standard, lightly scented', starch:false, whites:true, method:'card', agree:true }; }
   const s = UI.sub; const p = CONFIG.plans[s.plan];
@@ -1478,3 +1479,111 @@ document.addEventListener('scroll',function(e){ const t=e.target; if(!t.classLis
     }; }
   var t=setTimeout(end,4300); ov.addEventListener('click',function(){ clearTimeout(t); end(); });
 })();
+
+/* ===== Sign-up flow v4: plan, address, pickups & care, pay (Paystack) ===== */
+const OB_STEPS=['Plan','Address','Pickups & care','Pay'];
+function obFreq(k){ return {fresh:'Once a month',weekly:'Every other week',household:'3 times a month'}[k]; }
+function obDates(k,day){ const f=nextDateFor(day); return k==='fresh'?[f]:k==='weekly'?[f,addDays(f,14)]:[f,addDays(f,7),addDays(f,14)]; }
+function obSeg(key,opts,val){ return `<div class="ob-seg" role="radiogroup">${opts.map(o=>`<button type="button" role="radio" aria-checked="${o===val}" class="${o===val?'on':''}" data-ob="set" data-k="${key}" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div>`; }
+function obInit(){ const u=me(); if(UI.sub && UI.sub.v===4) return UI.sub;
+  UI.sub={ v:4, step:0, plan:UI.pickedPlan||u.plan||'weekly', area:CONFIG.areas.find(a=>a.open).name, label:'Home', street:'', building:'', landmark:'', notes:'', gate:[], contact:'0'+u.phone, email:u.email||'', lat:null, lng:null,
+    day:2, window:1, everyday:'Folded', shirts:'On hangers', iron:'Everything', detergent:'Standard', softener:true, starch:'None', care:'', agree:true };
+  return UI.sub; }
+function obMap(s){ if(s.lat==null) return `<div class="ob-map ob-map-empty"><span>${I.pin||''}</span><p>Your pin shows here once we find your address.</p></div>`;
+  const d=0.004, bb=[s.lng-d,s.lat-d*0.6,s.lng+d,s.lat+d*0.6].join(',');
+  return `<div class="ob-map"><iframe title="Map of your address" loading="lazy" src="https://www.openstreetmap.org/export/embed.html?bbox=${bb}&layer=mapnik&marker=${s.lat},${s.lng}"></iframe><span class="ob-map-tag">Pinned</span></div>`; }
+function viewSubscribe(){
+  const u=me(); const s=obInit(); const p=CONFIG.plans[s.plan];
+  const disc=isFounding()?Math.round(p.price*CONFIG.foundingDiscount):0, due=p.price-disc;
+  const areas=CONFIG.areas; let body='';
+  if(s.step===0) body=`<p class="ob-eyebrow">Step 1 of 4</p><h1 class="ob-h1">Choose your plan</h1><p class="ob-sub">Priced by the number of clothes, not by weight. Change or pause any month.</p>
+    <div class="ob-plans" role="radiogroup">${PLAN_KEYS.map(k=>{ const q=CONFIG.plans[k], on=k===s.plan; return `<button type="button" class="ob-plan ${on?'on':''}" role="radio" aria-checked="${on}" data-ob="plan" data-v="${k}">
+      <span class="ob-radio"></span>
+      <span class="ob-pm"><span class="ob-pn">${q.name}${k==='weekly'?'<em>Most popular</em>':''}</span><span class="ob-pd">${q.items} clothes a month · ${q.pickups} pickup${q.pickups>1?'s':''} and ${q.pickups} deliver${q.pickups>1?'ies':'y'}</span><span class="ob-pd2">${k==='fresh'?'Wash, dry and fold':'Wash, dry, iron, hang or fold'}${q.extra.length?' · '+q.extra.join(' · '):''}</span></span>
+      <span class="ob-pp"><b>${naira(q.price)}</b><small>a month</small></span></button>`; }).join('')}</div>
+    <p class="ob-note">Duvets, curtains, suits and native attire are priced separately. Extra clothes are ${naira(CONFIG.extraItem)} each. For an estate or business, <button type="button" class="ob-link" data-act="quote">request a quote</button>.</p>`;
+  if(s.step===1) body=`<p class="ob-eyebrow">Step 2 of 4</p><h1 class="ob-h1">Where do we pick up?</h1><p class="ob-sub">Your rider collects and delivers here. You can add more addresses later.</p>
+    <section class="ob-card"><h2 class="ob-st">Area</h2>
+      <div class="ob-areas">${areas.map(a=>`<button type="button" class="ob-chip ${a.name===s.area?'on':''}" ${a.open?`data-ob="set" data-k="area" data-v="${esc(a.name)}"`:'disabled'} aria-pressed="${a.name===s.area}">${esc(a.name)}${a.open?'':'<small>Soon</small>'}</button>`).join('')}</div></section>
+    <section class="ob-card"><div class="ob-row"><h2 class="ob-st">Address</h2><button type="button" class="ob-locate" data-ob="locate">${I.pin||''}<span>Use my location</span></button></div>
+      ${obSeg('label',['Home','Office','Other'],s.label)}
+      <div class="ob-fieldwrap"><label class="ob-field"><span>Street address</span><input data-sb="street" autocomplete="off" value="${esc(s.street)}" placeholder="e.g. 12 Admiralty Way, Lekki Phase 1"></label><div class="ob-sugg" hidden></div></div>
+      <div class="ob-2"><label class="ob-field"><span>House, flat or estate</span><input data-sb="building" value="${esc(s.building)}" placeholder="Flat 3B, Palm Court Estate"></label>
+      <label class="ob-field"><span>Nearest landmark</span><input data-sb="landmark" value="${esc(s.landmark)}" placeholder="Opposite the filling station"></label></div>
+      ${obMap(s)}</section>
+    <section class="ob-card"><h2 class="ob-st">At the gate</h2><p class="ob-help">Pick any that apply. Your rider sees these on every visit.</p>
+      <div class="ob-areas">${['Call me when you arrive','Leave with security','Hand to me only','Gate code needed','Ask for the housekeeper'].map(g=>`<button type="button" class="ob-chip ${s.gate.includes(g)?'on':''}" aria-pressed="${s.gate.includes(g)}" data-ob="gate" data-v="${esc(g)}">${g}</button>`).join('')}</div>
+      <label class="ob-field"><span>Anything else for the rider? (optional)</span><textarea data-sb="notes" rows="2" placeholder="e.g. Blue gate, second house on the left">${esc(s.notes)}</textarea></label>
+      <label class="ob-field"><span>Phone on pickup day</span><input data-sb="contact" type="tel" inputmode="tel" value="${esc(s.contact)}"></label></section>`;
+  if(s.step===2){ const ds=obDates(s.plan,s.day); body=`<p class="ob-eyebrow">Step 3 of 4</p><h1 class="ob-h1">Pickups and care</h1><p class="ob-sub">${p.name} includes ${p.pickups} pickup${p.pickups>1?'s':''} and ${p.pickups} deliver${p.pickups>1?'ies':'y'} a month: ${obFreq(s.plan).toLowerCase()}. Everything comes back within 48 hours.</p>
+    <section class="ob-card"><h2 class="ob-st">Pickup day</h2>
+      <div class="ob-days">${[1,2,3,4,5,6].map(d=>{ const dt=nextDateFor(d); return `<button type="button" class="ob-day ${d===s.day?'on':''}" aria-pressed="${d===s.day}" data-ob="day" data-v="${d}"><b>${DOW[d]}</b><span>${dt.getDate()} ${MON[dt.getMonth()]}</span></button>`; }).join('')}</div>
+      <h2 class="ob-st" style="margin-top:22px">Time window</h2>
+      <div class="ob-wins">${CONFIG.windows.map((w,i)=>`<button type="button" class="ob-chip ${i===s.window?'on':''}" aria-pressed="${i===s.window}" data-ob="win" data-v="${i}">${w}</button>`).join('')}</div>
+      <div class="ob-sched"><p class="ob-help" style="margin:0 0 10px">Your first month</p>${ds.map((d,i)=>`<div class="ob-si"><span class="ob-sd">${DOW[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}</span><span>Pickup ${i+1}</span><span class="ob-sb">Back by ${DOW[addDays(d,2).getDay()]} ${addDays(d,2).getDate()} ${MON[addDays(d,2).getMonth()]}</span></div>`).join('')}</div></section>
+    <section class="ob-card"><h2 class="ob-st">How you like your clothes</h2><p class="ob-help">We wash everything: T-shirts, jeans, coloured clothes, gym wear, shirts, dresses, towels and bedding. Whites, colours and darks are always washed apart, and your load is never mixed with anyone else's.</p>
+      <div class="ob-pref"><div><b>Everyday wear</b><span>T-shirts, jeans, shorts, gym wear</span></div>${obSeg('everyday',['Folded','On hangers'],s.everyday)}</div>
+      <div class="ob-pref"><div><b>Shirts, blouses and dresses</b><span>Work and occasion wear</span></div>${obSeg('shirts',['On hangers','Folded'],s.shirts)}</div>
+      ${s.plan==='fresh'?`<div class="ob-pref"><div><b>Ironing</b><span>Not included in Fresh Start. Upgrade to Weekly Fresh for ironing.</span></div><span class="ob-tagoff">Not included</span></div>`:`<div class="ob-pref"><div><b>Ironing</b><span>Steam pressed at the studio</span></div>${obSeg('iron',['Everything','Shirts and trousers','No ironing'],s.iron)}</div>`}
+      <div class="ob-pref"><div><b>Detergent</b><span>For sensitive skin, choose unscented</span></div>${obSeg('detergent',['Standard','Unscented'],s.detergent)}</div>
+      <div class="ob-pref"><div><b>Fabric softener</b><span>Softer towels and T-shirts</span></div>${obSeg('softener',['Yes','No'],s.softener?'Yes':'No')}</div>
+      ${s.plan==='fresh'?'':`<div class="ob-pref"><div><b>Starch on shirts</b><span>For a crisp collar</span></div>${obSeg('starch',['None','Light','Firm'],s.starch)}</div>`}
+      <label class="ob-field" style="margin-top:6px"><span>Special care (optional)</span><textarea data-sb="care" rows="2" placeholder="e.g. Hand-wash the silk blouse. No dryer for my jeans.">${esc(s.care)}</textarea></label></section>`; }
+  if(s.step===3){ const ds=obDates(s.plan,s.day); body=`<p class="ob-eyebrow">Step 4 of 4</p><h1 class="ob-h1">Review and pay</h1><p class="ob-sub">Pay securely with Paystack by card, bank transfer or USSD. Riders never collect cash.</p>
+    <section class="ob-card ob-review">
+      ${[['Plan',`${p.name} · ${p.items} clothes a month`,0],['Address',`${esc(s.street)}${s.building?', '+esc(s.building):''}, ${esc(s.area)}`,1],['Pickups',`${obFreq(s.plan)} · ${DOW_L[s.day]}s, ${CONFIG.windows[s.window]}`,2],['First pickup',fmtL(ds[0]),2],['Care',`${s.everyday==='Folded'?'Everyday wear folded':'Everyday wear on hangers'}, shirts ${s.shirts.toLowerCase()}${s.plan==='fresh'?'':', iron '+s.iron.toLowerCase()}, ${s.detergent.toLowerCase()} detergent`,2]].map(r=>`<div class="ob-rr"><span>${r[0]}</span><b>${r[1]}</b><button type="button" class="ob-link" data-ob="goto" data-v="${r[2]}">Edit</button></div>`).join('')}
+    </section>
+    <section class="ob-card"><h2 class="ob-st">Receipt email</h2><label class="ob-field"><span>Email</span><input data-sb="email" type="email" inputmode="email" autocomplete="email" value="${esc(s.email)}" placeholder="you@example.com"></label>
+      <div class="ob-paywith"><span>Pay with</span><i>Card</i><i>Bank transfer</i><i>USSD</i><i>Bank</i></div>
+      <label class="ob-check"><input type="checkbox" data-bind="agree" ${s.agree?'checked':''}><span>${isFounding()?'I agree to the 3-month founding-member commitment, the Terms, and the damage and loss policy. ':'I agree to the Terms and the damage and loss policy. '}My plan renews monthly until I cancel.</span></label>
+      ${CONFIG.paystackKey?'':'<p class="ob-demo">Test mode: Paystack is not connected yet, so this completes as a demo and nothing is charged.</p>'}
+    </section>`; }
+  const err=UI.subErr?`<p class="ob-err" role="alert">${esc(UI.subErr)}</p>`:'';
+  const next=s.step<3?`<button type="button" class="ob-next" data-ob="next">${['Continue','Continue','Continue to payment'][s.step]} ${ARROW}</button>`:`<button type="button" class="ob-next ob-pay" data-ob="pay">${UI.paying?'Opening Paystack…':'Pay '+naira(due)}</button>`;
+  return `<div class="ob">
+    <header class="ob-bar"><a class="logo" href="#/">${LOGO()}<span>${CONFIG.brand}</span></a>
+      <ol class="ob-prog" aria-label="Sign-up steps">${OB_STEPS.map((l,i)=>`<li class="${i===s.step?'cur':''} ${i<s.step?'done':''}"><button type="button" data-ob="goto" data-v="${i}" ${i>s.step?'disabled':''} ${i===s.step?'aria-current="step"':''}><i></i><span>${l}</span></button></li>`).join('')}</ol>
+      <a href="#/" class="ob-cancel">Cancel</a></header>
+    <div class="ob-wrap"><main class="ob-main">${body}${err}
+      <div class="ob-nav">${s.step>0?`<button type="button" class="ob-back" data-ob="prev">Back</button>`:'<span></span>'}${next}</div></main>
+      <aside class="ob-sum" aria-label="Summary"><p class="ob-sk">Your plan</p><h2>${p.name}</h2><p class="ob-sp"><b>${naira(p.price)}</b>/month</p>
+        <ul><li><span>Clothes</span><b>${p.items} a month</b></li><li><span>Pickups</span><b>${p.pickups} a month</b></li><li><span>Deliveries</span><b>${p.pickups} a month</b></li><li><span>Pickup and delivery</span><b>Free</b></li>${disc?`<li class="ob-disc"><span>Founding ${Math.round(CONFIG.foundingDiscount*100)}% off</span><b>−${naira(disc)}</b></li>`:''}</ul>
+        <div class="ob-due"><span>Due today</span><b>${naira(due)}</b></div><p class="ob-then">Then ${naira(p.price)} a month. Cancel or pause any time.</p>
+        <p class="ob-secure">${(SI.lock||'')}Secured by Paystack</p></aside></div></div>`;
+}
+function obValidate(){ const s=UI.sub;
+  if(s.step===1){ if(!s.street.trim()) return 'Please enter your street address.'; if(normPhone(s.contact).length!==10) return 'Please enter a valid phone number for pickup day.'; }
+  if(s.step===3){ if(!/^\S+@\S+\.\S+$/.test(s.email.trim())) return 'Please enter an email for your receipt.'; if(!s.agree) return 'Please accept the terms to continue.'; }
+  return ''; }
+function obFinish(amount, ref){ const s=UI.sub; s.notes=[s.gate.join('. '),s.notes].filter(Boolean).join('. '); s.method='paystack'; const u=me(); if(s.email) u.email=s.email.trim();
+  finishSubscribe(amount); const v=me(); if(v){ v.prefs=Object.assign(v.prefs||{},{everyday:s.everyday,shirts:s.shirts,iron:s.iron,detergent:s.detergent,softener:s.softener,starch:s.starch,care:s.care,gate:s.gate}); v.payment={type:'paystack',ref:ref||null}; if(v.addresses&&v.addresses[0]){ v.addresses[0].lat=s.lat; v.addresses[0].lng=s.lng; } save(); } }
+function obPay(){ const s=UI.sub, u=me(), p=CONFIG.plans[s.plan]; const amt=p.price-(isFounding()?Math.round(p.price*CONFIG.foundingDiscount):0);
+  if(!CONFIG.paystackKey){ return payModal(amt,'card',()=>obFinish(amt,'demo')); }
+  UI.paying=true; rerender();
+  loadScript('https://js.paystack.co/v2/inline.js').then(function(){ UI.paying=false; rerender();
+    const pop=new PaystackPop(); pop.newTransaction({ key:CONFIG.paystackKey, email:s.email.trim(), amount:amt*100, currency:'NGN', reference:'WD-'+Date.now().toString(36).toUpperCase()+'-'+u.phone.slice(-4),
+      metadata:{ plan:s.plan, phone:'0'+u.phone, name:u.name, custom_fields:[{display_name:'Plan',variable_name:'plan',value:p.name}] },
+      onSuccess:function(t){ toast('Payment received. Ref '+t.reference, true); obFinish(amt,t.reference); },
+      onCancel:function(){ toast('Payment cancelled. You can try again.'); },
+      onError:function(e){ toast('Paystack error: '+(e&&e.message||'please try again')); } });
+  }).catch(function(){ UI.paying=false; rerender(); toast('Could not reach Paystack. Check your connection.'); }); }
+let obT=null;
+function obSuggest(q){ clearTimeout(obT); const box=$('.ob-sugg'); if(!box) return; if(q.trim().length<4){ box.hidden=true; return; }
+  obT=setTimeout(function(){ fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&countrycodes=ng&viewbox=3.0,6.75,3.75,6.35&bounded=1&q='+encodeURIComponent(q)).then(r=>r.json()).then(function(res){ const b=$('.ob-sugg'); if(!b) return;
+    if(!res.length){ b.hidden=true; return; } b.innerHTML=res.map((r,i)=>`<button type="button" data-ob="pick" data-i="${i}">${I.pin||''}<span>${esc(r.display_name.split(',').slice(0,4).join(','))}</span></button>`).join(''); b.hidden=false; UI.obRes=res; }).catch(function(){}); },650); }
+document.addEventListener('input',function(e){ const t=e.target; if(!t.dataset||!t.dataset.sb||!UI.sub) return; UI.sub[t.dataset.sb]=t.value; if(t.dataset.sb==='street') obSuggest(t.value); });
+document.addEventListener('click',function(e){ const b=e.target.closest('[data-ob]'); if(!b||!UI.sub) return; const s=UI.sub, a=b.dataset.ob, v=b.dataset.v;
+  if(a==='plan'){ s.plan=v; } else if(a==='set'){ s[b.dataset.k]= b.dataset.k==='softener' ? v==='Yes' : v; }
+  else if(a==='gate'){ s.gate=s.gate.includes(v)?s.gate.filter(x=>x!==v):s.gate.concat(v); }
+  else if(a==='day'){ s.day=+v; } else if(a==='win'){ s.window=+v; }
+  else if(a==='goto'){ const i=+v; if(i<=s.step){ s.step=i; UI.subErr=''; window.scrollTo(0,0); } }
+  else if(a==='prev'){ s.step=Math.max(0,s.step-1); UI.subErr=''; window.scrollTo(0,0); }
+  else if(a==='next'){ const er=obValidate(); if(er){ UI.subErr=er; return rerender(); } s.step++; UI.subErr=''; rerender(); return window.scrollTo(0,0); }
+  else if(a==='pay'){ const er=obValidate(); if(er){ UI.subErr=er; return rerender(); } UI.subErr=''; return obPay(); }
+  else if(a==='pick'){ const r=(UI.obRes||[])[+b.dataset.i]; if(r){ const parts=r.display_name.split(','); s.street=parts.slice(0,3).join(',').trim(); s.lat=+r.lat; s.lng=+r.lon; } }
+  else if(a==='locate'){ if(!navigator.geolocation){ toast('Location is not available on this device.'); return; } b.classList.add('busy');
+    navigator.geolocation.getCurrentPosition(function(pos){ s.lat=pos.coords.latitude; s.lng=pos.coords.longitude;
+      fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='+s.lat+'&lon='+s.lng).then(r=>r.json()).then(function(r){ const ad=r.address||{}; s.street=[ad.house_number,ad.road].filter(Boolean).join(' ')||(r.display_name||'').split(',').slice(0,2).join(','); rerender(); }).catch(function(){ rerender(); }); },
+      function(){ b.classList.remove('busy'); toast('Allow location access, or type your address.'); },{enableHighAccuracy:true,timeout:10000}); return; }
+  else return;
+  rerender(); });
