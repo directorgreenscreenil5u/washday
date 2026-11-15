@@ -965,6 +965,7 @@ function viewOrders(){
       </div>
       <div class="tablebox" style="margin-top:16px"><table style="min-width:820px"><thead><tr><th>Order</th><th>Type</th><th>Date</th><th style="text-align:right">Items</th><th style="text-align:right">Weight</th><th style="text-align:right">Charged</th><th>Status</th><th><span class="sr">Actions</span></th></tr></thead>
       <tbody>${rows.map(o=>`<tr><td><b>${o.id}</b></td><td>${typeName(o.type)}</td><td class="muted">${fmt(o.date)}</td><td style="text-align:right">${o.items??'—'}</td><td style="text-align:right">${o.kg?o.kg+' kg':'—'}</td><td style="text-align:right">${o.cost?naira(o.cost):'—'}${o.overweight?`<br><span class="xs soft">+${naira(o.overweight*CONFIG.overweightPerKg)} weight</span>`:''}</td><td>${statusPill(o)}</td><td style="text-align:right;white-space:nowrap"><a href="#/app/track/${o.id}" style="font-weight:600;font-size:14px">${o.status<6&&!o.cancelled?'Track':'View'}</a></td></tr>`).join('')}</tbody></table></div>
+      <div class="o-cards">${rows.map(o=>`<a class="o-card" href="#/app/track/${o.id}"><div class="o-ct"><b>${o.id}</b>${statusPill(o)}</div><p>${typeName(o.type)} · ${fmt(o.date)}</p><div class="o-cm"><span><b>${o.items??'—'}</b> items</span><span><b>${o.kg?o.kg+' kg':'—'}</b></span><span><b>${o.cost?naira(o.cost):'Included'}</b></span></div></a>`).join('')}</div>
       ${rows.length?'':'<p class="muted" style="text-align:center;padding:32px 0">No orders here yet.</p>'}
     </section>`);
 }
@@ -1358,7 +1359,7 @@ function viewScan(arg){
           <h1 class="apph1" style="font-size:26px">Scan a tag</h1>
           <div class="scan-cam"><video muted playsinline></video><div class="scan-frame"><i></i><i></i><i></i><i></i></div><div class="scan-idle"><span>${SI.camera}</span><p>Camera is off</p></div></div>
           <div class="row" style="gap:8px;margin-top:12px"><button class="btn btn-dark" style="flex:1" data-act="scan-start">${SI.camera}Start camera</button><button class="btn btn-light" data-act="scan-stop">Stop</button></div>
-          <form data-form="tag-open" class="row" style="gap:8px;margin-top:16px;flex-wrap:nowrap"><input class="input" name="code" placeholder="Or type a tag code, e.g. WD-T-0007" style="flex:1;min-width:0;text-transform:uppercase"><button class="btn btn-light">Open</button></form>
+          <form data-form="tag-open" class="row" style="gap:8px;margin-top:16px;flex-wrap:nowrap"><input class="input" name="code" placeholder="Tag code, e.g. WD-T-0007" style="flex:1;min-width:0;text-transform:uppercase"><button class="btn btn-light">Open</button></form>
           <p class="xs soft" style="margin-top:12px">${Object.keys(DB.tags).length} items tagged so far.</p>
         </section>
         <section class="card ts-right">${right}</section>
