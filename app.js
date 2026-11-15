@@ -255,11 +255,15 @@ const LT_MAP = `<svg class="lt-map" viewBox="0 0 320 640" preserveAspectRatio="x
     <g transform="translate(0 -34)"><rect x="-44" y="-13" width="88" height="26" rx="13" fill="#1D1D1F"/><path d="M-5 13 L0 19 L5 13Z" fill="#1D1D1F"/><text x="-32" y="4.5" font-size="10" font-weight="600" fill="#fff" font-family="-apple-system,sans-serif">Home</text><text x="32" y="4.5" text-anchor="end" font-size="10" font-weight="700" fill="#9FB0FF" font-family="-apple-system,sans-serif"><tspan class="lt-min">11</tspan> min</text></g>
   </g>
   <g>
-    <circle r="22" fill="#2340E8" opacity=".14"><animate attributeName="r" values="16;26;16" dur="2s" repeatCount="indefinite"/></circle>
-    <circle r="14" fill="#fff" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,.25))"/>
-    <circle r="10" fill="#2340E8"/>
-    <path d="M0 -5.5 L4.5 4.5 L0 2 L-4.5 4.5Z" fill="#fff"/>
-    <animateMotion dur="16s" repeatCount="indefinite" rotate="auto" keyPoints="0;1" keyTimes="0;1" calcMode="linear"><mpath href="#ltRoute"/></animateMotion>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.06;.9;1" dur="14s" repeatCount="indefinite"/>
+    <circle r="21" fill="#2340E8" opacity=".12"><animate attributeName="r" values="17;24;17" dur="1.8s" repeatCount="indefinite"/></circle>
+    <circle r="15.5" fill="#fff" style="filter:drop-shadow(0 2px 5px rgba(0,0,0,.28))"/>
+    <circle r="12.5" fill="#2340E8"/>
+    <g transform="translate(-8.2 -6.2) scale(.68)" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="4.5" cy="14" r="3.6"/><circle cx="19.5" cy="14" r="3.6"/>
+      <path d="M4.5 14 L9 8.5 H14.5 L19.5 14"/><path d="M14.5 8.5 L13 4.5 H16.5"/><path d="M9 8.5 L8 5.5 H5.5"/>
+    </g>
+    <animateMotion dur="14s" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="linear"><mpath href="#ltRoute"/></animateMotion>
   </g>
 </svg>`;
 const TRK = [
@@ -280,6 +284,7 @@ const SVC3 = {
   bed: { label:'Bedding', ti:'layers', img:'towels', head:'Duvets, sheets and curtains.', sub:'Big items washed properly, without taking over your weekend.', price:`Included on Full House, or ${naira(CONFIG.duvet)} a duvet`,
     rows:[['layers','Washed on their own','Large items get their own cycle and a full dry.'],['shield','Hygienic wash','Hot wash for sheets and towels to keep them truly clean.'],['zip','Sealed and fresh','Folded and returned in a sealed zip bag.']] }
 };
+Object.assign(SI, { appi:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="3.5" width="15" height="17" rx="3.5"/><circle cx="12" cy="13" r="4.2"/><path d="M8 7h2"/><path d="M10.2 13.6c1 .9 2.6.9 3.6 0"/></svg>` });
 Object.assign(SI, {
   back:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>`,
   share:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>`
@@ -359,7 +364,7 @@ function viewHome(){
         <div class="lt-ph">
           <div class="lt-glow"></div>
           <div class="iph lt-iph" aria-hidden="true"><span class="lt-btn-a"></span><span class="lt-btn-b"></span><span class="lt-btn-c"></span>
-            <div class="lt-island"><span class="lt-ia">w</span><span class="lt-ib"><span class="lt-min">11</span> min</span></div>
+            <div class="lt-island"><span class="lt-ia">${SI.appi}</span><span class="lt-ib"><span class="lt-min">11</span> min</span></div>
             <div class="iph-scr lt-scr">
               <div class="iph-bar lt-bar"><span>9:41</span><span class="iph-sig"><i></i><i></i><i></i><i></i></span></div>
               ${LT_MAP}
@@ -367,7 +372,7 @@ function viewHome(){
               <div class="lt-mapbtns"><span>${SI.nav}</span></div>
               <div class="lt-sheet2">
                 <span class="lt-grab"></span>
-                <div class="lt-eta2"><div><p class="lt-k">Arriving in</p><p class="lt-big"><span class="lt-min">11</span><small>min</small></p></div><div class="lt-time"><p class="lt-k">Estimated</p><b>10:52 AM</b><span>Out for delivery</span></div></div>
+                <div class="lt-eta2"><div><p class="lt-k">Arriving in</p><p class="lt-big"><span class="lt-min">11</span><small>min</small></p></div><div class="lt-time"><p class="lt-k">Arrives at</p><b>10:52</b></div></div>
                 <div class="lt-track"><div class="lt-tline"><i></i></div>
                   ${[['bag2','Picked up','done'],['drop','Cleaned','done'],['bike','On the way','now'],['home','Delivered','']].map(x=>`<div class="lt-tn ${x[2]}"><span>${SI[x[0]]}</span><em>${x[1]}</em></div>`).join('')}
                 </div>
@@ -376,15 +381,9 @@ function viewHome(){
               </div>
             </div>
           </div>
-          <div class="lt-card c1"><div class="lt-cin lt-noteC"><span class="lt-app">w</span><div><p class="lt-nt"><b>Washday</b><time>8:12 AM</time></p><p class="lt-nb"><b>Picked up.</b> 6.4 kg weighed at your door. Weight sent on WhatsApp.</p></div></div></div>
-          <div class="lt-card c2"><div class="lt-cin lt-la"><div class="lt-la-top"><span class="lt-app sm">w</span><b>Washday</b><span class="lt-la-r"><span class="lt-min">11</span> min</span></div><p class="lt-la-t">Arriving soon</p><div class="lt-la-bar"><span></span><i>${SI.bike}</i></div><div class="lt-la-foot"><span>Out for delivery</span><span>10:52 AM</span></div></div></div>
-          <div class="lt-card c3"><div class="lt-cin lt-mini"><svg class="lt-ring" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" fill="none" stroke="#E3E9FF" stroke-width="5"/><circle class="lt-ringp" cx="22" cy="22" r="18" fill="none" stroke="#2340E8" stroke-width="5" stroke-linecap="round" pathLength="1" transform="rotate(-90 22 22)"/><path d="M15 22.5l4.5 4.5L29 17.5" fill="none" stroke="#2340E8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b>32 of 32 items</b><span>Counted, pressed and sealed</span></div></div></div>
+          <div class="lt-card c1"><div class="lt-cin lt-noteC"><span class="lt-app">${SI.appi}</span><div><p class="lt-nt"><b>Washday</b><time>9m ago</time></p><p class="lt-nb"><b>Your laundry is on its way</b><br>Tunde picked up your clean bag. 32 items, sealed.</p></div></div></div>
+          <div class="lt-card c2"><div class="lt-cin lt-la"><div class="lt-la-top"><span class="lt-app sm">${SI.appi}</span><b>Washday</b><span class="lt-la-r"><span class="lt-min">11</span> min</span></div><p class="lt-la-t">Arriving soon</p><div class="lt-la-bar"><span></span><i>${SI.bike}</i></div><div class="lt-la-foot"><span>Out for delivery</span><span>10:52 AM</span></div></div></div>
         </div>
-      </div>
-      <div class="lt-feats">
-        <div><span class="lt-fi">${SI.scale}</span><b>Weighed at your door</b><p>The weight lands on WhatsApp before your rider leaves.</p></div>
-        <div><span class="lt-fi">${SI.tag}</span><b>Counted twice</b><p>Every item is counted at pickup and again before delivery.</p></div>
-        <div><span class="lt-fi">${SI.bike}</span><b>Live rider location</b><p>See exactly where your rider is and when they'll arrive.</p></div>
       </div>
     </div>
   </section>
