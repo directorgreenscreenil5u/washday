@@ -9,11 +9,12 @@ const CONFIG = {
   whatsapp: '2348000000000',
   areas: [ {name:'Lekki Phase 1', open:true}, {name:'Yaba', open:true}, {name:'Ikoyi', open:false}, {name:'Surulere', open:false}, {name:'Ikeja GRA', open:false} ],
   plans: {
-    fresh:     { name:'Fresh Start',  price:20000, pickups:2, kg:8,  service:'Wash, dry and fold',            blurb:'For one person who wants their weekends back.', extra:[], img:'folded' },
-    weekly:    { name:'Weekly Fresh', price:45000, pickups:4, kg:8,  service:'Wash, dry, iron, hang or fold', blurb:'A pickup every week, ironed and ready to wear.', extra:['Live order tracking'], tag:'Best for most homes', img:'shirt' },
-    household: { name:'Full House',   price:75000, pickups:4, kg:15, service:'Wash, dry, iron, hang or fold', blurb:'For busy homes with kids, towels and bedding.', extra:['1 duvet or bedding set a month','Priority pickup windows'], img:'family' }
+    fresh:     { name:'Fresh Start',  price:20000, items:50,  pickups:2, kg:8,  service:'Wash, dry and fold',            blurb:'For one person who wants their weekends back.', extra:[], img:'folded' },
+    weekly:    { name:'Weekly Fresh', price:35000, items:100, pickups:4, kg:8,  service:'Wash, dry, iron, hang or fold', blurb:'A pickup every week, ironed and ready to wear.', extra:['Live order tracking'], tag:'Best for most homes', img:'shirt' },
+    household: { name:'Full House',   price:60000, items:200, pickups:4, kg:15, service:'Wash, dry, iron, hang or fold', blurb:'For busy homes with kids, towels and bedding.', extra:['Live order tracking','Priority pickup windows'], img:'family' }
   },
   overweightPerKg: 1000,
+  extraItem: 450, curtain: 3000,
   // PLACEHOLDER PRICES: set before launch
   extraPickup: 7000, duvet: 5000, dryCleanItem: 3000, express: 5000,
   foundingDiscount: 0.30,
@@ -167,13 +168,29 @@ function siteHeader(){
     <div class="mobilemenu" id="mobilemenu"><a href="#/home/services">Services</a><a href="#/home/how">How it works</a><a href="#/home/plans">Pricing</a><a href="#/home/uses">Who it's for</a><a href="#/home/faq">Help</a>${u?'<a href="#/app">My account</a>':'<a href="#/login">Log in</a>'}</div>`;
 }
 const FAQS = [
-  ['How much laundry is 8 kg?','About a week of clothes for one person: roughly 6 shirts, 4 trousers, 6 T-shirts, underwear and a towel or two. The rider weighs your bag at the door so you always know.'],
-  ['What happens if I go over my kg limit?',`We wash it anyway and add ${naira(CONFIG.overweightPerKg)} per extra kg to your next bill. You see the weight on WhatsApp before we leave your door.`],
+  ['What counts as one item?','Each piece of clothing is one item: a shirt, a pair of trousers, a T-shirt, a dress, a towel. A two-piece outfit counts as two. Duvets, curtains, suits and native attire for dry cleaning are priced separately.'],
+  ['What if I go over my items for the month?',`We wash them anyway and add ${naira(CONFIG.extraItem)} per extra item to your next bill. You see the count on WhatsApp before we leave your door.`],
   ['Can I pause or cancel my plan?','Yes. Pause for one billing month a year when you travel, switch plans from your account, or cancel before your next billing date. Unused pickups do not roll over.'],
   ['What if something is lost or damaged?','Every item is tagged and counted, so this is rare. If it happens, we pay you back using our published compensation scale and reply to every complaint within 24 hours.'],
   ['How do I pay?','Online by card, bank transfer or USSD through Paystack, billed monthly. Riders never collect cash.'],
   ['What are the pickup times?','Pick a fixed day and a two-hour window between 7am and 8pm, Monday to Saturday. Move a single pickup from your account up to 12 hours before.']
 ];
+function prPick(n){ return n<=50?'fresh':n<=100?'weekly':'household'; }
+function prRec(n){ const k=prPick(n), p=CONFIG.plans[k]; const over=Math.max(0,n-p.items); return `Best fit: <b>${p.name}</b> · ${naira(p.price)} a month${over?` + about ${naira(over*CONFIG.extraItem)} for ${over} extra items`:''}`; }
+function prCard(k){
+  const p=CONFIG.plans[k], rec=prPick(UI.prN||100)===k, per=Math.round(p.price/p.items);
+  const disc=isFounding()?Math.round(p.price*(1-CONFIG.foundingDiscount)):0;
+  const feats=[p.service,`${p.pickups===4?'Weekly':'Fortnightly'} pickup and delivery`,'Every item tagged and counted',...p.extra];
+  return `<article class="prc ${rec?'rec':''}" data-plan="${k}">
+    <span class="prc-badge">Best fit for you</span>
+    <div class="prc-top"><h3>${p.name}</h3><span>${p.pickups===4?'Every week':'Every other week'}</span></div>
+    <p class="prc-items"><b>${p.items}</b><span>items a month</span></p>
+    <p class="prc-price"><b>${naira(p.price)}</b><span>/ month</span></p>
+    <p class="prc-per">${naira(per)} per item${disc?` · <em>${naira(disc)}</em> first month for founding members`:''}</p>
+    <ul>${feats.map(f=>`<li>${SI.check}<span>${f}</span></li>`).join('')}</ul>
+    <button class="btn btn-lg btn-block prc-btn" data-act="pick-plan" data-plan="${k}">Choose ${p.name}</button>
+  </article>`;
+}
 function planCard(k, feat){
   const p = CONFIG.plans[k];
   const per = Math.round(p.price/p.pickups/50)*50;
@@ -278,12 +295,12 @@ const TRK = [
 ];
 const SVC3 = {
   wash: { label:'Wash & fold', ti:'drop', img:'bagpink', head:'Everyday clothes, done.', sub:'Hand over one bag. Get it back clean, fresh and neatly folded.', price:'Included in every plan',
-    rows:[['scale','Weighed at your door','Your rider weighs the bag in front of you and sends the weight on WhatsApp.'],['tag','Every item tagged','Each piece is tagged to you and counted in and out.'],['shield','Never mixed','Your load is washed on its own, with your detergent preferences.']] },
+    rows:[['scale','Counted at your door','Your rider counts every piece with you and sends the count on WhatsApp.'],['tag','Every item tagged','Each piece is tagged to you and counted in and out.'],['shield','Never mixed','Your load is washed on its own, with your detergent preferences.']] },
   iron: { label:'Ironing', ti:'hanger', img:'iron', head:'Pressed and ready to wear.', sub:'Shirts on hangers, trousers creased, straight from the bag to your day.', price:'Included in Weekly Fresh and Full House',
     rows:[['hanger','Hung or folded','Tell us once and we remember how you like each item.'],['clock','Back in 48 hours','Or 24 hours with express return when you need it sooner.'],['sparkle','Crisp every time','Steam-pressed by hand, collars and cuffs included.']] },
   dry: { label:'Dry cleaning', ti:'sparkle', img:'native', head:'From agbada to tuxedo.', sub:'Native attire, suits and gowns, cleaned and pressed with care.', price:`From ${naira(CONFIG.dryCleanItem)} per item`,
     rows:[['sparkle','Delicate fabrics','Aso-oke, lace, ankara and embroidery handled by specialists.'],['camera','Photographed on arrival','Existing stains or damage are flagged before we start.'],['zip','Returned covered','Every piece comes back pressed, on a hanger, in a garment cover.']] },
-  bed: { label:'Bedding', ti:'layers', img:'towels', head:'Duvets, sheets and curtains.', sub:'Big items washed properly, without taking over your weekend.', price:`Included on Full House, or ${naira(CONFIG.duvet)} a duvet`,
+  bed: { label:'Bedding', ti:'layers', img:'towels', head:'Duvets, sheets and curtains.', sub:'Big items washed properly, without taking over your weekend.', price:`${naira(CONFIG.duvet)} a duvet, priced separately`,
     rows:[['layers','Washed on their own','Large items get their own cycle and a full dry.'],['shield','Hygienic wash','Hot wash for sheets and towels to keep them truly clean.'],['zip','Sealed and fresh','Folded and returned in a sealed zip bag.']] }
 };
 Object.assign(SI, {
@@ -322,12 +339,12 @@ const SVC2 = [
 ];
 const USES = [
   ['woman','Busy professionals','Long days, no time, no generator to spare. Hand over one bag a week and get your weekends back.','fresh'],
-  ['family','Families','Kids\' clothes, school uniforms, towels and bedding. Full House covers up to 15 kg a pickup.','household'],
+  ['family','Families','Kids\' clothes, school uniforms, towels and bedding. Full House covers 200 items a month.','household'],
   ['rider','Estates','One collection point for every resident, a fixed pickup day and a residents\' discount.','quote'],
   ['tagging','Businesses','Uniforms, towels and linen for salons, spas, gyms and small hotels, counted in and out every time.','quote']
 ];
 const HL = [
-  ['img/bts-van.jpg','Counted at your door.','Your rider counts every piece with you before leaving, and the full list lands on WhatsApp straight away. No weighing, no guessing.','Pickup · Tue 8:14 am','Counting at pickup','Washday driver lifting baskets of clean laundry from a cobalt van at a customer home'],
+  ['img/bts-van2.jpg','Counted at your door.','Your rider counts every piece with you before leaving, and the full list lands on WhatsApp straight away. No weighing, no guessing.','Pickup · Tue 8:14 am','Counting at pickup','Washday driver handing a basket of clean laundry to a customer at a cobalt van'],
   ['img/bts-tag.jpg','Tagged and counted again.','Every piece gets a QR tag tied to you. We count again at the studio and before delivery, and the final number is printed on your sealed bag.','Studio · Lekki · 10:02','Tagging','Washday technician attaching a QR tag to a folded shirt'],
   ['img/bts-wash.jpg','Never mixed with anyone else&rsquo;s clothes.','Your clothes go into a machine on their own, never in a shared load with other customers. Your detergent and folding preferences are saved and used every time.','Your clothes · WD-1042','Washing','Technician loading one customer bag into its own machine'],
   ['img/woman.jpg','Backed in writing.','Lost or damaged? We pay you back on a published scale, and every complaint gets a reply within 24 hours.','Delivered · Thu 10:41 am','Guarantee','A customer receiving her clean laundry at the door']
@@ -370,7 +387,7 @@ function viewHome(){
     <div class="svx-head"><h2 class="h2">Everything your wardrobe needs.</h2><p class="lead">One subscription. Four services. Zero trips to the laundry man.</p></div>
     <div class="svx-tabs" role="tablist">${Object.entries(SVC3).map(([k,v])=>`<button role="tab" class="${tab===k?'on':''}" aria-selected="${tab===k}" data-act="svc2" data-t="${k}"><span class="svx-ti">${SI[v.ti]}</span>${v.label}</button>`).join('')}</div>
     ${(()=>{ const V=SVC3[tab]||SVC3.wash; return `<div class="svx-panel">
-      <div class="svx-media"><img src="${IMG[V.img]}" alt="${V.label}" loading="lazy"></div>
+      <div class="svx-media"><img src="${IMG[V.img]}" alt="${V.label}"></div>
       <div class="svx-body">
         <p class="svx-eyebrow">${V.label}</p>
         <h3 class="svx-h">${V.head}</h3>
@@ -442,9 +459,24 @@ function viewHome(){
   </section>
 
   <section id="plans" class="wrap section">
-    <div class="plans-head"><div><span class="tag">Pricing</span><h2 class="h2">Pick a plan that fits your week</h2></div><p class="lead">Pickup and delivery are always included. Each plan has a weight limit per pickup, so it stays fair for everyone. Change or pause any month.</p></div>
-    <div class="pgrid">${planCard('fresh')}${planCard('weekly',true)}${planCard('household')}</div>
-    <div class="pextras"><span class="pe-l">Extras on any plan</span><span>Over your limit <b>${naira(CONFIG.overweightPerKg)}/kg</b></span><span>Dry cleaning <b>${naira(CONFIG.dryCleanItem)}/item</b></span><span>Duvet <b>${naira(CONFIG.duvet)}</b></span><span>Express 24h <b>+${naira(CONFIG.express)}</b></span></div>
+    <div class="pr">
+      <div class="pr-head">
+        <p class="pr-eye">Pricing</p>
+        <h2 class="pr-h">Pay for your clothes.<br><span>Not the kilos.</span></h2>
+        <p class="pr-sub">Every piece is counted with you at the door. Pickup and delivery always included. Pause or change your plan any month.</p>
+      </div>
+      <div class="pr-calc">
+        <div class="pr-q"><p>How many clothes do you wash in a month?</p><p class="pr-val"><b class="pr-n">${UI.prN||100}</b><span>items</span></p></div>
+        <input class="pr-range" type="range" min="20" max="250" step="5" value="${UI.prN||100}" aria-label="Clothes per month" style="--p:${(((UI.prN||100)-20)/230*100).toFixed(1)}%">
+        <div class="pr-ticks"><span>20</span><span>50</span><span>100</span><span>150</span><span>200</span><span>250</span></div>
+        <p class="pr-rec">${prRec(UI.prN||100)}</p>
+      </div>
+      <div class="pr-grid">${PLAN_KEYS.map(k=>prCard(k)).join('')}</div>
+      <div class="pr-xt">
+        <div class="pr-xh"><h3>Priced separately</h3><p>Big or delicate pieces that need their own care.</p></div>
+        <div class="pr-xg">${[['layers','Duvets and comforters',naira(CONFIG.duvet),'each'],['hanger','Curtains',naira(CONFIG.curtain),'per panel'],['sparkle','Suits and native attire',naira(CONFIG.dryCleanItem),'dry cleaned, per item'],['clock','Express 24-hour return','+'+naira(CONFIG.express),'per pickup'],['tag','Extra items',naira(CONFIG.extraItem),'per item over your plan']].map(x=>`<div class="pr-xi"><span class="pr-xic">${SI[x[0]]}</span><div><b>${x[1]}</b><span>${x[3]}</span></div><em>${x[2]}</em></div>`).join('')}</div>
+      </div>
+    </div>
   </section>
 
   <section id="uses" class="wrap section">
@@ -548,7 +580,7 @@ function viewSubscribe(){
   let body = '';
   if (s.step===0) body = `<h1 class="flowh1">Choose your plan</h1><p class="muted" style="margin-top:8px">You can change or pause it any time from your account.</p>
     <div style="display:flex;flex-direction:column;gap:12px;margin-top:28px">
-      ${PLAN_KEYS.map(k=>{ const q=CONFIG.plans[k]; const on=k===s.plan; return `<button type="button" class="choice ${on?'on':''}" aria-pressed="${on}" data-act="sub-plan" data-plan="${k}" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:14px">${radio(on)}<span style="width:76px;height:76px;border-radius:14px;overflow:hidden;flex:none"><img class="photo" src="${IMG[q.img]}" alt=""></span><span style="flex:1 1 200px"><span style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b style="font-family:var(--display);font-size:20px;font-weight:600">${q.name}</b>${q.tag?`<span class="pill pill-amber">${q.tag}</span>`:''}</span><span class="muted" style="display:block;margin-top:4px;font-size:14px">${q.pickups} pickups a month · up to ${q.kg} kg each · ${q.service.toLowerCase()}</span></span><span style="text-align:right;padding-right:8px"><b style="display:block;font-family:var(--display);font-size:24px;font-weight:500;letter-spacing:-.02em">${naira(q.price)}</b><span class="xs soft">per month</span></span></button>`; }).join('')}
+      ${PLAN_KEYS.map(k=>{ const q=CONFIG.plans[k]; const on=k===s.plan; return `<button type="button" class="choice ${on?'on':''}" aria-pressed="${on}" data-act="sub-plan" data-plan="${k}" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:14px">${radio(on)}<span style="width:76px;height:76px;border-radius:14px;overflow:hidden;flex:none"><img class="photo" src="${IMG[q.img]}" alt=""></span><span style="flex:1 1 200px"><span style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b style="font-family:var(--display);font-size:20px;font-weight:600">${q.name}</b>${q.tag?`<span class="pill pill-amber">${q.tag}</span>`:''}</span><span class="muted" style="display:block;margin-top:4px;font-size:14px">${q.items} items a month · ${q.pickups} pickups · ${q.service.toLowerCase()}</span></span><span style="text-align:right;padding-right:8px"><b style="display:block;font-family:var(--display);font-size:24px;font-weight:500;letter-spacing:-.02em">${naira(q.price)}</b><span class="xs soft">per month</span></span></button>`; }).join('')}
     </div>
     <div style="margin-top:18px;background:var(--sky);border-radius:18px;padding:14px 18px;font-size:15px;display:flex;gap:12px;align-items:center;color:var(--blue)">${I.alert}<span style="color:var(--ink)">Need uniforms or linen for a business or estate? <button type="button" class="linkbtn" data-act="quote" style="font-size:15px">Request a quote</button> instead.</span></div>`;
   if (s.step===1) body = `<h1 class="flowh1">Where should we pick up?</h1><p class="muted" style="margin-top:8px">We currently serve ${openAreas.map(a=>a.name).join(' and ')}.</p>
@@ -578,7 +610,7 @@ function viewSubscribe(){
       </div></div>`;
   if (s.step===3) body = `<h1 class="flowh1">Review and pay</h1><p class="muted" style="margin-top:8px">Payments are processed securely by Paystack. Riders never collect cash.</p>
     <div class="card-b" style="margin-top:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;font-size:15px">
-      <div><p class="xs soft">Plan</p><p style="font-weight:600;margin-top:4px">${p.name} · ${p.pickups} pickups, ${p.kg} kg each</p></div>
+      <div><p class="xs soft">Plan</p><p style="font-weight:600;margin-top:4px">${p.name} · ${p.items} items a month, ${p.pickups} pickups</p></div>
       <div><p class="xs soft">Pickup</p><p style="font-weight:600;margin-top:4px">${s.plan==='fresh'?'Every other':'Every'} ${DOW_L[s.day]}, ${CONFIG.windows[s.window]}</p></div>
       <div><p class="xs soft">Address</p><p style="font-weight:600;margin-top:4px">${esc(s.street)}, ${esc(s.area)}</p></div>
       <div><p class="xs soft">First pickup</p><p style="font-weight:600;margin-top:4px">${fmtL(first)}</p></div>
@@ -610,7 +642,7 @@ function viewSubscribe(){
             <div class="between"><span>Pickup and delivery</span><b>Free</b></div>
             <div style="height:1px;background:var(--line);margin:4px 0"></div>
             <div class="between" style="font-size:18px;font-weight:700"><span>Due today</span><span>${naira(p.price-disc)}</span></div>
-            <p class="xs soft">Then ${naira(p.price)} every month. Extra weight is billed at ${naira(CONFIG.overweightPerKg)} per kg.</p>
+            <p class="xs soft">Then ${naira(p.price)} every month. Extra items are ${naira(CONFIG.extraItem)} each.</p>
           </div>
           <div style="margin-top:20px;background:var(--bg);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;font-size:14px;color:var(--blue)">
             <span style="display:flex;gap:10px;align-items:center">${I.shield}<span style="color:var(--ink)">Loss and damage guarantee</span></span>
@@ -912,7 +944,7 @@ function viewBilling(){
             <div style="flex:2 1 360px;padding:28px 32px">
               <div class="row" style="gap:8px;align-items:center"><p class="small" style="color:#B9CCD8">Current plan</p>${u.founding?'<span class="pill pill-amber">Founding member</span>':''}${u.status!=='active'?`<span class="pill" style="background:#fff;color:var(--ink)">${u.status==='paused'?'Paused':'Cancelled'}</span>`:''}${u.pauseMonth&&u.status==='active'?`<span class="pill" style="background:#fff;color:var(--ink)">Pausing ${MON_L[Number(u.pauseMonth.slice(5))-1]}</span>`:''}${u.pendingPlan?`<span class="pill" style="background:#fff;color:var(--ink)">Switching to ${CONFIG.plans[u.pendingPlan].name} on ${fmt(c.renew)}</span>`:''}</div>
               <p class="apph1" style="font-size:36px;margin-top:8px;color:#fff">${p.name} · ${naira(p.price)}<span style="font-size:16px;color:#B9CCD8"> / month</span></p>
-              <p style="color:#D5E3EC;margin-top:6px">${p.pickups} pickups a month, up to ${p.kg} kg each. ${p.service}.</p>
+              <p style="color:#D5E3EC;margin-top:6px">${p.items} items a month across ${p.pickups} pickups. ${p.service}.</p>
               <div class="row" style="gap:10px;margin-top:18px">${u.status==='cancelled'?`<button class="btn btn-white btn-sm" data-act="restart">Restart plan</button>`:`<button class="btn btn-white btn-sm" data-act="bill-panel" data-p="change">Change plan</button>${u.pauseMonth?`<button class="btn btn-ghost btn-sm" data-act="resume">Cancel the pause</button>`:`<button class="btn btn-ghost btn-sm" data-act="bill-panel" data-p="pause">Pause a month</button>`}<button class="btn btn-ghost btn-sm" data-act="bill-panel" data-p="day">Change pickup day</button>`}</div>
             </div>
           </div>
@@ -922,7 +954,7 @@ function viewBilling(){
         </section>
         ${B.panel==='change'?`<section class="card" style="border:2px solid var(--ink)" aria-label="Change plan">
           <div class="between"><h2 class="cardh" style="font-size:22px">Change your plan</h2>${close}</div>
-          <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:18px">${PLAN_KEYS.map(k=>{const q=CONFIG.plans[k];const on=B.pick===k;return `<button class="choice ${on?'on':''}" aria-pressed="${on}" data-act="bill-pick" data-k="${k}" style="padding:12px"><span style="display:block;height:96px;border-radius:12px;overflow:hidden;margin-bottom:12px"><img class="photo" src="${IMG[q.img]}" alt=""></span><span class="between" style="padding:0 6px"><b style="font-family:var(--display);font-size:18px">${q.name}</b>${k===u.plan?'<span class="xs" style="color:var(--blue);font-weight:700">CURRENT</span>':''}</span><b style="display:block;font-size:20px;margin-top:4px;padding:0 6px">${naira(q.price)}</b><span class="xs muted" style="display:block;margin-top:4px;padding:0 6px 6px">${q.pickups} pickups, ${q.kg} kg each</span></button>`;}).join('')}</div>
+          <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:18px">${PLAN_KEYS.map(k=>{const q=CONFIG.plans[k];const on=B.pick===k;return `<button class="choice ${on?'on':''}" aria-pressed="${on}" data-act="bill-pick" data-k="${k}" style="padding:12px"><span style="display:block;height:96px;border-radius:12px;overflow:hidden;margin-bottom:12px"><img class="photo" src="${IMG[q.img]}" alt=""></span><span class="between" style="padding:0 6px"><b style="font-family:var(--display);font-size:18px">${q.name}</b>${k===u.plan?'<span class="xs" style="color:var(--blue);font-weight:700">CURRENT</span>':''}</span><b style="display:block;font-size:20px;margin-top:4px;padding:0 6px">${naira(q.price)}</b><span class="xs muted" style="display:block;margin-top:4px;padding:0 6px 6px">${q.items} items a month</span></button>`;}).join('')}</div>
           <div class="between" style="margin-top:18px"><p class="small muted" style="max-width:520px">${B.pick===u.plan?'This is your current plan.':CONFIG.plans[B.pick].price>p.price?`Upgrade starts now. You pay ${naira(Math.round((CONFIG.plans[B.pick].price-p.price)*Math.max(0,(c.renew-today())/(c.renew-c.start))))} for the rest of this cycle.`:`Downgrade starts on your next billing date, ${fmt(c.renew)}.`}</p><button class="btn btn-dark" data-act="bill-apply">Confirm change</button></div>
         </section>`:''}
         ${B.panel==='pause'?`<section class="card" style="border:2px solid var(--orange)" aria-label="Pause plan">
@@ -1364,3 +1396,24 @@ function hlNum(){ document.querySelectorAll('.hl.seen .hl-card.on .gx-num b').fo
 (function(){ var o=hlGo; hlGo=function(i,how){ o(i,how); hlNum(); }; })();
 document.addEventListener('click',function(e){ var c=e.target.closest('.hl-card:not(.on)'); if(!c) return; var cs=[].slice.call(c.parentNode.children); hlGo(cs.indexOf(c)); });
 setInterval(function(){ document.querySelectorAll('.hl:not(.seen)').forEach(function(el){ var r=el.getBoundingClientRect(); if(r.top<innerHeight*.7&&r.bottom>innerHeight*.3){ el.classList.add('seen'); UI.hlSeen=1; hlNum(); } }); },250);
+
+/* Pricing slider */
+document.addEventListener('input',function(e){ const r=e.target; if(!r.classList||!r.classList.contains('pr-range')) return; const n=+r.value; UI.prN=n;
+  r.style.setProperty('--p',((n-20)/230*100).toFixed(1)+'%');
+  const root=r.closest('.pr'); const nb=root.querySelector('.pr-n'); nb.textContent=n; nb.classList.remove('bump'); void nb.offsetWidth; nb.classList.add('bump');
+  root.querySelector('.pr-rec').innerHTML=prRec(n);
+  const k=prPick(n); root.querySelectorAll('.prc').forEach(function(c){ c.classList.toggle('rec',c.dataset.plan===k); });
+});
+
+/* Services tabs: swap only the services panel, no full-page redraw */
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-act="svc2"]'); if(!t) return;
+  e.stopPropagation(); e.preventDefault();
+  if(UI.svc2===t.dataset.t || (!UI.svc2 && t.dataset.t==='wash')) return;
+  UI.svc2=t.dataset.t;
+  var old=document.getElementById('services'); if(!old) return;
+  var tmp=document.createElement('div'); tmp.innerHTML=viewHome(); var fresh=tmp.querySelector('#services'); if(!fresh) return;
+  old.querySelectorAll('.svx-tabs [data-act="svc2"]').forEach(function(b){ var on=b.dataset.t===UI.svc2; b.classList.toggle('on',on); b.setAttribute('aria-selected',on); });
+  var op=old.querySelector('.svx-panel'), np=fresh.querySelector('.svx-panel'); if(!op||!np) return;
+  np.classList.add('svx-swap'); op.replaceWith(np);
+},true);
