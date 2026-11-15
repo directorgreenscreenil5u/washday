@@ -2,7 +2,6 @@
 (function(){
   try{
     var h=location.hash||''; if(h && !/^#\/?(home\/.*)?$/.test(h)) return;
-    if(sessionStorage.getItem('wd_intro')) return; sessionStorage.setItem('wd_intro','1');
     if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   }catch(e){ return; }
   var logo='<svg viewBox="0 0 40 40"><defs><linearGradient id="inIc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4A63FF"/><stop offset="1" stop-color="#1B32CF"/></linearGradient></defs><rect width="40" height="40" rx="9.2" fill="url(#inIc)"/><circle cx="20" cy="20.5" r="11" fill="#fff"/><path d="M10.6 22.2c2.6-1.9 5.1-1.9 7.6 0s5.1 1.9 7.6 0 4.2-1.6 5.2-.7A11 11 0 0 1 9.2 22.9c.4-.2.9-.4 1.4-.7z" fill="#2340E8"/><circle cx="20" cy="20.5" r="11" fill="none" stroke="#fff" stroke-width="2.4"/></svg>';
@@ -200,6 +199,10 @@ function peResult(n){ const k=prPick(n), p=CONFIG.plans[k], over=Math.max(0,n-p.
     <div class="pe-cal"><div class="pe-dow"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div><div class="pe-days">${peCal(k)}</div></div>
     <div class="pe-leg"><span><i class="pu">↑</i>${p.pickups} pickup${p.pickups>1?'s':''}</span><span><i class="de">↓</i>${p.pickups} deliver${p.pickups>1?'ies':'y'}</span><span class="pe-trips">${p.pickups*2} trips a month</span></div>
     <button class="btn btn-lg btn-block pe-cta" data-act="pick-plan" data-plan="${k}">Choose ${p.name}</button>`; }
+function pxDetail(n){ const k=prPick(n), p=CONFIG.plans[k], over=Math.max(0,n-p.items), per=Math.round(p.price/p.items);
+  return `<div class="pxd-a"><p class="pxd-k">${p.name}</p><p class="pxd-price"><b>${naira(p.price)}</b><span>/ month</span></p><p class="pxd-per">${naira(per)} per item${over?` · <em>+${naira(over*CONFIG.extraItem)} for ${over} extra</em>`:''}</p></div>
+  <ul class="pxd-b"><li>${SI.bag2}<span><b>${p.pickups} pickup${p.pickups>1?'s':''} · ${p.pickups} deliver${p.pickups>1?'ies':'y'}</b> a month</span></li><li>${SI.drop}<span>${p.service}</span></li><li>${SI.tag}<span>Every item tagged and counted</span></li></ul>
+  <div class="pxd-c"><button class="btn btn-lg px-cta" data-act="pick-plan" data-plan="${k}">Choose ${p.name}</button><p>Pause or change any month</p></div>`; }
 function prPick(n){ return n<=50?'fresh':n<=100?'weekly':'household'; }
 function prRec(n){ const k=prPick(n), p=CONFIG.plans[k]; const over=Math.max(0,n-p.items); return `Best fit: <b>${p.name}</b> · ${naira(p.price)} a month${over?` + about ${naira(over*CONFIG.extraItem)} for ${over} extra items`:''}`; }
 function prCard(k){
@@ -369,7 +372,7 @@ const USES = [
   ['tagging','Businesses','Uniforms, towels and linen for salons, spas, gyms and small hotels, counted in and out every time.','quote']
 ];
 const HL = [
-  ['img/bts-van3.jpg','Counted at your door.','Your rider counts every piece with you before leaving, and the full list lands on WhatsApp straight away. No weighing, no guessing.','Pickup · Tue 8:14 am','Counting at pickup','Washday driver handing a basket of clean laundry to a customer at a cobalt van'],
+  ['img/bts-van4.jpg','Counted at your door.','Your rider counts every piece with you before leaving, and the full list lands on WhatsApp straight away. No weighing, no guessing.','Pickup · Tue 8:14 am','Counting at pickup','Washday driver handing a basket of clean laundry to a customer at a cobalt van'],
   ['img/bts-tag.jpg','Tagged and counted again.','Every piece gets a QR tag tied to you. We count again at the studio and before delivery, and the final number is printed on your sealed bag.','Studio · Lekki · 10:02','Tagging','Washday technician attaching a QR tag to a folded shirt'],
   ['img/bts-wash.jpg','Never mixed with anyone else&rsquo;s clothes.','Your clothes go into a machine on their own, never in a shared load with other customers. Your detergent and folding preferences are saved and used every time.','Your clothes · WD-1042','Washing','Technician loading one customer bag into its own machine'],
   ['img/woman.jpg','Backed in writing.','Lost or damaged? We pay you back on a published scale, and every complaint gets a reply within 24 hours.','Delivered · Thu 10:41 am','Guarantee','A customer receiving her clean laundry at the door']
@@ -490,20 +493,16 @@ function viewHome(){
         <h2 class="pr-h">Pay for your clothes.<br><span>Not the kilos.</span></h2>
         <p class="pr-sub">Every piece is counted with you at the door. Pickup and delivery always included. Pause or change your plan any month.</p>
       </div>
-      <div class="pe ${'k-'+prPick(UI.prN||100)}">
-        <div class="pe-l">
-          <p class="pe-q">How many clothes do you wash in a month?</p>
-          <p class="pe-big"><b class="pr-n">${UI.prN||100}</b><span>items</span></p>
-          <div class="pe-track">
-            <div class="pe-zones"><i style="left:0;width:${(30/230*100).toFixed(2)}%"></i><i style="left:${(30/230*100).toFixed(2)}%;width:${(50/230*100).toFixed(2)}%"></i><i style="left:${(80/230*100).toFixed(2)}%;width:${(100/230*100).toFixed(2)}%"></i><i style="left:${(180/230*100).toFixed(2)}%;width:${(50/230*100).toFixed(2)}%"></i></div>
-            <input class="pr-range" type="range" min="20" max="250" step="5" value="${UI.prN||100}" aria-label="Clothes per month" style="--p:${(((UI.prN||100)-20)/230*100).toFixed(1)}%">
-            <div class="pe-marks">${[[50,'Fresh Start'],[100,'Weekly Fresh'],[200,'Full House']].map(m=>`<span style="left:${((m[0]-20)/230*100).toFixed(2)}%" data-v="${m[0]}"><b>${m[0]}</b>${m[1]}</span>`).join('')}</div>
-          </div>
-          <p class="pe-hint">Count every shirt, trouser, dress and towel. A two-piece outfit is two items.</p>
+      <div class="px">
+        <div class="px-top">
+          <p class="px-q">How many clothes do you wash in a month?</p>
+          <p class="px-big"><b class="pr-n">${UI.prN||100}</b><span>items</span></p>
         </div>
-        <div class="pe-r" aria-live="polite">${peResult(UI.prN||100)}</div>
+        <input class="pr-range px-range" type="range" min="20" max="250" step="5" value="${UI.prN||100}" aria-label="Clothes per month" style="--p:${(((UI.prN||100)-20)/230*100).toFixed(1)}%">
+        <div class="px-scale"><span>20 items</span><span>250 items</span></div>
+        <div class="px-plans" role="radiogroup" aria-label="Plans" style="--i:${PLAN_KEYS.indexOf(prPick(UI.prN||100))}"><span class="px-ind" aria-hidden="true"></span>${PLAN_KEYS.map(k=>{ const q=CONFIG.plans[k]; const on=prPick(UI.prN||100)===k; return `<button type="button" class="px-plan ${on?'on':''}" role="radio" aria-checked="${on}" data-px="${k}" data-n="${q.items}"><span class="px-pn">${q.name}</span><span class="px-pi">${q.items} items</span><span class="px-pp">${naira(q.price)}<small>/mo</small></span></button>`; }).join('')}</div>
+        <div class="px-detail">${pxDetail(UI.prN||100)}</div>
       </div>
-      <div class="pr-grid">${PLAN_KEYS.map(k=>prCard(k)).join('')}</div>
       <div class="pr-xt">
         <div class="pr-xh"><h3>Priced separately</h3><p>Big or delicate pieces that need their own care.</p></div>
         <div class="pr-xg">${[['layers','Duvets and comforters',naira(CONFIG.duvet),'each'],['hanger','Curtains',naira(CONFIG.curtain),'per panel'],['sparkle','Suits and native attire',naira(CONFIG.dryCleanItem),'dry cleaned, per item'],['clock','Express 24-hour return','+'+naira(CONFIG.express),'per pickup'],['tag','Extra items',naira(CONFIG.extraItem),'per item over your plan']].map(x=>`<div class="pr-xi"><span class="pr-xic">${SI[x[0]]}</span><div><b>${x[1]}</b><span>${x[3]}</span></div><em>${x[2]}</em></div>`).join('')}</div>
@@ -1429,16 +1428,11 @@ function hlNum(){ document.querySelectorAll('.hl.seen .hl-card.on .gx-num b').fo
 document.addEventListener('click',function(e){ var c=e.target.closest('.hl-card:not(.on)'); if(!c) return; var cs=[].slice.call(c.parentNode.children); hlGo(cs.indexOf(c)); });
 setInterval(function(){ document.querySelectorAll('.hl:not(.seen)').forEach(function(el){ var r=el.getBoundingClientRect(); if(r.top<innerHeight*.7&&r.bottom>innerHeight*.3){ el.classList.add('seen'); UI.hlSeen=1; hlNum(); } }); },250);
 
-/* Pricing estimator */
-function peTween(el,to){ const from=+(el.dataset.v||to); el.dataset.v=to; if(from===to){ el.textContent=naira(to); return; } const t0=performance.now(); (function f(t){ const p=Math.min(1,(t-t0)/450), e=1-Math.pow(1-p,3); el.textContent=naira(Math.round((from+(to-from)*e)/50)*50); if(p<1) requestAnimationFrame(f); })(t0); }
-document.addEventListener('input',function(e){ const r=e.target; if(!r.classList||!r.classList.contains('pr-range')) return; const n=+r.value; const prevK=prPick(UI.prN||100); UI.prN=n;
-  r.style.setProperty('--p',((n-20)/230*100).toFixed(1)+'%');
-  const root=r.closest('.pr'); const nb=root.querySelector('.pr-n'); nb.textContent=n;
-  const k=prPick(n); const pe=root.querySelector('.pe'); const res=root.querySelector('.pe-r');
-  const oldPrice=res.querySelector('.pe-price b'); const oldV=oldPrice?+oldPrice.dataset.v:CONFIG.plans[k].price;
-  res.innerHTML=peResult(n); const nbp=res.querySelector('.pe-price b'); nbp.dataset.v=oldV; peTween(nbp,CONFIG.plans[k].price);
-  pe.className='pe k-'+k;
-  root.querySelectorAll('.pe-marks span').forEach(function(m){ m.classList.toggle('hit', +m.dataset.v===n); });
-  if(k!==prevK){ res.classList.remove('swap'); void res.offsetWidth; res.classList.add('swap'); try{ navigator.vibrate&&navigator.vibrate(8); }catch(x){} }
-  root.querySelectorAll('.prc').forEach(function(c){ c.classList.toggle('rec',c.dataset.plan===k); });
-});
+/* Pricing selector */
+function pxSet(root,n,fromTile){ const prevK=prPick(UI.prN||100); UI.prN=n; const r=root.querySelector('.pr-range'); if(fromTile) r.value=n;
+  r.style.setProperty('--p',((n-20)/230*100).toFixed(1)+'%'); root.querySelector('.pr-n').textContent=n;
+  const k=prPick(n); const pl=root.querySelector('.px-plans'); pl.style.setProperty('--i',PLAN_KEYS.indexOf(k));
+  pl.querySelectorAll('.px-plan').forEach(function(b){ const on=b.dataset.px===k; b.classList.toggle('on',on); b.setAttribute('aria-checked',on); });
+  const d=root.querySelector('.px-detail'); d.innerHTML=pxDetail(n); if(k!==prevK){ d.classList.remove('sw'); void d.offsetWidth; d.classList.add('sw'); } }
+document.addEventListener('input',function(e){ const r=e.target; if(!r.classList||!r.classList.contains('px-range')) return; pxSet(r.closest('.px'),+r.value); });
+document.addEventListener('click',function(e){ const b=e.target.closest('.px-plan'); if(!b) return; pxSet(b.closest('.px'),+b.dataset.n,true); });
