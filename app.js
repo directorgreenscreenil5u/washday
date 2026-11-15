@@ -153,6 +153,7 @@ Object.assign(IMG, { hero3d:'img/hero3d.webp', moon:'img/moon.webp', shirtpink:'
 Object.assign(IMG, { hero:'img/hero.jpg', moon:'img/hero.jpg', hero3d:'img/hero.jpg', bagpink:'img/basket.jpg', iron:'img/iron.jpg', native:'img/native.jpg', towels:'img/bed.jpg', woman:'img/woman.jpg', family:'img/family.jpg', rider:'img/rider.jpg', tagging:'img/tagging.jpg', folded:'img/folded.jpg', shirt:'img/shirts.jpg', shirtpink:'img/shirts.jpg', heroVid:'img/hero-wm.mp4', heroPoster:'img/hero-wm.jpg' });
 Object.assign(IMG, { bagpink:'img/svc-wash.jpg', iron:'img/svc-iron.jpg', native:'img/svc-dry.jpg', towels:'img/svc-bed.jpg' });
 Object.assign(IMG, { rider:'img/rider-pro2.jpg' });
+Object.assign(IMG, { usePro:'img/use-pro.jpg', useFamily:'img/use-family.jpg', useEstate:'img/use-estate.jpg', useBiz:'img/use-business.jpg' });
 const ARR = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 const ARR_UP = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg>';
 function siteHeader(){
@@ -372,10 +373,10 @@ const SVC2 = [
   { label:'Bedding', head:'Duvets, sheets<br>and curtains.', img:'towels', facts:[['layers','Washed on their own'],['zip','Returned in a sealed bag']], price:`Included on Full House, or ${naira(CONFIG.duvet)} a duvet` }
 ];
 const USES = [
-  ['woman','Busy professionals','Long days, no time, no generator to spare. Hand over one bag a week and get your weekends back.','fresh'],
-  ['family','Families','Kids\' clothes, school uniforms, towels and bedding. Full House covers 200 items a month.','household'],
-  ['rider','Estates','One collection point for every resident, a fixed pickup day and a residents\' discount.','quote'],
-  ['tagging','Businesses','Uniforms, towels and linen for salons, spas, gyms and small hotels, counted in and out every time.','quote']
+  ['usePro','Busy professionals','Long days, no time, no generator to spare. Hand over one bag a week and get your weekends back.','fresh'],
+  ['useFamily','Families','Kids\' clothes, school uniforms, towels and bedding. Full House covers 200 items a month.','household'],
+  ['useEstate','Estates','One collection point for every resident, a fixed pickup day and a residents\' discount.','quote'],
+  ['useBiz','Businesses','Uniforms, towels and linen for salons, spas, gyms and small hotels, counted in and out every time.','quote']
 ];
 const HL = [
   ['img/bts-van6.jpg','Counted at your door.','Your rider counts every piece with you before leaving, and the full list lands on WhatsApp straight away. No weighing, no guessing.','Pickup · Tue 8:14 am','Counting at pickup','Washday driver handing a basket of clean laundry to a customer at a cobalt van'],
@@ -562,7 +563,7 @@ function viewAuth(){
   const login = UI.authMode==='login'; const step = UI.authStep;
   return `<div class="authwrap">
     <div class="authside">
-      <img src="${IMG.moon}" alt="" style="object-position:80% 50%">
+      <video class="au-vid" src="img/intro.mp4" poster="img/intro-poster.jpg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video><span class="au-shade" aria-hidden="true"></span>
       <a class="wm" href="#/" aria-label="Washday home"><span class="wm-ic">${SI.appi}</span><span>washday</span></a>
       <div>
         <div class="glass" style="border-radius:20px;padding:16px 18px;display:flex;gap:14px;align-items:center;max-width:360px;color:var(--ink);margin-bottom:24px"><span style="width:42px;height:42px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;flex:none">${I.van}</span><div><p style="font-weight:600">Out for delivery</p><p class="small" style="color:var(--ink2)">Rider arriving 10:00 – 12:00 today</p></div></div>
