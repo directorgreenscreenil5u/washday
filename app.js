@@ -1607,19 +1607,19 @@ document.addEventListener('click',function(e){ const b=e.target.closest('[data-o
 
 /* ===== Customer app v2: shell + dashboard ===== */
 function shell(active, inner){
-  const u=me(); const p=plan(u);
+  const u=me(); const p=plan(u); const dk=isDark(u);
   const items=[['app','Home',I.home],['app/schedule','Schedule',I.cal],['app/orders','Orders',I.list],['app/billing','Plan & billing',I.card]];
   const initials=u.name.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();
-  return `<div class="ws">
+  return `<div class="ws${dk?' dark':''}">
     <aside class="ws-side">
       <a class="ws-logo" href="#/">${LOGO()}<span>washday</span></a>
       <nav aria-label="Account">${items.map(i=>`<a href="#/${i[0]}" class="${active===i[0]?'on':''}" ${active===i[0]?'aria-current="page"':''}>${i[2]}<span>${i[1]}</span></a>`).join('')}</nav>
       <div class="ws-foot">
         <a class="ws-help" href="https://wa.me/${CONFIG.whatsapp}" target="_blank" rel="noopener">${I.chat}<span><b>Need help?</b>Chat with us on WhatsApp</span></a>
-        <div class="ws-me"><span class="ws-av">${esc(initials)}</span><div><b>${esc(u.name)}</b><span>${p?p.name:'No plan'}${u.status&&u.status!=='active'?' · '+u.status:''}</span></div><button data-act="logout" aria-label="Log out">${I.out}</button></div>
+        <button class="ws-me" data-act="me-open" aria-label="Profile and settings">${avatarHtml(u)}<div><b>${esc(u.name)}</b><span>${p?p.name:'No plan'}${u.status&&u.status!=='active'?' · '+u.status:''}</span></div><i class="ws-more">•••</i></button>
       </div>
     </aside>
-    <header class="ws-top"><a class="ws-logo" href="#/">${LOGO()}<span>washday</span></a><span class="ws-av">${esc(initials)}</span></header>
+    <header class="ws-top"><a class="ws-logo" href="#/">${LOGO()}<span>washday</span></a><button class="ws-avb" data-act="me-open" aria-label="Profile and settings">${avatarHtml(u)}</button></header>
     <main class="ws-main">${inner}</main>
     <nav class="ws-tabs" aria-label="App">${items.map(i=>`<a href="#/${i[0]}" class="${active===i[0]?'on':''}">${i[2]}<span>${i[1].split(' ')[0]}</span></a>`).join('')}</nav>
   </div>`;
@@ -1725,7 +1725,7 @@ function viewBilling(){
       ${row('Member since', MON_L[parse(u.joined).getMonth()]+' '+parse(u.joined).getFullYear(), '')}
     </section>
     <h2 class="b-h2">Notifications</h2>
-    <section class="b-list">${[['whatsapp','WhatsApp updates'],['sms','SMS backup'],['email','Email receipts']].map(n=>`<button class="b-row b-sw" role="switch" aria-checked="${!!u.notifs[n[0]]}" data-act="notif" data-k="${n[0]}"><span>${n[1]}</span><i class="${u.notifs[n[0]]?'on':''}"></i></button>`).join('')}</section>
+    <section class="b-list">${[['whatsapp','WhatsApp updates'],['sms','SMS backup'],['email','Email receipts']].map(n=>`<button class="b-row b-sw" role="switch" aria-checked="${!!(u.notifs||{})[n[0]]}" data-act="notif" data-k="${n[0]}"><span>${n[1]}</span><i class="${(u.notifs||{})[n[0]]?'on':''}"></i></button>`).join('')}</section>
     <h2 class="b-h2">Billing history</h2>
     <section class="b-list">
       ${u.status!=='cancelled'?`<div class="b-row b-bill"><span>${fmt(c.renew)}</span><b>${(u.pendingPlan?CONFIG.plans[u.pendingPlan]:p).name}</b><em>${naira(nextAmt)}</em><i class="b-st">Upcoming</i></div>`:''}
@@ -1736,7 +1736,7 @@ function viewBilling(){
 }
 document.addEventListener('click',function(e){ const b=e.target.closest('[data-pf]'); if(!b) return; const u=me(); if(!u) return; u.prefs=u.prefs||{}; const k=b.dataset.pf, v=b.dataset.v; u.prefs[k]= k==='softener' ? v==='Yes' : v; save(); rerender(); });
 function viewDashboard(){
-  const u=me(); const p=plan(u); const c=cycleOf(u); const orders=myOrders();
+  demoFill(me()); ensureUpcoming(me()); const u=me(); const p=plan(u); const c=cycleOf(u); const orders=myOrders();
   const active=orders.filter(o=>o.status>=1&&o.status<6&&!o.cancelled).sort((a,b)=>a.date.localeCompare(b.date))[0];
   const upcoming=orders.filter(o=>o.status===0&&!o.cancelled).sort((a,b)=>a.date.localeCompare(b.date)); const next=upcoming[0];
   const inCycle=cycleRegular(u); const used=inCycle.filter(o=>o.status>=1).length;
@@ -1760,9 +1760,10 @@ function viewDashboard(){
     </div>
     <div class="d-grid">
       <section class="d-card"><div class="d-ch"><h2>Coming up</h2></div>
-        ${upcoming.length?`<ul class="d-list">${upcoming.slice(0,3).map(o=>{ const d=parse(o.date); return `<li><span class="d-cal"><b>${d.getDate()}</b><i>${MON[d.getMonth()]}</i></span><div><b>${typeName(o.type)}</b><span>${CONFIG.windows[o.window]}</span></div></li>`; }).join('')}</ul>`:'<p class="d-empty">Nothing scheduled.</p>'}</section>
+        ${upcoming.length?`<ul class="d-list">${upcoming.slice(0,3).map(o=>{ const d=parse(o.date); return `<li><span class="d-cal"><b>${d.getDate()}</b><i>${MON[d.getMonth()]}</i></span><div><b>${typeName(o.type)}${o.extras&&o.extras.includes('duvet')?' · duvet':''}</b><span>${DOW[d.getDay()]} · ${CONFIG.windows[o.window]}</span></div></li>`; }).join('')}</ul>`:'<p class="d-empty">Nothing scheduled.</p>'}</section>
       <section class="d-card"><div class="d-ch"><h2>Activity</h2><a href="#/app/orders">All orders</a></div>
-        ${acts.length?`<ol class="d-feed">${acts.slice(0,3).map(a=>`<li><i></i><div><b>${esc(a.t)}</b><span>${fmtTime(a.at)}</span></div></li>`).join('')}</ol>`:'<p class="d-empty">No activity yet.</p>'}</section>
+        ${acts.length?`<ol class="d-feed">${acts.slice(0,5).map(a=>`<li><i></i><div><b>${esc(a.t)}</b><span>${fmtTime(a.at)}</span></div></li>`).join('')}</ol>`:'<p class="d-empty">No activity yet.</p>'}</section>
+      ${washedCard(u)}
     </div>`);
 }
 
@@ -1956,3 +1957,56 @@ function viewContact(){
 document.addEventListener('click',function(e){ const a=e.target.closest('[data-lg]'); if(!a) return; e.preventDefault(); const el=document.getElementById('lg-'+a.dataset.lg); if(el) window.scrollTo({top:el.getBoundingClientRect().top+scrollY-80,behavior:'smooth'}); });
 
 setInterval(function(){ var t=document.querySelector('.lg-tabs a.on'); if(t&&!t.dataset.sv){ t.dataset.sv=1; t.parentNode.scrollLeft=t.offsetLeft-16; } },300);
+
+/* ===== v51 · demo history, profile sheet, dark mode ===== */
+function demoFill(u){
+  if(!u||!u.plan||u.demo) return; if(DB.orders.some(o=>o.phone===u.phone&&o.status>0)){ u.demo=1; return; }
+  u.demo=1; const T=today(), H=36e5;
+  const at=(d,h)=>{ const x=parse(iso(d)); x.setHours(h,Math.floor(Math.random()*50)); return x.getTime(); };
+  const mk=(dOff,items,kg,list,status,extra)=>{ const d=addDays(T,dOff); const o=newOrder(u,{type:extra||'regular',date:iso(d),window:u.window||1,address:0,bags:1,extras:extra==='extra'?['duvet']:[]});
+    o.items=items; o.kg=kg; o.list=list; o.status=status; o.history=[{s:0,at:at(addDays(d,-3),18)}];
+    const hrs=[8,10,12,15,9,10]; for(let s=1;s<=status;s++){ const dd=s<=3?d:s===4?addDays(d,1):addDays(d,2); o.history.push({s:s,at:at(dd,hrs[s-1])}); }
+    if(status===6) o.rated=5; return o; };
+  const L1=[['Shirts',8],['Trousers',5],['T-shirts',7],['Dresses',3],['Towels',4],['Bedsheets',2]];
+  const L2=[['Shirts',6],['Trousers',4],['T-shirts',9],['Jeans',3],['Towels',4],['Native wear',2]];
+  const L3=[['Shirts',7],['Trousers',5],['T-shirts',6],['Gym wear',5],['Towels',4],['Pillowcases',4]];
+  const L4=[['Shirts',9],['Trousers',4],['T-shirts',6],['Dresses',2],['Towels',3],['Bedsheets',2]];
+  const a=mk(-21,29,5.8,L1,6), b=mk(-14,28,5.6,L2,6), c=mk(-7,31,6.1,L3,6), d=mk(-1,26,5.2,L4,3);
+  c.flags=[{at:c.history[2].at,text:'Ink mark on a white shirt photographed before washing'}];
+  const x=mk(4,0,null,[],0,'extra'); x.items=null; x.kg=null;
+  [a,b,c,d,x].forEach(o=>DB.orders.push(o));
+  u.cycleStart=u.cycleStart||iso(addDays(T,-10));
+  const p=plan(u); if(!u.bills||!u.bills.length) u.bills=[{date:iso(addDays(T,-10)),kind:'renewal',desc:p.name+', this month',amount:p.price,status:'Paid'},{date:iso(addDays(T,-40)),kind:'renewal',desc:p.name+', last month',amount:p.price,status:'Paid'}];
+  save();
+}
+function lastDelivered(u){ return DB.orders.filter(o=>o.phone===u.phone&&o.status===6&&!o.cancelled).sort((a,b)=>b.date.localeCompare(a.date))[0]; }
+function washedCard(u){
+  const o=lastDelivered(u); if(!o) return '';
+  const list=o.list&&o.list.length?o.list:[['Items',o.items||0]]; const when=o.history.find(h=>h.s===6);
+  return `<section class="d-card d-washed"><div class="d-ch"><h2>Last delivery</h2><a href="#/app/track/${o.id}">${o.id}</a></div>
+    <div class="d-wtop"><p class="d-wbig">${o.items}<small> of ${o.items} back</small></p><p class="d-wsub">Delivered ${when?fmtTime(when.at):fmt(o.date)}${o.kg?` · ${o.kg} kg`:''}</p></div>
+    <ul class="d-wlist">${list.map(r=>`<li><b>${r[1]}</b><span>${esc(r[0])}</span></li>`).join('')}</ul></section>`;
+}
+function themePref(u){ return (u&&u.prefs&&u.prefs.theme)||'auto'; }
+function isDark(u){ const t=themePref(u); return t==='dark'||(t==='auto'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches); }
+function avatarHtml(u,cls){ const ini=String(u.name||'?').split(' ').filter(Boolean).map(x=>x[0]).slice(0,2).join('').toUpperCase(); return `<span class="pf-av ${cls||''}" aria-hidden="true">${esc(ini)}</span>`; }
+function meSheet(){ const u=me(); if(!u) return; const p=plan(u), t=themePref(u);
+  modal(`<div class="me-sh">
+    <div class="me-top">${avatarHtml(u,'pf-av-lg')}<div><h2>${esc(u.name)}</h2><p>0${u.phone}${u.email?' · '+esc(u.email):''}</p></div></div>
+    <a class="me-plan" href="#/app/billing" data-act="modal-close"><div><b>${p?p.name:'No plan'}</b><span>${u.status==='active'?'Renews '+fmt(cycleOf(u).renew):esc(u.status||'')}</span></div><i>›</i></a>
+    <p class="me-k">Appearance</p>
+    <div class="me-seg" role="radiogroup">${[['light','Light'],['dark','Dark'],['auto','Automatic']].map(m=>`<button role="radio" aria-checked="${t===m[0]}" class="${t===m[0]?'on':''}" data-theme="${m[0]}">${m[1]}</button>`).join('')}</div>
+    <div class="me-list">
+      <a href="#/app/billing" data-act="modal-close">Plan and billing<i>›</i></a>
+      <a href="https://wa.me/${CONFIG.whatsapp}" target="_blank" rel="noopener">Help on WhatsApp<i>›</i></a>
+      <a href="#/terms" data-act="modal-close">Terms and privacy<i>›</i></a>
+    </div>
+    <button class="me-out" data-act="logout">Log out</button>
+  </div>`); const m=$('#modal .modal'); if(m) m.classList.add('me-modal'); syncTheme(); }
+function syncTheme(){ const ws=document.querySelector('.ws'); const d=!!(ws&&ws.classList.contains('dark')); document.documentElement.classList.toggle('wd-dark',d); }
+document.addEventListener('click',function(e){
+  const o=e.target.closest('[data-act="me-open"]'); if(o){ e.preventDefault(); e.stopPropagation(); meSheet(); return; }
+  const t=e.target.closest('[data-theme]'); if(t){ const u=me(); if(!u) return; u.prefs=u.prefs||{}; u.prefs.theme=t.dataset.theme; save(); rerender(); meSheet(); }
+},true);
+try{ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){ if(document.querySelector('.ws')) rerender(); }); }catch(e){}
+new MutationObserver(syncTheme).observe(document.getElementById('app'),{childList:true});
