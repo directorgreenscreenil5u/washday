@@ -2294,3 +2294,4 @@ a.d-plan:hover .d-chev{transform:translateX(4px)}
   .me-modal{align-self:flex-end;margin-bottom:max(12px,env(safe-area-inset-bottom));border-radius:26px!important}
 }
 @media (max-width:560px){.ws-main>.grid{grid-template-columns:1fr 1fr!important;gap:10px!important}.ws-main>.grid .stat{padding:16px}.ws-main>.grid .stat b{font-size:24px}}
+.pt-fast{color:#2340E8;font-weight:600}
