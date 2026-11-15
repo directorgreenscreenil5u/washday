@@ -625,3 +625,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Geist','Inter',
 .lt-top{justify-content:flex-start;gap:10px}
 .lt-card.c3{left:-262px;top:74%}
 @media (max-width:1100px){.lt-card.c3{left:-200px}}
+/* v17: less "template", more product */
+.lt-ph .lt-glow{display:none}
+.lt{background:#F5F5F7}
+.lt-app{background:linear-gradient(180deg,#3A55FF 0%,#1E36D6 100%);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.25)}
+.lt-app svg{width:24px;height:24px;color:#fff}
+.lt-app.sm svg{width:15px;height:15px}
+.lt-ia svg{width:15px;height:15px;color:#fff}
+.lt-ia{background:linear-gradient(180deg,#3A55FF,#1E36D6)}
+.lt-noteC{width:300px;padding:12px 14px;border-radius:22px;background:rgba(246,246,248,.86);box-shadow:0 0 0 .5px rgba(0,0,0,.06),0 18px 50px rgba(17,24,39,.14)}
+.lt-nt{font-size:13px}.lt-nt b{font-weight:600;letter-spacing:-.01em}
+.lt-nb{font-size:13.5px;line-height:1.3;color:#1D1D1F}
+.lt-nb b{font-weight:600}
+.lt-card.c1{left:-250px;top:22%}
+.lt-card.c2{right:-262px;top:52%}
+.lt-iph{box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.18),0 60px 90px -30px rgba(17,24,39,.45),0 30px 60px -20px rgba(17,24,39,.25)}
+.lt{padding-bottom:clamp(56px,7vw,96px)}
+@media (max-width:1100px){.lt-card.c1{left:-190px}.lt-card.c2{right:-200px}}
+.lt-time b{font-size:20px;letter-spacing:-.02em}
+.lt-sheet2{padding:10px 20px 18px}
+.lt-card.c2{right:-262px;top:17%}
+.lt-card.c1{left:-250px;top:38%}
+@media (max-width:1100px){.lt-card.c1{left:-190px}.lt-card.c2{right:-200px}}
+@media (max-width:900px){.lt-card.c2{right:auto;top:auto}}
