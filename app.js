@@ -284,7 +284,14 @@ const SVC3 = {
   bed: { label:'Bedding', ti:'layers', img:'towels', head:'Duvets, sheets and curtains.', sub:'Big items washed properly, without taking over your weekend.', price:`Included on Full House, or ${naira(CONFIG.duvet)} a duvet`,
     rows:[['layers','Washed on their own','Large items get their own cycle and a full dry.'],['shield','Hygienic wash','Hot wash for sheets and towels to keep them truly clean.'],['zip','Sealed and fresh','Folded and returned in a sealed zip bag.']] }
 };
-Object.assign(SI, { appi:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="3.5" width="15" height="17" rx="3.5"/><circle cx="12" cy="13" r="4.2"/><path d="M8 7h2"/><path d="M10.2 13.6c1 .9 2.6.9 3.6 0"/></svg>` });
+Object.assign(SI, {
+  appi:`<svg viewBox="0 0 40 40"><defs><linearGradient id="wdIc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4A63FF"/><stop offset="1" stop-color="#1B32CF"/></linearGradient></defs><rect width="40" height="40" rx="9.2" fill="url(#wdIc)"/><circle cx="20" cy="20.5" r="11" fill="#fff"/><path d="M10.6 22.2c2.6-1.9 5.1-1.9 7.6 0s5.1 1.9 7.6 0 4.2-1.6 5.2-.7A11 11 0 0 1 9.2 22.9c.4-.2.9-.4 1.4-.7z" fill="#2340E8"/><circle cx="20" cy="20.5" r="11" fill="none" stroke="#fff" stroke-width="2.4"/></svg>`,
+  fbag:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 8V7a4 4 0 0 1 8 0v1h2.6a1 1 0 0 1 1 .93l.86 11A2 2 0 0 1 18.47 22H5.53a2 2 0 0 1-1.99-2.07l.86-11A1 1 0 0 1 5.4 8H8zm2 0h4V7a2 2 0 0 0-4 0v1z"/></svg>`,
+  fdrop:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.6c3.7 4.3 7 8.3 7 12A7 7 0 0 1 5 14.6c0-3.7 3.3-7.7 7-12z"/></svg>`,
+  fhome:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.3 3.3a1 1 0 0 1 1.4 0l8.4 8a.6.6 0 0 1-.4 1H19v7.7a1 1 0 0 1-1 1h-3.6v-5.4h-4.8V21H6a1 1 0 0 1-1-1v-7.7H3.7a.6.6 0 0 1-.4-1z"/></svg>`,
+  fmoto:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="16.5" r="3.2"/><circle cx="18.5" cy="16.5" r="3.2"/><path d="M5.5 16.5 10 10.5h5.5l3 6"/><path d="M15.5 10.5 14 6.5h3"/><path d="M10 10.5 9 8H6.5"/></svg>`
+});
+Object.assign(SI, { appiOLD:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="3.5" width="15" height="17" rx="3.5"/><circle cx="12" cy="13" r="4.2"/><path d="M8 7h2"/><path d="M10.2 13.6c1 .9 2.6.9 3.6 0"/></svg>` });
 Object.assign(SI, {
   back:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>`,
   share:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>`
@@ -364,7 +371,7 @@ function viewHome(){
         <div class="lt-ph">
           <div class="lt-glow"></div>
           <div class="iph lt-iph" aria-hidden="true"><span class="lt-btn-a"></span><span class="lt-btn-b"></span><span class="lt-btn-c"></span>
-            <div class="lt-island"><span class="lt-ia">${SI.appi}</span><span class="lt-ib"><span class="lt-min">11</span> min</span></div>
+            <div class="lt-island"><span class="lt-ia2">${SI.appi}</span><span class="lt-ib2"><span class="lt-min">11</span> min</span></div>
             <div class="iph-scr lt-scr">
               <div class="iph-bar lt-bar"><span>9:41</span><span class="iph-sig"><i></i><i></i><i></i><i></i></span></div>
               ${LT_MAP}
@@ -374,15 +381,19 @@ function viewHome(){
                 <span class="lt-grab"></span>
                 <div class="lt-eta2"><div><p class="lt-k">Arriving in</p><p class="lt-big"><span class="lt-min">11</span><small>min</small></p></div><div class="lt-time"><p class="lt-k">Arrives at</p><b>10:52</b></div></div>
                 <div class="lt-track"><div class="lt-tline"><i></i></div>
-                  ${[['bag2','Picked up','done'],['drop','Cleaned','done'],['bike','On the way','now'],['home','Delivered','']].map(x=>`<div class="lt-tn ${x[2]}"><span>${SI[x[0]]}</span><em>${x[1]}</em></div>`).join('')}
+                  ${[['fbag','Picked up','done'],['fdrop','Cleaned','done'],['fmoto','On the way','now'],['fhome','Delivered','']].map(x=>`<div class="lt-tn ${x[2]}"><span>${SI[x[0]]}</span><em>${x[1]}</em></div>`).join('')}
                 </div>
                 <div class="lt-rc"><span class="lt-av">TA</span><div class="lt-rcn"><b>Tunde A.</b><span>★ 4.9 · Honda Ace · LND 482 KJ</span></div></div>
                 <div class="lt-acts"><span class="lt-a1">${SI.chat}Message Tunde</span><span class="lt-a2">${SI.phone}</span></div>
               </div>
             </div>
           </div>
-          <div class="lt-card c1"><div class="lt-cin lt-noteC"><span class="lt-app">${SI.appi}</span><div><p class="lt-nt"><b>Washday</b><time>9m ago</time></p><p class="lt-nb"><b>Your laundry is on its way</b><br>Tunde picked up your clean bag. 32 items, sealed.</p></div></div></div>
-          <div class="lt-card c2"><div class="lt-cin lt-la"><div class="lt-la-top"><span class="lt-app sm">${SI.appi}</span><b>Washday</b><span class="lt-la-r"><span class="lt-min">11</span> min</span></div><p class="lt-la-t">Arriving soon</p><div class="lt-la-bar"><span></span><i>${SI.bike}</i></div><div class="lt-la-foot"><span>Out for delivery</span><span>10:52 AM</span></div></div></div>
+          <div class="lt-card c1"><div class="lt-cin ios-n"><span class="lt-ico">${SI.appi}</span><div class="ios-nb"><p class="ios-nh"><b>Washday</b><time>9m ago</time></p><p class="ios-nt">On its way to you</p><p class="ios-nx">Tunde picked up your clean bag. 32 items, counted and sealed.</p></div></div></div>
+          <div class="lt-card c2"><div class="lt-cin ios-la">
+            <div class="ios-la-top"><div><p class="ios-la-k">Arriving in</p><p class="ios-la-eta"><span class="lt-min">11</span> min</p></div><span class="lt-ico md">${SI.appi}</span></div>
+            <div class="ios-la-track"><span class="ios-la-a"></span><span class="ios-la-fill"><i>${SI.fmoto}</i></span><span class="ios-la-b">${SI.fhome}</span></div>
+            <div class="ios-la-foot"><span class="ios-la-av">TA</span><span>Tunde · LND 482 KJ</span><b>10:52</b></div>
+          </div></div>
         </div>
       </div>
     </div>
@@ -1161,7 +1172,7 @@ route();
   document.querySelectorAll('.trk:not([data-init])').forEach(function(root){ root.dataset.init=1; setStep(root,0); });
   setInterval(function(){ document.querySelectorAll('.trk').forEach(function(root){ if(root.dataset.hold && Date.now()-root.dataset.hold<9000) return; setStep(root,(+root.dataset.step||0)+1); }); },3200);
 })();
-(function(){ let m=11; setInterval(function(){ m = m<=3 ? 12 : m-1; document.querySelectorAll('.lt-min').forEach(function(el){ el.textContent=m; }); document.querySelectorAll('.lt-la-bar span').forEach(function(el){ el.style.width=(100-m*5)+'%'; }); },7000); })();
+(function(){ let m=11; setInterval(function(){ m = m<=3 ? 12 : m-1; document.querySelectorAll('.lt-min').forEach(function(el){ el.textContent=m; }); document.querySelectorAll('.ios-la-fill').forEach(function(el){ el.style.width=(96-m*5)+'%'; }); },7000); })();
 (function(){
   var io = ('IntersectionObserver' in window) ? new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }); },{threshold:.22}) : null;
   function hook(){ document.querySelectorAll('.lt-stage2:not([data-io])').forEach(function(el){ el.dataset.io=1; if(io) io.observe(el); else el.classList.add('in'); }); }
