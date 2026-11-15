@@ -358,7 +358,7 @@ const USES = [
   ['tagging','Businesses','Uniforms, towels and linen for salons, spas, gyms and small hotels, counted in and out every time.','quote']
 ];
 const HL = [
-  ['img/bts-van4.jpg','Counted at your door.','Your rider counts every piece with you before leaving, and the full list lands on WhatsApp straight away. No weighing, no guessing.','Pickup · Tue 8:14 am','Counting at pickup','Washday driver handing a basket of clean laundry to a customer at a cobalt van'],
+  ['img/bts-van5.jpg','Counted at your door.','Your rider counts every piece with you before leaving, and the full list lands on WhatsApp straight away. No weighing, no guessing.','Pickup · Tue 8:14 am','Counting at pickup','Washday driver handing a basket of clean laundry to a customer at a cobalt van'],
   ['img/bts-tag.jpg','Tagged and counted again.','Every piece gets a QR tag tied to you. We count again at the studio and before delivery, and the final number is printed on your sealed bag.','Studio · Lekki · 10:02','Tagging','Washday technician attaching a QR tag to a folded shirt'],
   ['img/bts-wash.jpg','Never mixed with anyone else&rsquo;s clothes.','Your clothes go into a machine on their own, never in a shared load with other customers. Your detergent and folding preferences are saved and used every time.','Your clothes · WD-1042','Washing','Technician loading one customer bag into its own machine'],
   ['img/woman.jpg','Backed in writing.','Lost or damaged? We pay you back on a published scale, and every complaint gets a reply within 24 hours.','Delivered · Thu 10:41 am','Guarantee','A customer receiving her clean laundry at the door']
@@ -1423,35 +1423,18 @@ function pxSet(root,n,fromTile){ const prevK=prPick(UI.prN||100); UI.prN=n; cons
 document.addEventListener('input',function(e){ const r=e.target; if(!r.classList||!r.classList.contains('px-range')) return; pxSet(r.closest('.px'),+r.value); });
 document.addEventListener('click',function(e){ const b=e.target.closest('.px-plan'); if(!b) return; pxSet(b.closest('.px'),+b.dataset.n,true); });
 
-/* Opening intro v2: start close on the real drum, pull back, then glide the machine into the hero */
+/* Opening intro v3: cinematic drum film, logo, then fade into the site */
 (function(){
   try{ var h=location.hash||''; if(h && !/^#\/?$/.test(h)) return; if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return; }catch(e){ return; }
-  var media=document.querySelector('.ahero .ah-media'); if(!media||!media.animate) return;
   window.scrollTo(0,0);
-  var root=document.documentElement; root.classList.add('intro-on','intro-media');
-  var r=media.getBoundingClientRect(); var vw=innerWidth, vh=innerHeight;
-  var ov=document.createElement('div'); ov.id='intro2'; ov.setAttribute('aria-hidden','true');
-  var bg=document.createElement('div'); bg.className='in2-bg'; var hb=getComputedStyle(document.querySelector('.ahero')).backgroundColor; if(hb && hb!=='rgba(0, 0, 0, 0)') bg.style.background=hb;
-  var cl=media.cloneNode(true); cl.classList.add('in2-clone');
-  cl.style.cssText='position:fixed;left:'+r.left+'px;top:'+r.top+'px;width:'+r.width+'px;height:'+r.height+'px;margin:0;max-width:none;transform-origin:50% 54%';
-  var brand=document.createElement('div'); brand.className='in2-brand'; brand.innerHTML='<span class="in2-ic">'+SI.appi+'</span><span>washday</span>';
-  ov.appendChild(bg); ov.appendChild(cl); ov.appendChild(brand); document.body.appendChild(ov);
-  var v=cl.querySelector('video'); if(v){ v.muted=true; v.currentTime=0; var pp=v.play&&v.play(); if(pp&&pp.catch) pp.catch(function(){}); }
-  var s=Math.min(1, (vw*0.92)/r.width, (vh*0.66)/r.height);
-  var cy=vh*0.45, dx=vw/2-(r.left+r.width/2), dy=cy-(r.top+r.height/2);
-  brand.style.top=Math.min(vh-70, cy+r.height*s*0.4+14)+'px';
-  var mid='translate('+dx+'px,'+dy+'px) scale('+s+')';
-  cl.animate([{transform:'translate('+dx+'px,'+dy+'px) scale('+(s*3.2)+')',filter:'blur(16px)',opacity:0},{offset:.35,opacity:1},{transform:mid,filter:'blur(0px)',opacity:1}],{duration:1500,easing:'cubic-bezier(.16,1,.3,1)',fill:'forwards'});
-  brand.animate([{opacity:0,transform:'translateY(12px)',letterSpacing:'.2em'},{opacity:1,transform:'none',letterSpacing:'-.045em'}],{duration:900,delay:650,easing:'cubic-bezier(.16,1,.3,1)',fill:'forwards'});
+  var root=document.documentElement; root.classList.add('intro-on');
+  var ov=document.createElement('div'); ov.id='intro3'; ov.setAttribute('aria-hidden','true');
+  ov.innerHTML='<div class="i3-film"><video muted playsinline autoplay preload="auto" poster="img/intro-poster.jpg" src="img/intro.mp4"></video></div><div class="i3-vig"></div><div class="i3-brand"><span class="i3-ic">'+SI.appi+'</span><span class="i3-wm">washday</span></div><p class="i3-tag">Laundry, handled.</p><span class="i3-skip">Tap to skip</span>';
+  document.body.appendChild(ov);
+  var v=ov.querySelector('video'); try{ v.muted=true; var pp=v.play(); if(pp&&pp.catch) pp.catch(function(){}); }catch(e){}
+  requestAnimationFrame(function(){ ov.classList.add('go'); });
   var done=false;
-  function land(){ if(done) return; done=true;
-    brand.animate([{opacity:1,transform:'none'},{opacity:0,transform:'translateY(-8px)'}],{duration:300,fill:'forwards',easing:'ease-in'});
-    cl.animate([{transform:mid},{transform:'translate(0px,0px) scale(1)'}],{duration:1000,easing:'cubic-bezier(.65,0,.25,1)',fill:'forwards'});
-    bg.animate([{opacity:1},{opacity:0}],{duration:700,delay:250,fill:'forwards',easing:'ease-out'});
-    setTimeout(function(){ root.classList.add('intro-reveal'); root.classList.remove('intro-on'); },420);
-    setTimeout(function(){ root.classList.remove('intro-media'); cl.animate([{opacity:1},{opacity:0}],{duration:220,fill:'forwards'}); },1020);
-    setTimeout(function(){ ov.remove(); },1300);
-    setTimeout(function(){ root.classList.remove('intro-reveal'); },2600);
-  }
-  var t=setTimeout(land,2150); ov.addEventListener('click',function(){ clearTimeout(t); land(); });
+  function end(){ if(done) return; done=true; ov.classList.add('out'); root.classList.add('intro-reveal'); root.classList.remove('intro-on');
+    setTimeout(function(){ ov.remove(); },1000); setTimeout(function(){ root.classList.remove('intro-reveal'); },2400); }
+  var t=setTimeout(end,4300); ov.addEventListener('click',function(){ clearTimeout(t); end(); });
 })();
