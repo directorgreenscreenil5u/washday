@@ -39,6 +39,11 @@ Object.assign(CONFIG, {
   guaranteeCap: '₦150,000'
 });
 const LEGAL_NAV=[['terms','Terms of service'],['privacy','Privacy policy'],['guarantee','Damage and loss guarantee'],['contact','Contact']];
+const SVGI={
+  call:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>',
+  wa:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z"/></svg>',
+  person:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>'
+};
 const PLAN_KEYS = ['fresh','weekly','household'];
 const STATUSES = ['Scheduled','Picked up','Tagged and counted','Washing and ironing','Quality check and packed','Out for delivery','Delivered'];
 const STATUS_HELP = ['Your rider will come in the chosen window.','Bag weighed at your door. Confirmation sent on WhatsApp.','Every item tagged to you and counted.','Washed on its own, never mixed with other loads.','Items counted again and sealed with the count on the bag.','Rider is on the way.','Confirm your item count and rate the load.'];
@@ -1062,6 +1067,7 @@ function viewStaff(){
         <div class="stat"><p class="xs soft">Open issues</p><b>${DB.orders.filter(o=>o.issue&&o.issue.status==='open').length}</b></div>
         <div class="stat"><p class="xs soft">Waitlist / quotes</p><b>${DB.waitlist.length} / ${DB.quotes.length}</b></div>
       </div>
+      ${staffHandoffs()}
       <section class="card" style="margin-top:16px">
         <div class="between"><h1 class="apph1" style="font-size:26px">Orders</h1><div class="tabs">${[['open','Open'],['today','Today'],['issues','Issues'],['all','All']].map(t=>`<button class="${f===t[0]?'on':''}" data-act="sfilter" data-f="${t[0]}" style="flex:none">${t[1]}</button>`).join('')}</div></div>
         <div class="tablebox" style="margin-top:12px"><table style="min-width:1000px"><thead><tr><th>Order</th><th>Customer</th><th>When</th><th>Address</th><th>Type</th><th>Status</th><th>Weight / items</th><th>Action</th></tr></thead><tbody>
@@ -1949,7 +1955,7 @@ function viewContact(){
   const open=CONFIG.areas.filter(a=>a.open).map(a=>a.name), soon=CONFIG.areas.filter(a=>!a.open).map(a=>a.name);
   return legalShell('contact','Help','Talk to us','A real person replies on WhatsApp, usually within minutes during working hours.',[
     ['Ways to reach us',`<div class="lg-cards">
-      <a class="lg-card" href="https://wa.me/${CONFIG.whatsapp}" target="_blank" rel="noopener"><b>WhatsApp</b><span>Fastest for orders, pickups and questions</span><em>Open chat ${ARR}</em></a>
+      <a class="lg-card" href="https://wa.me/${CONFIG.whatsapp}" target="_blank" rel="noopener"><b>WhatsApp a person</b><span>A real Washday team member, not a bot</span><em>Open chat ${ARR}</em></a>
       ${CONFIG.email?`<a class="lg-card" href="mailto:${CONFIG.email}"><b>Email</b><span>For receipts, privacy and business enquiries</span><em>${CONFIG.email}</em></a>`:''}
       ${CONFIG.phone?`<a class="lg-card" href="tel:${CONFIG.phone.replace(/\s/g,'')}"><b>Phone</b><span>Monday to Saturday</span><em>${esc(CONFIG.phone)}</em></a>`:''}
       <a class="lg-card" href="#/app/orders"><b>Track an order</b><span>Live status for every bag</span><em>Open orders ${ARR}</em></a></div>`],
@@ -2016,7 +2022,7 @@ try{ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',functi
 new MutationObserver(syncTheme).observe(document.getElementById('app'),{childList:true});
 
 /* ===== v52 · Support chat ===== */
-var SUP_QUICK=['Where is my order?','Change my pickup time','Something is missing','Question about billing'];
+var SUP_QUICK=['Talk to a person','Where is my order?','Change my pickup time','Something is missing','Question about billing'];
 function supSeed(u){ if(!u.chat||!u.chat.length){ u.chat=[{from:'wd',t:'Hi '+String(u.name||'').split(' ')[0]+', this is Washday support. Ask us anything about your pickups, orders or plan. We usually reply within a few minutes, 7am to 8pm.',at:Date.now()-60000}]; save(); } }
 function supReply(q,u){ q=q.toLowerCase(); const act=myOrders().filter(o=>o.status>=1&&o.status<6&&!o.cancelled)[0];
   if(/where|track|status|order|ready|when/.test(q)&&act) return `Your order ${act.id} is at "${STATUSES[act.status]}". It's due back ${fmt(returnDate(act))}. You can follow every step on the order page.`;
@@ -2033,20 +2039,21 @@ function viewSupport(arg){
   const u=me(); supSeed(u); if(arg) UI.supOrder=arg;
   const o=UI.supOrder?DB.orders.find(x=>x.id===UI.supOrder):null;
   const fmtT=function(at){ const d=new Date(at); return d.toLocaleTimeString('en-NG',{hour:'numeric',minute:'2-digit'}); };
-  const msgs=u.chat.map(function(m,i){ return `<div class="sp-m ${m.from==='me'?'me':'wd'}" style="--i:${Math.max(0,i-u.chat.length+4)}">${m.from==='wd'?`<span class="sp-ic">${SI.appi}</span>`:''}<div><p>${esc(m.t)}</p><time>${m.ctx?esc(m.ctx)+' · ':''}${fmtT(m.at)}</time></div></div>`; }).join('');
+  const msgs=u.chat.map(function(m,i){ return `<div class="sp-m ${m.from==='me'?'me':'wd'}" style="--i:${Math.max(0,i-u.chat.length+4)}">${m.from==='wd'?`<span class="sp-ic">${SI.appi}</span>`:''}<div><p>${esc(m.t)}</p>${m.kind==='handoff'?contactBtns():''}<time>${m.ctx?esc(m.ctx)+' · ':''}${fmtT(m.at)}</time></div></div>`; }).join('');
   return shell('app/support', `
     <div class="d-head"><div><p class="d-date">Replies in minutes · 7am to 8pm</p><h1 class="d-h1">Support</h1></div></div>
     <div class="sp-grid">
       <section class="sp-chat">
-        <header class="sp-top"><span class="sp-ic sp-ic-lg">${SI.appi}</span><div><b>Washday support</b><span><i class="sp-on"></i>Online now</span></div></header>
+        <header class="sp-top"><span class="sp-ic sp-ic-lg">${SI.appi}</span><div><b>Washday Assistant</b><span><i class="sp-on"></i>Instant answers · ask for a person anytime</span></div><button class="sp-human" data-hp="ask">${SVGI.person}<span>Talk to a person</span></button></header>
         <div class="sp-thread" aria-live="polite">${msgs}${UI.supTyping?'<div class="sp-m wd"><span class="sp-ic">'+SI.appi+'</span><div class="sp-typing"><i></i><i></i><i></i></div></div>':''}</div>
-        <div class="sp-quick">${o?`<span class="sp-ctx">About ${esc(o.id)} <button data-sp="clear" aria-label="Remove">×</button></span>`:''}${SUP_QUICK.map(q=>`<button data-sp="q" data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+        ${u.waitingHuman?`<div class="sp-wait"><span class="hp-dot"></span>A person from our team will reply here soon.</div>`:''}<div class="sp-quick">${o?`<span class="sp-ctx">About ${esc(o.id)} <button data-sp="clear" aria-label="Remove">×</button></span>`:''}${SUP_QUICK.map(q=>`<button data-sp="q" data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>
         <form class="sp-bar" data-form="sup"><input name="m" placeholder="Type a message" autocomplete="off" aria-label="Message"><button aria-label="Send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></form>
       </section>
       <aside class="sp-side">
+        <section class="d-card hp-card"><div class="d-ch"><h2>Talk to a real person</h2></div><p class="hp-sub">Not a bot. A Washday team member answers, 7am to 8pm, Monday to Saturday.</p>${contactBtns()}<button class="hp-ask" data-hp="ask">Or ask for a person in this chat</button></section>
         <section class="d-card"><div class="d-ch"><h2>Other ways to reach us</h2></div>
           <div class="sp-ways">
-            <a class="sp-way" href="https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent('Hi Washday'+(o?', about order '+o.id:''))}" target="_blank" rel="noopener"><span class="sp-wi sp-wa">${I.chat}</span><div><b>WhatsApp</b><span>Chat on your phone</span></div><i>›</i></a>
+            
             ${CONFIG.phone?`<a class="sp-way" href="tel:${CONFIG.phone.replace(/\s/g,'')}"><span class="sp-wi">☏</span><div><b>Call us</b><span>${esc(CONFIG.phone)}</span></div><i>›</i></a>`:''}
             ${CONFIG.email?`<a class="sp-way" href="mailto:${CONFIG.email}"><span class="sp-wi">@</span><div><b>Email</b><span>${esc(CONFIG.email)}</span></div><i>›</i></a>`:''}
             <a class="sp-way" href="#/app/orders"><span class="sp-wi">${I.list}</span><div><b>Report a problem</b><span>Pick the order first</span></div><i>›</i></a>
@@ -2066,3 +2073,39 @@ var WS_LAST='';
 function countUp(root){ (root||document).querySelectorAll('[data-count]').forEach(function(el){ if(el.dataset.cd) return; el.dataset.cd=1; const to=+el.dataset.count||0; if(!to||matchMedia('(prefers-reduced-motion: reduce)').matches){ el.textContent=to; return; } const t0=performance.now(), D=900; (function f(t){ const k=Math.min(1,(t-t0)/D), e=1-Math.pow(1-k,3); el.textContent=Math.round(to*e); if(k<1) requestAnimationFrame(f); })(t0); }); }
 new MutationObserver(function(){ const ws=document.querySelector('.ws'); if(!ws) { WS_LAST=''; return; } const r=location.hash; if(r!==WS_LAST){ WS_LAST=r; ws.classList.add('ws-enter'); setTimeout(function(){ const w=document.querySelector('.ws'); if(w) w.classList.remove('ws-enter'); },1200); countUp(ws); } else { ws.querySelectorAll('[data-count]').forEach(function(el){ el.textContent=el.dataset.count; }); } }).observe(document.getElementById('app'),{childList:true});
 document.addEventListener('pointerdown',function(e){ const b=e.target.closest('.ws a,.ws button,.me-modal a,.me-modal button'); if(!b) return; b.classList.add('mi-press'); const up=function(){ b.classList.remove('mi-press'); window.removeEventListener('pointerup',up); window.removeEventListener('pointercancel',up); }; window.addEventListener('pointerup',up); window.addEventListener('pointercancel',up); });
+
+/* ===== v56 · Talk to a person: hand-off + alerts ===== */
+Object.assign(CONFIG,{ alertEmail: CONFIG.alertEmail||'' }); // team inbox for "talk to a person" alerts, e.g. support@washday.ng
+const HUMAN_RX=/\b(human|person|agent|someone|real person|customer care|customer service|representative|speak to|talk to|call me|manager)\b/i;
+function handoffs(){ if(!DB.handoffs) DB.handoffs=[]; return DB.handoffs; }
+function sendAlert(h){
+  if(!CONFIG.alertEmail) return Promise.resolve(false);
+  return fetch('https://formsubmit.co/ajax/'+encodeURIComponent(CONFIG.alertEmail),{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body:JSON.stringify({_subject:'Washday: '+h.name+' wants to talk to a person',_template:'table',_captcha:'false',Customer:h.name,Phone:'0'+h.phone,Email:h.email||'',Order:h.order||'',Message:h.text,Time:new Date(h.at).toLocaleString('en-NG'),Reply_on_WhatsApp:'https://wa.me/234'+h.phone})})
+    .then(r=>r.ok).catch(()=>false);
+}
+function contactBtns(){ return `<div class="hp-btns">${CONFIG.phone?`<a class="hp-b hp-call" href="tel:${CONFIG.phone.replace(/\s/g,'')}">${SVGI.call}Call us</a>`:''}<a class="hp-b hp-wa" href="https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent('Hi Washday, I would like to speak to someone'+(UI.supOrder?' about order '+UI.supOrder:''))}" target="_blank" rel="noopener">${SVGI.wa}WhatsApp a person</a></div>`; }
+
+function askHuman(text){
+  const u=me(); if(!u) return; supSeed(u);
+  const open=handoffs().find(h=>h.phone===u.phone&&!h.done);
+  u.chat.push({from:'me',t:text||'I would like to speak to a person.',at:Date.now(),ctx:UI.supOrder||null});
+  const h=open||{id:'H'+Date.now().toString(36),phone:u.phone,name:u.name,email:u.email||'',order:UI.supOrder||'',text:text||'Asked to speak to a person',at:Date.now(),done:false};
+  if(!open) handoffs().unshift(h); u.waitingHuman=true; save(); UI.supTyping=true; rerender(); supScroll();
+  const hr=new Date().getHours(), inHours=hr>=7&&hr<20;
+  (open?Promise.resolve(true):sendAlert(h)).then(function(){
+    const v=me(); if(!v) return;
+    v.chat.push({from:'wd',kind:'handoff',t:(open?'You are already in the queue. ':'Done. I have alerted the Washday team. ')+(inHours?'A real person will reply right here, usually within 10 minutes.':'We are closed right now (7am to 8pm), so a person will reply first thing in the morning.')+' If it is urgent, reach a team member directly:',at:Date.now()});
+    save(); UI.supTyping=false; if(location.hash.indexOf('app/support')>-1){ rerender(); supScroll(); }
+  });
+}
+document.addEventListener('click',function(e){ const b=e.target.closest('[data-hp]'); if(!b) return; e.preventDefault(); e.stopPropagation();
+  if(b.dataset.hp==='ask') askHuman();
+  if(b.dataset.hp==='done'){ const h=handoffs().find(x=>x.id===b.dataset.id); if(h){ h.done=true; const u=DB.users[h.phone]; if(u){ u.waitingHuman=false; } save(); rerender(); toast('Marked as handled',true); } }
+},true);
+/* intercept typed messages asking for a person */
+document.addEventListener('submit',function(e){ const f=e.target; if(f.dataset.form!=='sup') return; const v=(f.elements.m.value||'').trim(); if(v&&HUMAN_RX.test(v)){ e.preventDefault(); e.stopImmediatePropagation(); f.elements.m.value=''; askHuman(v); } },true);
+document.addEventListener('click',function(e){ const b=e.target.closest('[data-sp="q"]'); if(b&&b.dataset.q==='Talk to a person'){ e.preventDefault(); e.stopImmediatePropagation(); askHuman(); } },true);
+function staffHandoffs(){ const L=handoffs().filter(h=>!h.done); if(!L.length) return '';
+  return `<section class="hp-queue"><div class="hp-qh"><span class="hp-dot"></span><h2>${L.length} customer${L.length>1?'s':''} waiting to talk to a person</h2></div>
+    ${L.map(h=>`<div class="hp-qi"><div><b>${esc(h.name)}</b><span>0${h.phone}${h.order?' · '+esc(h.order):''} · ${fmtTime(h.at)}</span><p>“${esc(h.text)}”</p></div><div class="hp-qa"><a class="hp-b hp-wa" href="https://wa.me/234${h.phone}?text=${encodeURIComponent('Hi '+h.name.split(' ')[0]+', this is Washday support. How can we help?')}" target="_blank" rel="noopener">${SVGI.wa}WhatsApp</a><a class="hp-b hp-call" href="tel:0${h.phone}">${SVGI.call}Call</a><button class="hp-b hp-done" data-hp="done" data-id="${h.id}">Handled</button></div></div>`).join('')}</section>`; }
