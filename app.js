@@ -1050,7 +1050,7 @@ function viewStaff(){
   const users = Object.values(DB.users); const subs = users.filter(u=>u.plan && u.status!=='cancelled');
   const mrr = subs.filter(u=>u.status==='active').reduce((s,u)=>s+plan(u).price,0);
   return `<div style="min-height:100vh;background:var(--app)">
-    <header style="background:var(--ink);color:#fff"><div class="wrap between" style="padding-top:14px;padding-bottom:14px"><a class="logo" href="#/" style="color:#fff">${LOGO('#4C93D1')}<span>${CONFIG.brand} · Operations</span></a><div class="row" style="gap:8px"><a class="btn btn-ghost btn-sm" href="#/scan">Tag station</a><button class="btn btn-ghost btn-sm" data-act="staff-export">Export CSV</button><button class="btn btn-ghost btn-sm" data-act="staff-out">Lock</button></div></div></header>
+    <header style="background:var(--ink);color:#fff"><div class="wrap between" style="padding-top:14px;padding-bottom:14px"><a class="logo" href="#/" style="color:#fff">${LOGO('#4C93D1')}<span>${CONFIG.brand} · Operations</span></a><div class="row" style="gap:8px"><a class="btn btn-ghost btn-sm" href="#/staff/customers">Customers</a><a class="btn btn-ghost btn-sm" href="#/scan">Tag station</a><button class="btn btn-ghost btn-sm" data-act="staff-export">Export CSV</button><button class="btn btn-ghost btn-sm" data-act="staff-out">Lock</button></div></div></header>
     <main class="wrap" style="padding-top:28px;padding-bottom:64px">
       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
         <div class="stat"><p class="xs soft">Active subscribers</p><b>${subs.filter(u=>u.status==='active').length}</b></div>
@@ -1076,7 +1076,7 @@ function viewStaff(){
 /* =========================================================
    EVENTS
    ========================================================= */
-const ROUTES = { '': viewHome, login: viewAuth, signup: viewAuth, subscribe: viewSubscribe, app: viewDashboard, 'app/schedule': viewSchedule, 'app/track': viewTrack, 'app/orders': viewOrders, 'app/billing': viewBilling, staff: viewStaff, scan: (a)=>viewScan(a) };
+const ROUTES = { '': viewHome, login: viewAuth, signup: viewAuth, subscribe: viewSubscribe, app: viewDashboard, 'app/schedule': viewSchedule, 'app/track': viewTrack, 'app/orders': viewOrders, 'app/billing': viewBilling, staff: viewStaff, 'staff/customers': viewCustomers, scan: (a)=>viewScan(a) };
 const quoteForm = () => modal(`<form data-form="quote" style="display:flex;flex-direction:column;gap:14px"><h2 class="cardh" style="font-size:24px">Request a business or estate quote</h2><label class="field">Business or estate name<input class="input" name="org"></label><label class="field">Contact phone<input class="input" name="phone" type="tel"></label><label class="field">What do you need washed?<textarea class="input" name="need" rows="3" placeholder="e.g. 20 staff uniforms weekly, 60 towels"></textarea></label><div class="row" style="gap:10px"><button class="btn btn-dark">Send request</button><button type="button" class="btn btn-light" data-act="modal-close">Cancel</button></div></form>`);
 document.addEventListener('click', e=>{
   const t = e.target.closest('[data-act]'); if(!t) return;
@@ -1338,7 +1338,7 @@ function viewScan(arg){
       <p class="demo-note">Demo PIN: <b>${CONFIG.staffPin}</b>. Replace with real staff accounts before launch.</p>
     </form></div></div>`;
   }
-  const code=UI.tagCode; const T=code?DB.tags[code]:null; const F=UI.tagForm||(UI.tagForm={type:'Shirt',phone:UI.dirPhone||'',newc:false});
+  const code=UI.tagCode; let T=code?DB.tags[code]:null; if(T&&T.reserved){ if(!UI.tagForm||UI.tagForm.resv!==code) UI.tagForm={type:'Shirt',phone:T.phone,newc:false,resv:code}; UI.dirPhone=T.phone; T=null; } const F=UI.tagForm||(UI.tagForm={type:'Shirt',phone:UI.dirPhone||'',newc:false});
   const dir=UI.dirPhone||(T&&T.phone)||''; const items=dir?custItems(dir):[]; const du=DB.users[dir];
   const counts={}; items.forEach(function(t){counts[t.type]=(counts[t.type]||0)+1;});
   const right = !code ? `<div class="ts-empty"><span class="ts-eico">${SI.camera}</span><h2 class="cardh">Scan a tag to start</h2><p class="muted">Point the camera at a Washday QR tag, or type the code printed under it. New tags get registered to a customer. Tags already in use show the item they belong to.</p></div>`
@@ -1773,3 +1773,67 @@ function viewDashboard(){
         ${acts.length?`<ol class="d-feed">${acts.slice(0,3).map(a=>`<li><i></i><div><b>${esc(a.t)}</b><span>${fmtTime(a.at)}</span></div></li>`).join('')}</ol>`:'<p class="d-empty">No activity yet.</p>'}</section>
     </div>`);
 }
+
+/* ===== Staff: customers directory + tag generator ===== */
+function custTags(phone){ tagsDB(); return Object.values(DB.tags).filter(t=>t.phone===phone); }
+function custAddr(u){ const a=(u.addresses||[])[0]; return a?[a.street,a.building,a.area].filter(Boolean).join(', '):''; }
+function custList(){ return Object.values(DB.users).filter(u=>u&&u.phone).sort((a,b)=>(b.created||0)-(a.created||0)||String(a.name).localeCompare(String(b.name))); }
+function genTags(phone,n){ tagsDB(); const codes=[]; while(codes.length<n){ const c='WD-T-'+String(DB.tagSeq++).padStart(4,'0'); if(!DB.tags[c]){ DB.tags[c]={code:c,phone:phone,type:'Unassigned',reserved:true,at:Date.now()}; codes.push(c); } } save(); return codes; }
+function custSheet(phone,codes){ const u=DB.users[phone]||{name:'Customer'};
+  modal(`<div class="tagsheet-wrap"><h2 class="cardh" style="font-size:22px">${codes.length} tags for ${esc(u.name)}</h2><p class="muted small" style="margin:6px 0 14px">Print on sticker paper and attach one to each item at pickup. Every tag is already linked to ${esc(u.name.split(' ')[0])}, so scanning it at the studio files the item straight into their directory.</p>
+    <div class="tagsheet">${codes.map(c=>`<div class="tagp"><p class="tagp-b">washday</p><span class="tagp-q" data-qr="${tagUrl(c)}"></span><p class="tagp-c">${c}</p><p class="tagp-n">${esc(u.name.split(' ')[0])} · ${String(phone).slice(-4)}</p></div>`).join('')}</div>
+    <div class="row" style="gap:8px;margin-top:16px"><button class="btn btn-dark" data-act="tag-doprint">Print tags</button><button class="btn btn-light" data-act="modal-close">Done</button></div></div>`);
+  fillQR(); }
+function viewCustomers(){
+  try{ if(!UI.staff && localStorage.getItem('wd_staff')) UI.staff=true; if(UI.staff) localStorage.setItem('wd_staff','1'); }catch(e){}
+  if(!UI.staff) return viewStaff();
+  tagsDB(); const C=UI.cust||(UI.cust={open:false,n:10,sel:null}); const list=custList();
+  const areas=CONFIG.areas.map(a=>a.name);
+  const form=C.open?`<section class="cu-new"><div class="cu-nh"><div><h2>New customer</h2><p>Add their details, then print a set of tags linked to them.</p></div><button class="b-x" data-cu="close" aria-label="Close">×</button></div>
+    <form data-form="cu-new" class="cu-form" autocomplete="off">
+      <label class="ob-field"><span>Full name</span><input name="name" required placeholder="Adaeze Okafor"></label>
+      <label class="ob-field"><span>Phone number</span><input name="phone" type="tel" inputmode="tel" required placeholder="0803 000 0000"></label>
+      <label class="ob-field"><span>Area</span><select name="area">${areas.map(a=>`<option>${esc(a)}</option>`).join('')}<option>Other</option></select></label>
+      <label class="ob-field cu-wide"><span>Street address</span><input name="street" required placeholder="12 Admiralty Way"></label>
+      <label class="ob-field"><span>House, flat or estate</span><input name="building" placeholder="Flat 3B, Palm Court"></label>
+      <label class="ob-field"><span>Nearest landmark</span><input name="landmark" placeholder="Opposite the filling station"></label>
+      <div class="cu-count"><span>Tags to print</span><div class="sq-step"><button type="button" data-cu="n" data-n="-5" aria-label="Fewer">−</button><output>${C.n}</output><button type="button" data-cu="n" data-n="5" aria-label="More">+</button></div></div>
+      <button class="cu-go">Create customer and print ${C.n} tags</button>
+    </form></section>`:'';
+  const rows=list.map(u=>{ const tg=custTags(u.phone); const used=tg.filter(t=>!t.reserved).length; const ords=DB.orders.filter(o=>o.phone===u.phone).length; const ini=String(u.name||'?').split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();
+    const hay=[u.name,'0'+u.phone,u.phone,custAddr(u),tg.map(t=>t.code).join(' ')].join(' ').toLowerCase();
+    const open=C.sel===u.phone;
+    return `<div class="cu-row ${open?'open':''}" data-hay="${esc(hay)}"><button class="cu-main" data-cu="sel" data-p="${u.phone}"><span class="cu-av">${esc(ini)}</span><span class="cu-who"><b>${esc(u.name||'Unnamed')}</b><span>0${u.phone}</span></span><span class="cu-addr">${esc(custAddr(u))||'<i>No address</i>'}</span><span class="cu-meta">${u.plan?`<em class="cu-plan">${plan(u).name}</em>`:'<em class="cu-walk">Walk-in</em>'}<small>${used} item${used===1?'':'s'} · ${tg.length-used} spare tag${tg.length-used===1?'':'s'}</small></span><span class="cu-chev">›</span></button>
+      ${open?`<div class="cu-detail"><div class="cu-acts"><button class="b-btn" data-cu="more" data-p="${u.phone}">Print more tags</button><a class="b-btn2" href="#/scan" data-cu="scan" data-p="${u.phone}">Open in tag station</a></div>
+        ${tg.filter(t=>!t.reserved).length?`<div class="cu-items">${tg.filter(t=>!t.reserved).map(t=>`<div class="cu-it">${t.photo?`<img src="${t.photo}" alt="">`:'<span class="cu-ph"></span>'}<div><b>${esc(t.type)}${t.color?' · '+esc(t.color):''}</b><span>${t.code} · ${t.out?'Counted out':'In studio'}</span></div></div>`).join('')}</div>`:'<p class="cu-empty">No items registered yet. Tags are ready to scan at pickup.</p>'}
+        ${tg.filter(t=>t.reserved).length?`<p class="cu-spare">Spare tags: ${tg.filter(t=>t.reserved).map(t=>t.code).join(', ')}</p>`:''}</div>`:''}</div>`; }).join('');
+  return `<div class="ws-staff">
+    <header class="st-bar"><a class="ws-logo" href="#/">${LOGO()}<span>washday</span><em>Operations</em></a>
+      <nav class="st-nav"><a href="#/staff">Orders</a><a href="#/staff/customers" class="on">Customers</a><a href="#/scan">Tag station</a></nav>
+      <button class="b-link" data-act="staff-out">Lock</button></header>
+    <main class="st-main">
+      <div class="d-head"><div><p class="d-date">${list.length} customer${list.length===1?'':'s'} · ${Object.keys(DB.tags).length} tags issued</p><h1 class="d-h1">Customers</h1></div><button class="d-cta" data-cu="open">${I.plus}<span>New customer</span></button></div>
+      ${form}
+      <div class="cu-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="cuQ" type="search" placeholder="Search by name, phone, address or tag code" value="${esc(UI.cuQ||'')}" autocomplete="off"><span class="cu-res"></span></div>
+      <section class="cu-list">${rows||'<p class="cu-empty" style="padding:28px">No customers yet. Add your first one.</p>'}<p class="cu-none" hidden>No customer matches that search.</p></section>
+    </main></div>`;
+}
+function cuFilter(){ const q=(UI.cuQ||'').trim().toLowerCase().replace(/^0/,''); let n=0; document.querySelectorAll('.cu-row').forEach(r=>{ const ok=!q||q.split(/\s+/).every(w=>r.dataset.hay.includes(w)); r.hidden=!ok; if(ok) n++; }); const none=$('.cu-none'); if(none) none.hidden=n>0||!document.querySelectorAll('.cu-row').length; const res=$('.cu-res'); if(res) res.textContent=q?n+' found':''; }
+document.addEventListener('input',function(e){ if(e.target.id==='cuQ'){ UI.cuQ=e.target.value; cuFilter(); } });
+document.addEventListener('click',function(e){ const b=e.target.closest('[data-cu]'); if(!b) return; const C=UI.cust||(UI.cust={open:false,n:10,sel:null}); const a=b.dataset.cu;
+  if(a==='open'){ C.open=true; rerender(); const f=$('form[data-form="cu-new"] input[name="name"]'); if(f) f.focus(); return; }
+  if(a==='close'){ C.open=false; rerender(); return; }
+  if(a==='n'){ e.preventDefault(); const f=$('form[data-form="cu-new"]'); const keep=f?Object.fromEntries(new FormData(f).entries()):null; C.n=Math.max(5,Math.min(60,C.n+(+b.dataset.n))); rerender(); if(keep){ const g=$('form[data-form="cu-new"]'); Object.keys(keep).forEach(k=>{ const el=g.elements[k]; if(el) el.value=keep[k]; }); } return; }
+  if(a==='sel'){ C.sel=C.sel===b.dataset.p?null:b.dataset.p; rerender(); return; }
+  if(a==='more'){ const p=b.dataset.p; modal(`<h2 class="cardh" style="font-size:22px">Print more tags</h2><p class="muted" style="margin-top:6px">How many tags for ${esc(DB.users[p].name)}?</p><div class="ob-areas" style="margin-top:16px">${[5,10,20,30].map(n=>`<button class="ob-chip" data-cu="mk" data-p="${p}" data-n="${n}">${n} tags</button>`).join('')}</div>`); return; }
+  if(a==='mk'){ const p=b.dataset.p, n=+b.dataset.n; const codes=genTags(p,n); custSheet(p,codes); return; }
+  if(a==='scan'){ UI.dirPhone=b.dataset.p; UI.tagForm=null; return; }
+});
+document.addEventListener('submit',function(e){ const f=e.target; if(f.dataset.form!=='cu-new') return; e.preventDefault(); const v=Object.fromEntries(new FormData(f).entries());
+  const phone=normPhone(v.phone); if(!v.name.trim()){ toast('Add the customer name'); return; } if(phone.length!==10){ toast('Enter a valid Nigerian phone number'); return; } if(!v.street.trim()){ toast('Add the street address'); return; }
+  const ex=DB.users[phone];
+  const addr={label:'Home',area:v.area,street:v.street.trim(),building:(v.building||'').trim(),landmark:(v.landmark||'').trim(),notes:''};
+  if(ex){ ex.name=ex.name||v.name.trim(); ex.addresses=[addr].concat((ex.addresses||[]).filter(a=>a.street!==addr.street)); }
+  else DB.users[phone]={phone:phone,name:v.name.trim(),created:Date.now(),walkin:true,plan:null,status:'active',joined:iso(today()),addresses:[addr],bills:[],notifs:{}};
+  const C=UI.cust; const codes=genTags(phone,C.n); C.open=false; C.sel=phone; save(); rerender(); custSheet(phone,codes); toast((ex?'Updated ':'Added ')+v.name.trim()+' · '+codes.length+' tags ready', true); });
+setInterval(function(){ if(document.getElementById('cuQ')&&UI.cuQ) cuFilter(); },600);
