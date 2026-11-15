@@ -1423,7 +1423,7 @@ function pxSet(root,n,fromTile){ const prevK=prPick(UI.prN||100); UI.prN=n; cons
 document.addEventListener('input',function(e){ const r=e.target; if(!r.classList||!r.classList.contains('px-range')) return; pxSet(r.closest('.px'),+r.value); });
 document.addEventListener('click',function(e){ const b=e.target.closest('.px-plan'); if(!b) return; pxSet(b.closest('.px'),+b.dataset.n,true); });
 
-/* Opening intro v3: cinematic drum film, logo, then fade into the site */
+/* Opening intro v3: cinematic drum film, logo, then match-cut into the hero machine */
 (function(){
   try{ var h=location.hash||''; if(h && !/^#\/?$/.test(h)) return; if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return; }catch(e){ return; }
   window.scrollTo(0,0);
@@ -1435,13 +1435,28 @@ document.addEventListener('click',function(e){ const b=e.target.closest('.px-pla
   requestAnimationFrame(function(){ ov.classList.add('go'); });
   var done=false;
   function end(){ if(done) return; done=true; ov.classList.add('iris');
-    var film=ov.querySelector('.i3-film'); var vw=innerWidth, vh=innerHeight, R=Math.hypot(vw,vh)/2+60, D=1150, t0=0;
-    setTimeout(function(){ root.classList.add('intro-reveal'); root.classList.remove('intro-on'); },380);
-    function step(t){ if(!t0) t0=t; var p=Math.min(1,(t-t0)/D); var e=p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
-      var r=Math.max(0,e*R), m='radial-gradient(circle at 50% 50%, transparent '+r+'px, rgba(0,0,0,.35) '+(r+18)+'px, #000 '+(r+46)+'px)';
-      ov.style.webkitMaskImage=m; ov.style.maskImage=m;
-      film.style.transform='scale('+(1+0.35*e)+')'; film.style.transition='none';
-      if(p<1) requestAnimationFrame(step); else { ov.remove(); setTimeout(function(){ root.classList.remove('intro-reveal'); },1600); } }
-    setTimeout(function(){ requestAnimationFrame(step); },260); }
+    var real=document.querySelector('.ahero .ah-media'), film=ov.querySelector('.i3-film');
+    function fallback(){ root.classList.add('intro-reveal'); root.classList.remove('intro-on'); ov.classList.add('out'); setTimeout(function(){ ov.remove(); root.classList.remove('intro-reveal'); },1600); }
+    if(!real || !ov.animate){ fallback(); return; }
+    /* Match-cut: the intro drum becomes the hero machine's drum, then the camera pulls back to the hero */
+    root.classList.add('i3-hide');
+    var r=real.getBoundingClientRect(), vw=innerWidth, vh=innerHeight;
+    var fs=Math.max(vw/1280, vh/716), ri=345*fs, cx=vw/2+(0.496-0.5)*1280*fs, cy=vh/2+(0.479-0.5)*716*fs;
+    var rh=0.109*r.width, S=Math.max(1.5, ri/rh*1.04), dx=0.501*r.width, dy=0.488*r.height;
+    var tx=cx-r.left-S*dx, ty=cy-r.top-S*dy;
+    var cl=real.cloneNode(true); cl.classList.add('i3-clone');
+    cl.style.cssText='position:absolute;margin:0;max-width:none;left:'+r.left+'px;top:'+r.top+'px;width:'+r.width+'px;transform-origin:0 0;opacity:0;will-change:transform,opacity';
+    var rv=real.querySelector('video'), cv=cl.querySelector('video');
+    if(cv){ try{ cv.muted=true; if(rv) cv.currentTime=rv.currentTime||0; var q=cv.play(); if(q&&q.catch) q.catch(function(){}); }catch(e){} }
+    ov.appendChild(cl);
+    var T0='translate('+tx+'px,'+ty+'px) scale('+S+')';
+    film.style.transition='none';
+    film.animate([{transform:'scale(1)'},{transform:'scale(1.05)'}],{duration:650,easing:'ease-in',fill:'forwards'});
+    cl.animate([{opacity:0,transform:T0},{opacity:1,transform:T0}],{duration:620,easing:'ease-in-out',fill:'forwards'}).onfinish=function(){
+      ov.style.background='transparent'; film.style.visibility='hidden'; var vg=ov.querySelector('.i3-vig'); if(vg) vg.style.visibility='hidden'; ov.style.cursor='default';
+      var pull=cl.animate([{transform:T0},{transform:'translate(0,0) scale(1)'}],{duration:1700,easing:'cubic-bezier(.7,0,.2,1)',fill:'forwards'});
+      setTimeout(function(){ root.classList.add('intro-reveal'); root.classList.remove('intro-on'); },800);
+      pull.onfinish=function(){ try{ if(rv&&cv) rv.currentTime=cv.currentTime; }catch(e){} root.classList.remove('i3-hide'); requestAnimationFrame(function(){ ov.remove(); }); setTimeout(function(){ root.classList.remove('intro-reveal'); },1600); };
+    }; }
   var t=setTimeout(end,4300); ov.addEventListener('click',function(){ clearTimeout(t); end(); });
 })();
