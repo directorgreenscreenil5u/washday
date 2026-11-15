@@ -7,7 +7,7 @@
 const CONFIG = {
   brand: 'Washday',
   whatsapp: '2348000000000',
-  areas: [ {name:'Lekki Phase 1', open:true}, {name:'Yaba', open:true}, {name:'Ikoyi', open:false}, {name:'Surulere', open:false}, {name:'Ikeja GRA', open:false} ],
+  areas: [ {name:'Yaba', open:true}, {name:'Surulere', open:true}, {name:'Ikeja', open:true}, {name:'Lekki', open:false}, {name:'Victoria Island', open:false} ],
   plans: {
     fresh:     { name:'Fresh Start',  price:20000, items:50,  pickups:1, kg:8,  service:'Wash, dry and fold',            blurb:'For one person who wants their weekends back.', extra:[], img:'folded' },
     weekly:    { name:'Weekly Fresh', price:35000, items:100, pickups:2, kg:8,  service:'Wash, dry, iron, hang or fold', blurb:'A pickup every week, ironed and ready to wear.', extra:['Live order tracking'], tag:'Best for most homes', img:'shirt' },
@@ -278,7 +278,7 @@ const LT_MAP = `<svg class="lt-map" viewBox="0 0 320 640" preserveAspectRatio="x
   <path d="M0 470 C70 450 120 470 170 498 C225 528 270 520 320 500 L320 640 L0 640Z" fill="url(#ltW)"/>
   <text x="196" y="586" font-size="10.5" font-style="italic" fill="#6F9CC9" font-family="-apple-system,sans-serif" letter-spacing=".8">Lagos Lagoon</text>
   <rect x="214" y="196" width="94" height="72" rx="10" fill="#D6EBCB"/>
-  <text x="232" y="236" font-size="9" fill="#6E9A5E" font-family="-apple-system,sans-serif">Lekki Park</text>
+  <text x="232" y="236" font-size="9" fill="#6E9A5E" font-family="-apple-system,sans-serif">Rowe Park</text>
   <g fill="#EAE6DE">
     <rect x="16" y="22" width="80" height="46" rx="5"/><rect x="16" y="76" width="36" height="58" rx="5"/><rect x="58" y="76" width="38" height="58" rx="5"/>
     <rect x="126" y="22" width="44" height="50" rx="5"/><rect x="176" y="22" width="60" height="50" rx="5"/><rect x="126" y="80" width="110" height="54" rx="5"/>
@@ -294,10 +294,10 @@ const LT_MAP = `<svg class="lt-map" viewBox="0 0 320 640" preserveAspectRatio="x
     <g stroke="#FFFFFF"><path d="M0 160 H320" stroke-width="15"/><path d="M110 0 V470" stroke-width="13"/><path d="M0 350 H320" stroke-width="11"/><path d="M200 160 V460" stroke-width="9"/><path d="M0 438 H200" stroke-width="8"/><path d="M250 0 V160" stroke-width="9"/></g>
     <path d="M0 74 H110 M110 74 H320 M0 254 H110" stroke="#FFFFFF" stroke-width="5"/>
   </g>
-  <text x="130" y="163.5" font-size="8.5" font-weight="600" fill="#8E8A82" font-family="-apple-system,sans-serif">Admiralty Way</text>
-  <text x="20" y="353.5" font-size="8" font-weight="600" fill="#8E8A82" font-family="-apple-system,sans-serif">Freedom Way</text>
-  <text x="114" y="300" font-size="8" font-weight="600" fill="#8E8A82" font-family="-apple-system,sans-serif" transform="rotate(-90 114 300)">Admiralty Rd</text>
-  <text x="20" y="118" font-size="9.5" font-weight="700" fill="#A7A29A" font-family="-apple-system,sans-serif" letter-spacing="1.4">LEKKI PHASE 1</text>
+  <text x="130" y="163.5" font-size="8.5" font-weight="600" fill="#8E8A82" font-family="-apple-system,sans-serif">Herbert Macaulay Way</text>
+  <text x="20" y="353.5" font-size="8" font-weight="600" fill="#8E8A82" font-family="-apple-system,sans-serif">Commercial Ave</text>
+  <text x="114" y="300" font-size="8" font-weight="600" fill="#8E8A82" font-family="-apple-system,sans-serif" transform="rotate(-90 114 300)">Ikorodu Rd</text>
+  <text x="20" y="118" font-size="9.5" font-weight="700" fill="#A7A29A" font-family="-apple-system,sans-serif" letter-spacing="1.4">YABA</text>
   <path d="M60 438 H110 V160 H250 V98" fill="none" stroke="#2340E8" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" opacity=".18" filter="url(#ltGlow)"/>
   <path d="M60 438 H110 V300" fill="none" stroke="#A9B4D9" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
   <path id="ltRoute" d="M110 300 V160 H250 V98" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
@@ -323,7 +323,7 @@ const LT_MAP = `<svg class="lt-map" viewBox="0 0 320 640" preserveAspectRatio="x
 </svg>`;
 const TRK = [
   { t:'Picked up', d:'Weighed at your door. Weight sent on WhatsApp.', ic:'scale', s:'Picked up', ct:'6.4 kg weighed at your door', cd:'Tunde collected your bag at 8:12am' },
-  { t:'Tagged and counted', d:'Every piece tagged to you and counted in.', ic:'tag', s:'Tagged and counted', ct:'32 items tagged to you', cd:'Counted in at the Lekki studio' },
+  { t:'Tagged and counted', d:'Every piece tagged to you and counted in.', ic:'tag', s:'Tagged and counted', ct:'32 items tagged to you', cd:'Counted in at the Yaba studio' },
   { t:'Washing', d:'Washed on its own, never mixed with other loads.', ic:'drop', s:'Washing', ct:'In the wash · 47 min left', cd:'Your detergent and settings saved' },
   { t:'Pressed and packed', d:'Ironed, folded, counted again and sealed.', ic:'hanger', s:'Pressed and packed', ct:'32 of 32 items checked', cd:'Sealed with the count on the bag' },
   { t:'Out for delivery', d:'Your rider is on the way with an arrival window.', ic:'bike', s:'Out for delivery', ct:'Tunde is 12 minutes away', cd:'Arriving between 10am and 12pm' },
@@ -381,7 +381,7 @@ const USES = [
 ];
 const HL = [
   ['img/bts-van6.jpg','Counted at your door.','Your rider counts every piece with you before leaving, and the full list lands on WhatsApp straight away. No weighing, no guessing.','Pickup · Tue 8:14 am','Counting at pickup','Washday driver handing a basket of clean laundry to a customer at a cobalt van'],
-  ['img/bts-tag.jpg','Tagged and counted again.','Every piece gets a QR tag tied to you. We count again at the studio and before delivery, and the final number is printed on your sealed bag.','Studio · Lekki · 10:02','Tagging','Washday technician attaching a QR tag to a folded shirt'],
+  ['img/bts-tag.jpg','Tagged and counted again.','Every piece gets a QR tag tied to you. We count again at the studio and before delivery, and the final number is printed on your sealed bag.','Studio · Yaba · 10:02','Tagging','Washday technician attaching a QR tag to a folded shirt'],
   ['img/bts-wash.jpg','Never mixed with anyone else&rsquo;s clothes.','Your clothes go into a machine on their own, never in a shared load with other customers. Your detergent and folding preferences are saved and used every time.','Your clothes · WD-1042','Washing','Technician loading one customer bag into its own machine'],
   ['img/woman.jpg','Backed in writing.','Lost or damaged? We pay you back on a published scale, and every complaint gets a reply within 24 hours.','Delivered · Thu 10:41 am','Guarantee','A customer receiving her clean laundry at the door']
 ];
@@ -407,7 +407,7 @@ const ACCS = [
 function viewHome(){
   const u = me(); const tab = UI.svc2 || 'wash'; const S = SVC[tab]; const acc = UI.acc ?? 0;
   const open = CONFIG.areas.filter(a=>a.open).map(a=>a.name);
-  const marqItems = ['◐ Lekki Phase 1','◑ Yaba','48-hour return','Every item tagged','◒ Ikoyi · soon','Paystack','◓ Surulere · soon','WhatsApp updates','◐ Ikeja GRA · soon'];
+  const marqItems = ['◐ Yaba','◑ Surulere','48-hour return','Every item tagged','◒ Ikeja','Paystack','◓ Lekki · soon','WhatsApp updates','◐ Victoria Island · soon'];
   return `
   ${isFounding()?`<div class="annc">Founding members get ${Math.round(CONFIG.foundingDiscount*100)}% off.<a href="#/subscribe">Claim yours</a></div>`:''}
   ${siteHeader()}
@@ -617,7 +617,7 @@ function viewSubscribeOld(){
     <form data-form="sub-address" class="card-b" novalidate style="margin-top:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px">
       <label class="field">Area<select class="input" name="area">${openAreas.map(a=>`<option ${a.name===s.area?'selected':''}>${a.name}</option>`).join('')}</select></label>
       <label class="field">Address label<select class="input" name="label">${['Home','Office','Other'].map(x=>`<option ${x===s.label?'selected':''}>${x}</option>`).join('')}</select></label>
-      <label class="field" style="grid-column:1/-1">Street address<input class="input" name="street" autocomplete="street-address" value="${esc(s.street)}" placeholder="12 Admiralty Way"></label>
+      <label class="field" style="grid-column:1/-1">Street address<input class="input" name="street" autocomplete="street-address" value="${esc(s.street)}" placeholder="12 Herbert Macaulay Way"></label>
       <label class="field">Estate, building or flat<input class="input" name="building" value="${esc(s.building)}" placeholder="Flat 3B, Palm Court"></label>
       <label class="field">Nearest landmark<input class="input" name="landmark" value="${esc(s.landmark)}" placeholder="Opposite the filling station"></label>
       <label class="field" style="grid-column:1/-1">Notes for the rider (gate, security, who hands over the bag)<textarea class="input" name="notes" rows="3" placeholder="Tell security it's ${CONFIG.brand}.">${esc(s.notes)}</textarea></label>
@@ -1036,21 +1036,14 @@ function viewBillingOld(){
 /* ---------- Staff console ---------- */
 function viewStaff(){
   if (!UI.staff){
-    return `<div class="authwrap"><div class="authside"><img src="${IMG.tagging}" alt=""><a class="logo" href="#/" style="color:#fff">${LOGO('#fff')}<span>${CONFIG.brand}</span></a><h1 class="h1" style="font-size:clamp(34px,4vw,54px);color:#fff">Operations console</h1></div>
-      <div class="authmain"><button type="button" class="st-back" data-act="go-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Back</button><form data-form="staff-pin" style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:16px">
-      <h2 class="flowh1">Staff login</h2><p class="muted">Enter the staff PIN to manage pickups and orders.</p>
-      <label class="field">Staff PIN<input class="input" name="pin" type="password" inputmode="numeric" autocomplete="off"></label>
-      ${UI.staffErr?'<p class="err" role="alert">Wrong PIN.</p>':''}
-      <button class="btn btn-dark btn-lg">Open console</button>
-      <p class="demo-note">Demo PIN: <b>${CONFIG.staffPin}</b>. Replace with real staff accounts before launch.</p>
-    </form></div></div>`;
+    return staffLogin('Operations','Sign in to manage pickups, orders and customers.','Open console');
   }
   const f = UI.sfilter || 'open';
   const list = DB.orders.filter(o=> f==='all' ? true : f==='open' ? (o.status<6 && !o.cancelled) : f==='issues' ? (o.issue&&o.issue.status==='open') : o.date===iso(today())).sort((a,b)=>a.date.localeCompare(b.date)||a.window-b.window);
   const users = Object.values(DB.users); const subs = users.filter(u=>u.plan && u.status!=='cancelled');
   const mrr = subs.filter(u=>u.status==='active').reduce((s,u)=>s+plan(u).price,0);
   return `<div style="min-height:100vh;background:var(--app)">
-    <header style="background:var(--ink);color:#fff"><div class="wrap between" style="padding-top:14px;padding-bottom:14px"><a class="logo" href="#/" style="color:#fff">${LOGO('#4C93D1')}<span>${CONFIG.brand} · Operations</span></a><div class="row" style="gap:8px"><a class="btn btn-ghost btn-sm" href="#/">← Website</a><a class="btn btn-ghost btn-sm" href="#/staff/customers">Customers</a><a class="btn btn-ghost btn-sm" href="#/scan">Tag station</a><button class="btn btn-ghost btn-sm" data-act="staff-export">Export CSV</button><button class="btn btn-ghost btn-sm" data-act="staff-out">Lock</button></div></div></header>
+    ${staffBar('orders')}
     <main class="wrap" style="padding-top:28px;padding-bottom:64px">
       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
         <div class="stat"><p class="xs soft">Active subscribers</p><b>${subs.filter(u=>u.status==='active').length}</b></div>
@@ -1329,14 +1322,7 @@ function viewScan(arg){
   try{ if(!UI.staff && localStorage.getItem('wd_staff')) UI.staff=true; if(UI.staff) localStorage.setItem('wd_staff','1'); }catch(e){}
   if(arg && UI.tagArg!==arg){ UI.tagArg=arg; UI.tagCode=normTag(arg); }
   if(!UI.staff){
-    return `<div class="authwrap"><div class="authside"><img src="img/tagging.jpg" alt=""><a class="logo" href="#/" style="color:#fff">${LOGO('#fff')}<span>${CONFIG.brand}</span></a><h1 class="h1" style="font-size:clamp(34px,4vw,54px);color:#fff">Tag station</h1></div>
-      <div class="authmain"><button type="button" class="st-back" data-act="go-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Back</button><form data-form="staff-pin" style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:16px">
-      <h2 class="flowh1">Staff login</h2><p class="muted">Enter the staff PIN to scan tags and register clothes.${UI.tagCode?` You scanned <b>${esc(UI.tagCode)}</b>.`:''}</p>
-      <label class="field">Staff PIN<input class="input" name="pin" type="password" inputmode="numeric" autocomplete="off"></label>
-      ${UI.staffErr?'<p class="err" role="alert">Wrong PIN.</p>':''}
-      <button class="btn btn-dark btn-lg">Open tag station</button>
-      <p class="demo-note">Demo PIN: <b>${CONFIG.staffPin}</b>. Replace with real staff accounts before launch.</p>
-    </form></div></div>`;
+    return staffLogin('Tag station','Sign in to scan tags and register clothes.'+(UI.tagCode?' You scanned <b>'+esc(UI.tagCode)+'</b>.':''),'Open tag station');
   }
   const code=UI.tagCode; let T=code?DB.tags[code]:null; if(T&&T.reserved){ if(!UI.tagForm||UI.tagForm.resv!==code) UI.tagForm={type:'Shirt',phone:T.phone,newc:false,resv:code}; UI.dirPhone=T.phone; T=null; } const F=UI.tagForm||(UI.tagForm={type:'Shirt',phone:UI.dirPhone||'',newc:false});
   const dir=UI.dirPhone||(T&&T.phone)||''; const items=dir?custItems(dir):[]; const du=DB.users[dir];
@@ -1359,7 +1345,7 @@ function viewScan(arg){
         <div class="row" style="gap:8px"><button class="btn btn-dark btn-lg">Register item</button><button type="button" class="btn btn-light btn-lg" data-act="tag-next">Cancel</button></div>
       </form>`;
   return `<div class="ts" style="min-height:100vh;background:var(--app)">
-    <header style="background:var(--ink);color:#fff"><div class="wrap between" style="padding-top:14px;padding-bottom:14px"><a class="logo" href="#/" style="color:#fff">${LOGO('#4C93D1')}<span>${CONFIG.brand} · Tag station</span></a><div class="row" style="gap:8px"><button class="btn btn-ghost btn-sm" data-act="tag-print">Print new tags</button><a class="btn btn-ghost btn-sm" href="#/staff">Orders console</a></div></div></header>
+    ${staffBar('scan')}
     <main class="wrap" style="padding-top:28px;padding-bottom:64px">
       <div class="ts-grid">
         <section class="card ts-left">
@@ -1532,7 +1518,7 @@ function viewSubscribe(){
       <div class="ob-areas">${areas.map(a=>`<button type="button" class="ob-chip ${a.name===s.area?'on':''}" ${a.open?`data-ob="set" data-k="area" data-v="${esc(a.name)}"`:'disabled'} aria-pressed="${a.name===s.area}">${esc(a.name)}${a.open?'':'<small>Soon</small>'}</button>`).join('')}</div></section>
     <section class="ob-card"><div class="ob-row"><h2 class="ob-st">Address</h2><button type="button" class="ob-locate" data-ob="locate">${I.pin||''}<span>Use my location</span></button></div>
       ${obSeg('label',['Home','Office','Other'],s.label)}
-      <div class="ob-fieldwrap"><label class="ob-field"><span>Street address</span><input data-sb="street" autocomplete="off" value="${esc(s.street)}" placeholder="e.g. 12 Admiralty Way, Lekki Phase 1"></label><div class="ob-sugg" hidden></div></div>
+      <div class="ob-fieldwrap"><label class="ob-field"><span>Street address</span><input data-sb="street" autocomplete="off" value="${esc(s.street)}" placeholder="e.g. 24 Herbert Macaulay Way, Yaba"></label><div class="ob-sugg" hidden></div></div>
       <div class="ob-2"><label class="ob-field"><span>House, flat or estate</span><input data-sb="building" value="${esc(s.building)}" placeholder="Flat 3B, Palm Court Estate"></label>
       <label class="ob-field"><span>Nearest landmark</span><input data-sb="landmark" value="${esc(s.landmark)}" placeholder="Opposite the filling station"></label></div>
       ${obMap(s)}</section>
@@ -1794,7 +1780,7 @@ function viewCustomers(){
       <label class="ob-field"><span>Full name</span><input name="name" required placeholder="Adaeze Okafor"></label>
       <label class="ob-field"><span>Phone number</span><input name="phone" type="tel" inputmode="tel" required placeholder="0803 000 0000"></label>
       <label class="ob-field"><span>Area</span><select name="area">${areas.map(a=>`<option>${esc(a)}</option>`).join('')}<option>Other</option></select></label>
-      <label class="ob-field cu-wide"><span>Street address</span><input name="street" required placeholder="12 Admiralty Way"></label>
+      <label class="ob-field cu-wide"><span>Street address</span><input name="street" required placeholder="12 Herbert Macaulay Way"></label>
       <label class="ob-field"><span>House, flat or estate</span><input name="building" placeholder="Flat 3B, Palm Court"></label>
       <label class="ob-field"><span>Nearest landmark</span><input name="landmark" placeholder="Opposite the filling station"></label>
       <div class="cu-count"><span>Tags to print</span><div class="sq-step"><button type="button" data-cu="n" data-n="-5" aria-label="Fewer">−</button><output>${C.n}</output><button type="button" data-cu="n" data-n="5" aria-label="More">+</button></div></div>
@@ -1808,9 +1794,7 @@ function viewCustomers(){
         ${tg.filter(t=>!t.reserved).length?`<div class="cu-items">${tg.filter(t=>!t.reserved).map(t=>`<div class="cu-it">${t.photo?`<img src="${t.photo}" alt="">`:'<span class="cu-ph"></span>'}<div><b>${esc(t.type)}${t.color?' · '+esc(t.color):''}</b><span>${t.code} · ${t.out?'Counted out':'In studio'}</span></div></div>`).join('')}</div>`:'<p class="cu-empty">No items registered yet. Tags are ready to scan at pickup.</p>'}
         ${tg.filter(t=>t.reserved).length?`<p class="cu-spare">Spare tags: ${tg.filter(t=>t.reserved).map(t=>t.code).join(', ')}</p>`:''}</div>`:''}</div>`; }).join('');
   return `<div class="ws-staff">
-    <header class="st-bar"><div class="st-l"><button type="button" class="st-back" data-act="go-home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Website</button><a class="ws-logo" href="#/">${LOGO()}<span>washday</span><em>Operations</em></a></div>
-      <nav class="st-nav"><a href="#/staff">Orders</a><a href="#/staff/customers" class="on">Customers</a><a href="#/scan">Tag station</a></nav>
-      <button class="b-link" data-act="staff-out">Lock</button></header>
+    ${staffBar('customers')}
     <main class="st-main">
       <div class="d-head"><div><p class="d-date">${list.length} customer${list.length===1?'':'s'} · ${Object.keys(DB.tags).length} tags issued</p><h1 class="d-h1">Customers</h1></div><button class="d-cta" data-cu="open">${I.plus}<span>New customer</span></button></div>
       ${form}
@@ -1842,3 +1826,24 @@ setInterval(function(){ if(document.getElementById('cuQ')&&UI.cuQ) cuFilter(); }
 var NAV_N=0; window.addEventListener('hashchange',function(){NAV_N++;});
 document.addEventListener('click',function(e){ var b=e.target.closest('[data-act="go-back"],[data-act="go-home"]'); if(!b) return; e.preventDefault(); e.stopPropagation();
   if(b.dataset.act==='go-back' && NAV_N>0){ history.back(); } else { location.hash='#/'; } },true);
+
+/* ===== v48 · staff login + shared staff bar ===== */
+function backSvg(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>'; }
+function staffLogin(title,sub,cta){
+  return `<div class="sl"><button type="button" class="st-back sl-back" data-act="go-back">${backSvg()}Back</button>
+    <form data-form="staff-pin" class="sl-card" autocomplete="off">
+      <span class="sl-ico">${LOGO()}</span>
+      <p class="sl-eye">Washday ${esc(title)}</p>
+      <h1 class="sl-h">Staff sign in</h1>
+      <p class="sl-sub">${sub}</p>
+      <input class="sl-pin" name="pin" type="password" inputmode="numeric" maxlength="8" placeholder="••••" aria-label="Staff PIN" autofocus>
+      ${UI.staffErr?'<p class="sl-err" role="alert">That PIN is not right. Try again.</p>':''}
+      <button class="sl-go">${esc(cta)}</button>
+      <p class="sl-demo">Demo PIN ${CONFIG.staffPin}</p>
+    </form></div>`;
+}
+function staffBar(on){
+  return `<header class="st-bar"><div class="st-l"><button type="button" class="st-back" data-act="go-home">${backSvg()}Website</button><a class="ws-logo" href="#/">${LOGO()}<span>washday</span><em>Operations</em></a></div>
+    <nav class="st-nav"><a href="#/staff" class="${on==='orders'?'on':''}">Orders</a><a href="#/staff/customers" class="${on==='customers'?'on':''}">Customers</a><a href="#/scan" class="${on==='scan'?'on':''}">Tag station</a></nav>
+    <div class="st-r">${on==='orders'?'<button class="b-link" data-act="staff-export">Export</button>':''}${on==='scan'?'<button class="b-link" data-act="tag-print">Print tags</button>':''}<button class="b-link" data-act="staff-out">Lock</button></div></header>`;
+}
