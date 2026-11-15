@@ -1037,7 +1037,7 @@ function viewBillingOld(){
 function viewStaff(){
   if (!UI.staff){
     return `<div class="authwrap"><div class="authside"><img src="${IMG.tagging}" alt=""><a class="logo" href="#/" style="color:#fff">${LOGO('#fff')}<span>${CONFIG.brand}</span></a><h1 class="h1" style="font-size:clamp(34px,4vw,54px);color:#fff">Operations console</h1></div>
-      <div class="authmain"><form data-form="staff-pin" style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:16px">
+      <div class="authmain"><button type="button" class="st-back" data-act="go-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Back</button><form data-form="staff-pin" style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:16px">
       <h2 class="flowh1">Staff login</h2><p class="muted">Enter the staff PIN to manage pickups and orders.</p>
       <label class="field">Staff PIN<input class="input" name="pin" type="password" inputmode="numeric" autocomplete="off"></label>
       ${UI.staffErr?'<p class="err" role="alert">Wrong PIN.</p>':''}
@@ -1050,7 +1050,7 @@ function viewStaff(){
   const users = Object.values(DB.users); const subs = users.filter(u=>u.plan && u.status!=='cancelled');
   const mrr = subs.filter(u=>u.status==='active').reduce((s,u)=>s+plan(u).price,0);
   return `<div style="min-height:100vh;background:var(--app)">
-    <header style="background:var(--ink);color:#fff"><div class="wrap between" style="padding-top:14px;padding-bottom:14px"><a class="logo" href="#/" style="color:#fff">${LOGO('#4C93D1')}<span>${CONFIG.brand} · Operations</span></a><div class="row" style="gap:8px"><a class="btn btn-ghost btn-sm" href="#/staff/customers">Customers</a><a class="btn btn-ghost btn-sm" href="#/scan">Tag station</a><button class="btn btn-ghost btn-sm" data-act="staff-export">Export CSV</button><button class="btn btn-ghost btn-sm" data-act="staff-out">Lock</button></div></div></header>
+    <header style="background:var(--ink);color:#fff"><div class="wrap between" style="padding-top:14px;padding-bottom:14px"><a class="logo" href="#/" style="color:#fff">${LOGO('#4C93D1')}<span>${CONFIG.brand} · Operations</span></a><div class="row" style="gap:8px"><a class="btn btn-ghost btn-sm" href="#/">← Website</a><a class="btn btn-ghost btn-sm" href="#/staff/customers">Customers</a><a class="btn btn-ghost btn-sm" href="#/scan">Tag station</a><button class="btn btn-ghost btn-sm" data-act="staff-export">Export CSV</button><button class="btn btn-ghost btn-sm" data-act="staff-out">Lock</button></div></div></header>
     <main class="wrap" style="padding-top:28px;padding-bottom:64px">
       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
         <div class="stat"><p class="xs soft">Active subscribers</p><b>${subs.filter(u=>u.status==='active').length}</b></div>
@@ -1330,7 +1330,7 @@ function viewScan(arg){
   if(arg && UI.tagArg!==arg){ UI.tagArg=arg; UI.tagCode=normTag(arg); }
   if(!UI.staff){
     return `<div class="authwrap"><div class="authside"><img src="img/tagging.jpg" alt=""><a class="logo" href="#/" style="color:#fff">${LOGO('#fff')}<span>${CONFIG.brand}</span></a><h1 class="h1" style="font-size:clamp(34px,4vw,54px);color:#fff">Tag station</h1></div>
-      <div class="authmain"><form data-form="staff-pin" style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:16px">
+      <div class="authmain"><button type="button" class="st-back" data-act="go-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Back</button><form data-form="staff-pin" style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:16px">
       <h2 class="flowh1">Staff login</h2><p class="muted">Enter the staff PIN to scan tags and register clothes.${UI.tagCode?` You scanned <b>${esc(UI.tagCode)}</b>.`:''}</p>
       <label class="field">Staff PIN<input class="input" name="pin" type="password" inputmode="numeric" autocomplete="off"></label>
       ${UI.staffErr?'<p class="err" role="alert">Wrong PIN.</p>':''}
@@ -1808,7 +1808,7 @@ function viewCustomers(){
         ${tg.filter(t=>!t.reserved).length?`<div class="cu-items">${tg.filter(t=>!t.reserved).map(t=>`<div class="cu-it">${t.photo?`<img src="${t.photo}" alt="">`:'<span class="cu-ph"></span>'}<div><b>${esc(t.type)}${t.color?' · '+esc(t.color):''}</b><span>${t.code} · ${t.out?'Counted out':'In studio'}</span></div></div>`).join('')}</div>`:'<p class="cu-empty">No items registered yet. Tags are ready to scan at pickup.</p>'}
         ${tg.filter(t=>t.reserved).length?`<p class="cu-spare">Spare tags: ${tg.filter(t=>t.reserved).map(t=>t.code).join(', ')}</p>`:''}</div>`:''}</div>`; }).join('');
   return `<div class="ws-staff">
-    <header class="st-bar"><a class="ws-logo" href="#/">${LOGO()}<span>washday</span><em>Operations</em></a>
+    <header class="st-bar"><div class="st-l"><button type="button" class="st-back" data-act="go-home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Website</button><a class="ws-logo" href="#/">${LOGO()}<span>washday</span><em>Operations</em></a></div>
       <nav class="st-nav"><a href="#/staff">Orders</a><a href="#/staff/customers" class="on">Customers</a><a href="#/scan">Tag station</a></nav>
       <button class="b-link" data-act="staff-out">Lock</button></header>
     <main class="st-main">
@@ -1837,3 +1837,8 @@ document.addEventListener('submit',function(e){ const f=e.target; if(f.dataset.f
   else DB.users[phone]={phone:phone,name:v.name.trim(),created:Date.now(),walkin:true,plan:null,status:'active',joined:iso(today()),addresses:[addr],bills:[],notifs:{}};
   const C=UI.cust; const codes=genTags(phone,C.n); C.open=false; C.sel=phone; save(); rerender(); custSheet(phone,codes); toast((ex?'Updated ':'Added ')+v.name.trim()+' · '+codes.length+' tags ready', true); });
 setInterval(function(){ if(document.getElementById('cuQ')&&UI.cuQ) cuFilter(); },600);
+
+/* back navigation */
+var NAV_N=0; window.addEventListener('hashchange',function(){NAV_N++;});
+document.addEventListener('click',function(e){ var b=e.target.closest('[data-act="go-back"],[data-act="go-home"]'); if(!b) return; e.preventDefault(); e.stopPropagation();
+  if(b.dataset.act==='go-back' && NAV_N>0){ history.back(); } else { location.hash='#/'; } },true);
