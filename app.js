@@ -208,6 +208,68 @@ const SI = {
   layers:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg>`,
   zip:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 9h16"/><path d="M12 9v3"/></svg>`
 };
+const LTN = [
+  ['Picked up.','6.4 kg weighed at your door.','8:12 AM'],
+  ['Tagged and counted.','32 items are now tagged to you.','9:05 AM'],
+  ['Pressed and packed.','32 of 32 items checked and sealed.','Wed'],
+  ['On the way.','Tunde is 12 minutes away.','now']
+];
+const LT_MAP = `<svg class="lt-map" viewBox="0 0 320 640" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <defs>
+    <linearGradient id="ltW" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#CFE6FA"/><stop offset="1" stop-color="#B7D9F6"/></linearGradient>
+    <filter id="ltGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter>
+  </defs>
+  <rect width="320" height="640" fill="#F4F2EE"/>
+  <path d="M0 470 C70 450 120 470 170 498 C225 528 270 520 320 500 L320 640 L0 640Z" fill="url(#ltW)"/>
+  <text x="196" y="586" font-size="10.5" font-style="italic" fill="#6F9CC9" font-family="-apple-system,sans-serif" letter-spacing=".8">Lagos Lagoon</text>
+  <rect x="214" y="196" width="94" height="72" rx="10" fill="#D6EBCB"/>
+  <text x="232" y="236" font-size="9" fill="#6E9A5E" font-family="-apple-system,sans-serif">Lekki Park</text>
+  <g fill="#EAE6DE">
+    <rect x="16" y="22" width="80" height="46" rx="5"/><rect x="16" y="76" width="36" height="58" rx="5"/><rect x="58" y="76" width="38" height="58" rx="5"/>
+    <rect x="126" y="22" width="44" height="50" rx="5"/><rect x="176" y="22" width="60" height="50" rx="5"/><rect x="126" y="80" width="110" height="54" rx="5"/>
+    <rect x="266" y="22" width="44" height="112" rx="5"/>
+    <rect x="16" y="186" width="80" height="60" rx="5"/><rect x="16" y="254" width="80" height="78" rx="5"/>
+    <rect x="126" y="186" width="62" height="64" rx="5"/><rect x="126" y="258" width="62" height="74" rx="5"/>
+    <rect x="214" y="278" width="94" height="54" rx="5"/>
+    <rect x="16" y="366" width="80" height="54" rx="5"/><rect x="126" y="366" width="62" height="60" rx="5"/><rect x="214" y="366" width="94" height="66" rx="5"/>
+  </g>
+  <path d="M-10 300 L330 120" stroke="#F3D98A" stroke-width="15" stroke-linecap="round" opacity=".0"/>
+  <g fill="none" stroke-linecap="round">
+    <g stroke="#E3DED5"><path d="M0 160 H320" stroke-width="18"/><path d="M110 0 V470" stroke-width="16"/><path d="M0 350 H320" stroke-width="14"/><path d="M200 160 V460" stroke-width="12"/><path d="M0 438 H200" stroke-width="11"/><path d="M250 0 V160" stroke-width="12"/><path d="M0 176 H320" stroke-width="0"/></g>
+    <g stroke="#FFFFFF"><path d="M0 160 H320" stroke-width="15"/><path d="M110 0 V470" stroke-width="13"/><path d="M0 350 H320" stroke-width="11"/><path d="M200 160 V460" stroke-width="9"/><path d="M0 438 H200" stroke-width="8"/><path d="M250 0 V160" stroke-width="9"/></g>
+    <path d="M0 74 H110 M110 74 H320 M0 254 H110" stroke="#FFFFFF" stroke-width="5"/>
+  </g>
+  <text x="130" y="163.5" font-size="8.5" font-weight="600" fill="#8E8A82" font-family="-apple-system,sans-serif">Admiralty Way</text>
+  <text x="20" y="353.5" font-size="8" font-weight="600" fill="#8E8A82" font-family="-apple-system,sans-serif">Freedom Way</text>
+  <text x="114" y="300" font-size="8" font-weight="600" fill="#8E8A82" font-family="-apple-system,sans-serif" transform="rotate(-90 114 300)">Admiralty Rd</text>
+  <text x="20" y="118" font-size="9.5" font-weight="700" fill="#A7A29A" font-family="-apple-system,sans-serif" letter-spacing="1.4">LEKKI PHASE 1</text>
+  <path d="M60 438 H110 V160 H250 V98" fill="none" stroke="#2340E8" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" opacity=".18" filter="url(#ltGlow)"/>
+  <path d="M60 438 H110 V300" fill="none" stroke="#A9B4D9" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path id="ltRoute" d="M110 300 V160 H250 V98" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <path class="lt-rt" pathLength="1" d="M110 300 V160 H250 V98" fill="none" stroke="#2340E8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <g transform="translate(60 438)"><circle r="9" fill="#fff" stroke="#A9B4D9" stroke-width="3"/><circle r="3" fill="#A9B4D9"/></g>
+  <g transform="translate(60 458)"><rect x="-38" y="0" width="76" height="18" rx="9" fill="#fff" opacity=".95"/><text y="12.5" text-anchor="middle" font-size="8.5" font-weight="600" fill="#6E6E73" font-family="-apple-system,sans-serif">Washday Studio</text></g>
+  <g transform="translate(250 98)">
+    <circle r="16" fill="#2340E8" opacity=".14"><animate attributeName="r" values="10;26;10" dur="2.6s" repeatCount="indefinite"/><animate attributeName="opacity" values=".22;0;.22" dur="2.6s" repeatCount="indefinite"/></circle>
+    <circle r="11" fill="#fff"/><circle r="8" fill="#1D1D1F"/><path d="M-4 1 L0 -3.5 L4 1 V4 H-4Z" fill="#fff"/>
+    <g transform="translate(0 -34)"><rect x="-44" y="-13" width="88" height="26" rx="13" fill="#1D1D1F"/><path d="M-5 13 L0 19 L5 13Z" fill="#1D1D1F"/><text x="-32" y="4.5" font-size="10" font-weight="600" fill="#fff" font-family="-apple-system,sans-serif">Home</text><text x="32" y="4.5" text-anchor="end" font-size="10" font-weight="700" fill="#9FB0FF" font-family="-apple-system,sans-serif"><tspan class="lt-min">11</tspan> min</text></g>
+  </g>
+  <g>
+    <circle r="22" fill="#2340E8" opacity=".14"><animate attributeName="r" values="16;26;16" dur="2s" repeatCount="indefinite"/></circle>
+    <circle r="14" fill="#fff" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,.25))"/>
+    <circle r="10" fill="#2340E8"/>
+    <path d="M0 -5.5 L4.5 4.5 L0 2 L-4.5 4.5Z" fill="#fff"/>
+    <animateMotion dur="16s" repeatCount="indefinite" rotate="auto" keyPoints="0;1" keyTimes="0;1" calcMode="linear"><mpath href="#ltRoute"/></animateMotion>
+  </g>
+</svg>`;
+const TRK = [
+  { t:'Picked up', d:'Weighed at your door. Weight sent on WhatsApp.', ic:'scale', s:'Picked up', ct:'6.4 kg weighed at your door', cd:'Tunde collected your bag at 8:12am' },
+  { t:'Tagged and counted', d:'Every piece tagged to you and counted in.', ic:'tag', s:'Tagged and counted', ct:'32 items tagged to you', cd:'Counted in at the Lekki studio' },
+  { t:'Washing', d:'Washed on its own, never mixed with other loads.', ic:'drop', s:'Washing', ct:'In the wash · 47 min left', cd:'Your detergent and settings saved' },
+  { t:'Pressed and packed', d:'Ironed, folded, counted again and sealed.', ic:'hanger', s:'Pressed and packed', ct:'32 of 32 items checked', cd:'Sealed with the count on the bag' },
+  { t:'Out for delivery', d:'Your rider is on the way with an arrival window.', ic:'bike', s:'Out for delivery', ct:'Tunde is 12 minutes away', cd:'Arriving between 10am and 12pm' },
+  { t:'Delivered', d:'Confirm the count and rate your load.', ic:'check', s:'Delivered', ct:'Delivered at 10:41am', cd:'Tap to confirm 32 items received' }
+];
 const SVC3 = {
   wash: { label:'Wash & fold', ti:'drop', img:'bagpink', head:'Everyday clothes, done.', sub:'Hand over one bag. Get it back clean, fresh and neatly folded.', price:'Included in every plan',
     rows:[['scale','Weighed at your door','Your rider weighs the bag in front of you and sends the weight on WhatsApp.'],['tag','Every item tagged','Each piece is tagged to you and counted in and out.'],['shield','Never mixed','Your load is washed on its own, with your detergent preferences.']] },
@@ -218,6 +280,22 @@ const SVC3 = {
   bed: { label:'Bedding', ti:'layers', img:'towels', head:'Duvets, sheets and curtains.', sub:'Big items washed properly, without taking over your weekend.', price:`Included on Full House, or ${naira(CONFIG.duvet)} a duvet`,
     rows:[['layers','Washed on their own','Large items get their own cycle and a full dry.'],['shield','Hygienic wash','Hot wash for sheets and towels to keep them truly clean.'],['zip','Sealed and fresh','Folded and returned in a sealed zip bag.']] }
 };
+Object.assign(SI, {
+  back:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>`,
+  share:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>`
+});
+Object.assign(SI, {
+  nav:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5L3.8 10.6c-.8.3-.7 1.4.1 1.6l6.6 1.5 1.5 6.6c.2.8 1.3.9 1.6.1L20.5 3.5z"/></svg>`,
+  bag2:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>`,
+  home:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9H4z"/><path d="M10 20v-5h4v5"/></svg>`,
+  lock:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>`
+});
+Object.assign(SI, { chat:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>` });
+Object.assign(SI, {
+  bike:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17" r="3"/><circle cx="18.5" cy="17" r="3"/><path d="M8.5 17h5l3-6h-4"/><path d="M12.5 11l-2-4H8"/><path d="M15 7h2l1.5 4"/></svg>`,
+  check:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>`,
+  phone:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h3l2 5-2.5 1.5a11 11 0 0 0 6 6L15 14l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>`
+});
 Object.assign(SI, {
   drop:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.4 6 11a6 6 0 0 1-12 0c0-4.6 6-11 6-11z"/></svg>`,
   shield:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg>`
@@ -271,25 +349,42 @@ function viewHome(){
   </section>
 
   <section id="how" class="wrap section">
-    <div class="row" style="gap:clamp(32px,6vw,96px);align-items:center">
-      <div style="flex:1 1 400px;min-width:0">
-        <span class="tag">Live tracking</span>
-        <h2 class="h2">Know where your laundry is, at every step</h2>
-        <p class="lead" style="margin-top:18px">Your rider confirms the weight at your door. You get a message when it's tagged, when it's washing and when it's on the way back. Nothing to chase.</p>
-        <ol style="list-style:none;padding:0;margin:28px 0 0;display:flex;flex-direction:column;gap:14px">${['Choose a plan and a pickup day','We collect, weigh and tag every item','Washed, pressed and counted again','Back at your door within 48 hours'].map((s,i)=>`<li style="display:flex;gap:14px;align-items:center"><span style="width:30px;height:30px;border-radius:50%;background:var(--pink-soft);color:var(--pink-ink);font-weight:600;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none">${i+1}</span><span style="font-weight:500">${s}</span></li>`).join('')}</ol>
-        <a class="btn btn-dark btn-lg" href="#/subscribe" style="margin-top:32px">Get started ${ARR}</a>
+    <div class="lt">
+      <div class="lt-head">
+        <p class="lt-eyebrow">Live tracking</p>
+        <h2 class="lt-h">Watch your laundry<br>come home.</h2>
+        <p class="lt-lead">Every update, from pickup to your doorstep, right on your phone.</p>
       </div>
-      <div class="gcard" style="flex:1 1 440px;min-width:0" aria-hidden="true">
-        <div class="phone" style="max-width:420px;margin:24px auto">
-          <div class="between" style="padding:4px 4px 12px;border-bottom:1px solid #F1E3EC"><span style="width:28px;height:28px;border-radius:50%;background:#F4F4F5;display:flex;align-items:center;justify-content:center">‹</span><b class="small">${CONFIG.brand}</b><span style="width:28px;height:28px;border-radius:50%;background:#F4F4F5;display:flex;align-items:center;justify-content:center">⋯</span></div>
-          <div style="display:flex;flex-direction:column;gap:10px;padding:16px 4px">
-            <div class="bub me">Can you pick up tomorrow morning?</div>
-            <div class="bub them">Booked for Tue 8:00 – 10:00am. Tunde will collect from 12 Admiralty Way.</div>
-            <div class="bub them"><span class="tag" style="margin:0 0 6px;font-size:11px;padding:3px 8px">Picked up</span><br>7.4 kg weighed at your door. 18 items tagged and counted.</div>
-            <div class="bub them"><span class="tag" style="margin:0 0 6px;font-size:11px;padding:3px 8px">On the way</span><br>Your laundry is out for delivery. Arriving 10:00 – 12:00.</div>
+      <div class="lt-stage2">
+        <div class="lt-ph">
+          <div class="lt-glow"></div>
+          <div class="iph lt-iph" aria-hidden="true"><span class="lt-btn-a"></span><span class="lt-btn-b"></span><span class="lt-btn-c"></span>
+            <div class="lt-island"><span class="lt-ia">w</span><span class="lt-ib"><span class="lt-min">11</span> min</span></div>
+            <div class="iph-scr lt-scr">
+              <div class="iph-bar lt-bar"><span>9:41</span><span class="iph-sig"><i></i><i></i><i></i><i></i></span></div>
+              ${LT_MAP}
+              <div class="lt-top"><span class="lt-cb">${SI.back}</span><span class="lt-tp"><span class="lt-live"></span>Order WD-1042</span></div>
+              <div class="lt-mapbtns"><span>${SI.nav}</span></div>
+              <div class="lt-sheet2">
+                <span class="lt-grab"></span>
+                <div class="lt-eta2"><div><p class="lt-k">Arriving in</p><p class="lt-big"><span class="lt-min">11</span><small>min</small></p></div><div class="lt-time"><p class="lt-k">Estimated</p><b>10:52 AM</b><span>Out for delivery</span></div></div>
+                <div class="lt-track"><div class="lt-tline"><i></i></div>
+                  ${[['bag2','Picked up','done'],['drop','Cleaned','done'],['bike','On the way','now'],['home','Delivered','']].map(x=>`<div class="lt-tn ${x[2]}"><span>${SI[x[0]]}</span><em>${x[1]}</em></div>`).join('')}
+                </div>
+                <div class="lt-rc"><span class="lt-av">TA</span><div class="lt-rcn"><b>Tunde A.</b><span>★ 4.9 · Honda Ace · LND 482 KJ</span></div></div>
+                <div class="lt-acts"><span class="lt-a1">${SI.chat}Message Tunde</span><span class="lt-a2">${SI.phone}</span></div>
+              </div>
+            </div>
           </div>
-          <div style="display:flex;gap:8px;align-items:center;background:#F4F4F5;border-radius:12px;padding:10px 12px;color:#A1A1AA;font-size:13px">Type a message<span style="margin-left:auto;width:24px;height:24px;border-radius:7px;background:#2340E8"></span></div>
+          <div class="lt-card c1"><div class="lt-cin lt-noteC"><span class="lt-app">w</span><div><p class="lt-nt"><b>Washday</b><time>8:12 AM</time></p><p class="lt-nb"><b>Picked up.</b> 6.4 kg weighed at your door. Weight sent on WhatsApp.</p></div></div></div>
+          <div class="lt-card c2"><div class="lt-cin lt-la"><div class="lt-la-top"><span class="lt-app sm">w</span><b>Washday</b><span class="lt-la-r"><span class="lt-min">11</span> min</span></div><p class="lt-la-t">Arriving soon</p><div class="lt-la-bar"><span></span><i>${SI.bike}</i></div><div class="lt-la-foot"><span>Out for delivery</span><span>10:52 AM</span></div></div></div>
+          <div class="lt-card c3"><div class="lt-cin lt-mini"><svg class="lt-ring" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" fill="none" stroke="#E3E9FF" stroke-width="5"/><circle class="lt-ringp" cx="22" cy="22" r="18" fill="none" stroke="#2340E8" stroke-width="5" stroke-linecap="round" pathLength="1" transform="rotate(-90 22 22)"/><path d="M15 22.5l4.5 4.5L29 17.5" fill="none" stroke="#2340E8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b>32 of 32 items</b><span>Counted, pressed and sealed</span></div></div></div>
         </div>
+      </div>
+      <div class="lt-feats">
+        <div><span class="lt-fi">${SI.scale}</span><b>Weighed at your door</b><p>The weight lands on WhatsApp before your rider leaves.</p></div>
+        <div><span class="lt-fi">${SI.tag}</span><b>Counted twice</b><p>Every item is counted at pickup and again before delivery.</p></div>
+        <div><span class="lt-fi">${SI.bike}</span><b>Live rider location</b><p>See exactly where your rider is and when they'll arrive.</p></div>
       </div>
     </div>
   </section>
@@ -1047,3 +1142,29 @@ function countModal(o){ modal(`<form data-form="count" data-id="${o.id}" style="
 
 route();
 (function(){ let m=47; setInterval(function(){ m = m<=1 ? 47 : m-1; document.querySelectorAll('.wm-time').forEach(function(el){ el.innerHTML = '0<i>:</i>'+String(m).padStart(2,'0'); }); },60000); })();
+(function(){
+  function setStep(root,i){ const n=TRK.length; i=((i%n)+n)%n; root.dataset.step=i; const t=TRK[i];
+    root.querySelectorAll('.trk-step').forEach((el,k)=>{ el.classList.toggle('on',k===i); el.classList.toggle('done',k<i); });
+    root.querySelectorAll('.iph-prog i').forEach((el,k)=>el.classList.toggle('on',k<=i));
+    const q=s=>root.querySelector(s);
+    if(q('.iph-status')) q('.iph-status').textContent=t.s;
+    if(q('.iph-ic')) q('.iph-ic').innerHTML=SI[t.ic];
+    if(q('.iph-ct')) q('.iph-ct').textContent=t.ct;
+    if(q('.iph-cd')) q('.iph-cd').textContent=t.cd;
+    const r=q('.iph-rider'); if(r){ r.classList.add('show'); const rs=r.querySelector('.iph-rs'); if(rs) rs.textContent = i>=5 ? 'Delivered your bag' : i===4 ? 'On the way to you' : 'Collected your bag'; }
+    const st=root.querySelector('.trk-steps'); if(st) st.style.setProperty('--p', (i/(TRK.length-1)).toFixed(3));
+    const TM=['Tue 8:12am','Tue 9:05am','Tue 10:30am','Wed 2:15pm','Thu 9:48am','Thu 10:41am'];
+    const f=q('.iph-feed'); if(f){ const ev=[]; for(let k=i;k>=Math.max(0,i-2);k--) ev.push(`<li class="${k===i?'now':''}"><span>${TRK[k].s}</span><time>${TM[k]}</time></li>`); f.innerHTML=ev.join(''); }
+    const c=q('.iph-card'); if(c){ c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop'); }
+  }
+  document.addEventListener('click',function(e){ const b=e.target.closest('.trk-step'); if(!b) return; const root=b.closest('.trk'); root.dataset.hold=Date.now(); setStep(root,+b.dataset.i); });
+  new MutationObserver(function(){ document.querySelectorAll('.trk:not([data-init])').forEach(function(root){ root.dataset.init=1; setStep(root,0); }); }).observe(document.documentElement,{childList:true,subtree:true});
+  document.querySelectorAll('.trk:not([data-init])').forEach(function(root){ root.dataset.init=1; setStep(root,0); });
+  setInterval(function(){ document.querySelectorAll('.trk').forEach(function(root){ if(root.dataset.hold && Date.now()-root.dataset.hold<9000) return; setStep(root,(+root.dataset.step||0)+1); }); },3200);
+})();
+(function(){ let m=11; setInterval(function(){ m = m<=3 ? 12 : m-1; document.querySelectorAll('.lt-min').forEach(function(el){ el.textContent=m; }); document.querySelectorAll('.lt-la-bar span').forEach(function(el){ el.style.width=(100-m*5)+'%'; }); },7000); })();
+(function(){
+  var io = ('IntersectionObserver' in window) ? new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }); },{threshold:.22}) : null;
+  function hook(){ document.querySelectorAll('.lt-stage2:not([data-io])').forEach(function(el){ el.dataset.io=1; if(io) io.observe(el); else el.classList.add('in'); }); }
+  new MutationObserver(hook).observe(document.documentElement,{childList:true,subtree:true}); hook();
+})();
