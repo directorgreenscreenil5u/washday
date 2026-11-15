@@ -80,7 +80,7 @@ const I = {
   alert: sv('<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/>'),
   star: '<svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>'
 };
-const LOGO = (c1='#1F6FB2') => `<svg width="32" height="32" viewBox="0 0 34 34" aria-hidden="true"><circle cx="12" cy="20" r="10" fill="${c1}"/><circle cx="24" cy="10" r="6" fill="#8CC0E8"/><circle cx="27" cy="24" r="4" fill="#F2A65A"/></svg>`;
+const LOGO = () => `<span class="wm-ic" aria-hidden="true">${SI.appi}</span>`;
 const ARROW = '<span class="arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg></span>';
 
 function toast(msg, ok){ const t=document.createElement('div'); t.className='toast'+(ok?' ok':''); t.textContent=msg; $('#toasts').appendChild(t); setTimeout(()=>t.remove(), 4000); }
@@ -157,7 +157,7 @@ const ARR_UP = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stro
 function siteHeader(){
   const u = me();
   return `<header class="pillnav anav">
-      <a class="wm" href="#/">washday</a>
+      <a class="wm" href="#/" aria-label="Washday home"><span class="wm-ic">${SI.appi}</span><span>washday</span></a>
       <nav class="navlinks" aria-label="Main"><a href="#/home/services">Services</a><a href="#/home/how">How it works</a><a href="#/home/plans">Pricing</a><a href="#/home/uses">Who it's for</a><a href="#/home/faq">Help</a></nav>
       <div class="navcta">
         ${u ? `<a class="btn btn-dark" href="#/app">My account</a>` : `<a class="btn btn-dark" href="#/subscribe">Get started</a><a class="btn btn-light hide-m" href="#/login">Log in</a>`}
@@ -327,7 +327,7 @@ const USES = [
   ['tagging','Businesses','Uniforms, towels and linen for salons, spas, gyms and small hotels, counted in and out every time.','quote']
 ];
 const HL = [
-  ['img/bts-rider3.jpg','Counted at your door.','Your rider counts every piece with you before leaving, and the full list lands on WhatsApp straight away. No weighing, no guessing.','Pickup · Tue 8:14 am','Counting at pickup','Washday rider counting clothes with a customer at her door'],
+  ['img/bts-van.jpg','Counted at your door.','Your rider counts every piece with you before leaving, and the full list lands on WhatsApp straight away. No weighing, no guessing.','Pickup · Tue 8:14 am','Counting at pickup','Washday driver lifting baskets of clean laundry from a cobalt van at a customer home'],
   ['img/bts-tag.jpg','Tagged and counted again.','Every piece gets a QR tag tied to you. We count again at the studio and before delivery, and the final number is printed on your sealed bag.','Studio · Lekki · 10:02','Tagging','Washday technician attaching a QR tag to a folded shirt'],
   ['img/bts-wash.jpg','Never mixed with anyone else&rsquo;s clothes.','Your clothes go into a machine on their own, never in a shared load with other customers. Your detergent and folding preferences are saved and used every time.','Your clothes · WD-1042','Washing','Technician loading one customer bag into its own machine'],
   ['img/woman.jpg','Backed in writing.','Lost or damaged? We pay you back on a published scale, and every complaint gets a reply within 24 hours.','Delivered · Thu 10:41 am','Guarantee','A customer receiving her clean laundry at the door']
@@ -426,10 +426,9 @@ function viewHome(){
         <p class="bs-eye">Behind the scenes</p>
         <h2 class="bs-h">Laundry done properly.<br><span>Counted, tagged and photographed. Every time.</span></h2>
       </div>
-      <div class="hl">
+      <div class="hl ${UI.hlSeen?'seen':''}">
         <div class="hl-track">${HL.map((h,i)=>`<figure class="hl-card c${i} ${(UI.hl||0)===i?'on':''}">
           <div class="hl-media"><img class="hl-img" src="${h[0]}" alt="${h[5]}" loading="lazy"><div class="hl-shade"></div>
-            <span class="hl-chip">${SI.camera}<span>${h[3]}</span></span>
             <div class="hl-ui" aria-hidden="true">${HLUI[i]}</div>
           </div>
           <figcaption class="hl-cap"><p><b>${h[1]}</b> ${h[2]}</p></figcaption>
@@ -485,7 +484,7 @@ function viewHome(){
 
   <footer class="rfoot">
     <div class="row" style="gap:48px;justify-content:space-between">
-      <div style="max-width:340px"><a class="wm" href="#/">washday</a><p class="muted" style="margin-top:14px">Monthly laundry subscription with pickup and delivery in Lagos.</p></div>
+      <div style="max-width:340px"><a class="wm" href="#/" aria-label="Washday home"><span class="wm-ic">${SI.appi}</span><span>washday</span></a><p class="muted" style="margin-top:14px">Monthly laundry subscription with pickup and delivery in Lagos.</p></div>
       <div class="row" style="gap:64px;font-size:15px">
         <div style="display:flex;flex-direction:column;gap:12px"><b style="font-weight:600">Service</b><a href="#/home/services">Services</a><a href="#/home/how">How it works</a><a href="#/home/plans">Pricing</a><a href="#/home/areas">Areas</a></div>
         <div style="display:flex;flex-direction:column;gap:12px"><b style="font-weight:600">Account</b><a href="#/login">Log in</a><a href="#/subscribe">Get started</a><a href="#/app/orders">Track an order</a></div>
@@ -504,7 +503,7 @@ function viewAuth(){
   return `<div class="authwrap">
     <div class="authside">
       <img src="${IMG.moon}" alt="" style="object-position:80% 50%">
-      <a class="wm" href="#/">washday</a>
+      <a class="wm" href="#/" aria-label="Washday home"><span class="wm-ic">${SI.appi}</span><span>washday</span></a>
       <div>
         <div class="glass" style="border-radius:20px;padding:16px 18px;display:flex;gap:14px;align-items:center;max-width:360px;color:var(--ink);margin-bottom:24px"><span style="width:42px;height:42px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;flex:none">${I.van}</span><div><p style="font-weight:600">Out for delivery</p><p class="small" style="color:var(--ink2)">Rider arriving 10:00 – 12:00 today</p></div></div>
         <h1 class="h1" style="font-size:clamp(36px,4vw,56px);max-width:520px;color:#fff">Laundry day, without the laundry.</h1>
@@ -1359,3 +1358,9 @@ document.addEventListener('submit',async function(e){
   setTimeout(check,1500); setInterval(check,45000);
   document.addEventListener('visibilitychange',function(){ if(!document.hidden) check(); });
 })();
+
+/* Highlights micro-interactions */
+function hlNum(){ document.querySelectorAll('.hl.seen .hl-card.on .gx-num b').forEach(function(el){ var t0=performance.now()+650; (function f(t){ var p=Math.max(0,Math.min(1,(t-t0)/900)); el.textContent=Math.round(32*(1-Math.pow(1-p,3))); if(p<1) requestAnimationFrame(f); })(performance.now()); }); }
+(function(){ var o=hlGo; hlGo=function(i,how){ o(i,how); hlNum(); }; })();
+document.addEventListener('click',function(e){ var c=e.target.closest('.hl-card:not(.on)'); if(!c) return; var cs=[].slice.call(c.parentNode.children); hlGo(cs.indexOf(c)); });
+setInterval(function(){ document.querySelectorAll('.hl:not(.seen)').forEach(function(el){ var r=el.getBoundingClientRect(); if(r.top<innerHeight*.7&&r.bottom>innerHeight*.3){ el.classList.add('seen'); UI.hlSeen=1; hlNum(); } }); },250);
