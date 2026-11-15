@@ -1830,17 +1830,29 @@ document.addEventListener('click',function(e){ var b=e.target.closest('[data-act
 /* ===== v48 · staff login + shared staff bar ===== */
 function backSvg(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>'; }
 function staffLogin(title,sub,cta){
-  return `<div class="sl"><button type="button" class="st-back sl-back" data-act="go-back">${backSvg()}Back</button>
-    <form data-form="staff-pin" class="sl-card" autocomplete="off">
-      <span class="sl-ico">${LOGO()}</span>
-      <p class="sl-eye">Washday ${esc(title)}</p>
-      <h1 class="sl-h">Staff sign in</h1>
-      <p class="sl-sub">${sub}</p>
-      <input class="sl-pin" name="pin" type="password" inputmode="numeric" maxlength="8" placeholder="••••" aria-label="Staff PIN" autofocus>
-      ${UI.staffErr?'<p class="sl-err" role="alert">That PIN is not right. Try again.</p>':''}
-      <button class="sl-go">${esc(cta)}</button>
-      <p class="sl-demo">Demo PIN ${CONFIG.staffPin}</p>
-    </form></div>`;
+  return `<div class="authwrap">
+    <div class="authside">
+      <video class="au-vid" src="img/intro.mp4" poster="img/intro-poster.jpg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video><span class="au-shade" aria-hidden="true"></span>
+      <a class="wm" href="#/" aria-label="Washday home"><span class="wm-ic">${SI.appi}</span><span>washday</span></a>
+      <div>
+        <div class="glass" style="border-radius:20px;padding:16px 18px;display:flex;gap:14px;align-items:center;max-width:360px;color:var(--ink);margin-bottom:24px"><span style="width:42px;height:42px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;flex:none">${I.tag||I.van}</span><div><p style="font-weight:600">32 of 32 items counted</p><p class="small" style="color:var(--ink2)">Order WD-1042 · ready to seal</p></div></div>
+        <h1 class="h1" style="font-size:clamp(36px,4vw,56px);max-width:520px;color:#fff">${esc(title)}.</h1>
+        <p style="margin-top:14px;font-size:17px;color:#E2EBF1;max-width:440px">Pickups, orders, customers and tags for the Washday team.</p>
+      </div>
+    </div>
+    <div class="authmain"><div style="width:100%;max-width:420px">
+      <a class="logo" href="#/" style="margin-bottom:32px">${LOGO()}<span>${CONFIG.brand}</span></a>
+      <form data-form="staff-pin" novalidate autocomplete="off" style="display:flex;flex-direction:column;gap:16px">
+        <button type="button" class="linkbtn" data-act="go-back" style="align-self:flex-start">← Back</button>
+        <div><h2 class="flowh1">Staff sign in</h2><p class="muted" style="margin-top:8px">${sub}</p></div>
+        <label class="field">Staff PIN<input class="input" name="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="••••"></label>
+        ${UI.staffErr?'<p class="err" role="alert">That PIN is not right. Try again.</p>':''}
+        <button class="btn btn-dark btn-lg btn-block">${esc(cta)} ${ARROW}</button>
+        <p class="xs soft" style="text-align:center">Demo PIN ${CONFIG.staffPin}. Each staff member gets their own login before launch.</p>
+      </form>
+      <p class="xs soft" style="text-align:center;margin-top:36px">For Washday staff only. <a href="#/">Back to home</a></p>
+    </div></div>
+  </div>`;
 }
 function staffBar(on){
   return `<header class="st-bar"><div class="st-l"><button type="button" class="st-back" data-act="go-home">${backSvg()}Website</button><a class="ws-logo" href="#/">${LOGO()}<span>washday</span><em>Operations</em></a></div>
