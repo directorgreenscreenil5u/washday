@@ -957,7 +957,7 @@ function viewOrders(){
 }
 
 /* ---------- Billing ---------- */
-function viewBilling(){
+function viewBillingOld(){
   const u = me(); const p = plan(u); const c = cycleOf(u);
   const B = UI.bill || (UI.bill = { panel:null, pick:u.plan, month:null });
   const commitEnd = u.commitEnd ? parse(u.commitEnd) : null; const committed = commitEnd && commitEnd > today();
@@ -1608,7 +1608,7 @@ function shell(active, inner){
   </div>`;
 }
 function dRing(v,max,label){ const pc=max?Math.min(1,v/max):0, r=34, c=2*Math.PI*r; return `<svg class="d-ring" viewBox="0 0 80 80" aria-label="${label}"><circle cx="40" cy="40" r="${r}" fill="none" stroke="#ECEDF2" stroke-width="7"/><circle cx="40" cy="40" r="${r}" fill="none" stroke="#2340E8" stroke-width="7" stroke-linecap="round" stroke-dasharray="${(c*pc).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 40 40)"/></svg>`; }
-function viewDashboard(){
+function viewDashboardV2(){
   const u=me(); const p=plan(u); const c=cycleOf(u); const orders=myOrders();
   const active=orders.filter(o=>o.status>=1&&o.status<6&&!o.cancelled).sort((a,b)=>a.date.localeCompare(b.date))[0];
   const upcoming=orders.filter(o=>o.status===0&&!o.cancelled).sort((a,b)=>a.date.localeCompare(b.date));
@@ -1658,4 +1658,93 @@ function viewDashboard(){
         </dl></section>
     </div>
     <section class="d-refer"><div><h2>Give a free pickup, get one</h2><p>When a friend subscribes with your code, you both get a free pickup.</p></div><div class="d-code"><b>${esc(u.referral||'WASH-'+u.phone.slice(-4))}</b><button data-act="copy" data-v="${esc(u.referral||'')}">Copy</button></div></section>`);
+}
+
+/* ===== Plan & billing v2 ===== */
+function bSeg(key,opts,val){ return `<div class="ob-seg" role="radiogroup">${opts.map(o=>`<button type="button" role="radio" aria-checked="${o===val}" class="${o===val?'on':''}" data-pf="${key}" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div>`; }
+function viewBilling(){
+  const u=me(); const p=plan(u); const c=cycleOf(u);
+  const B=UI.bill||(UI.bill={panel:null,pick:u.plan,month:null});
+  const commitEnd=u.commitEnd?parse(u.commitEnd):null; const committed=commitEnd&&commitEnd>today();
+  const nextAmt=(u.pendingPlan?CONFIG.plans[u.pendingPlan].price:p.price)+(u.pendingCharges||0);
+  const pauseOpts=[1,2,3].map(n=>iso(addMonths(c.start,n)).slice(0,7));
+  const pr=u.prefs||{}; const x=`<button class="b-x" data-act="bill-panel" data-p="" aria-label="Close">×</button>`;
+  const tags=[u.founding?'<span class="b-tag b-tag-g">Founding member</span>':'', u.status!=='active'?`<span class="b-tag">${u.status==='paused'?'Paused':'Cancelled'}</span>`:'', u.pauseMonth&&u.status==='active'?`<span class="b-tag">Pausing ${MON_L[Number(u.pauseMonth.slice(5))-1]}</span>`:'', u.pendingPlan?`<span class="b-tag">Switching to ${CONFIG.plans[u.pendingPlan].name} on ${fmt(c.renew)}</span>`:''].join('');
+  const panel = B.panel==='change'?`<section class="b-panel"><div class="b-ph"><h2>Change plan</h2>${x}</div>
+      <div class="ob-plans" style="margin-top:4px">${PLAN_KEYS.map(k=>{const q=CONFIG.plans[k],on=B.pick===k;return `<button type="button" class="ob-plan ${on?'on':''}" data-act="bill-pick" data-k="${k}"><span class="ob-radio"></span><span class="ob-pm"><span class="ob-pn">${q.name}${k===u.plan?'<em>Current</em>':''}</span><span class="ob-pd">${q.items} clothes · ${q.pickups} pickup${q.pickups>1?'s':''} a month</span></span><span class="ob-pp"><b>${naira(q.price)}</b><small>a month</small></span></button>`;}).join('')}</div>
+      <div class="b-pf"><p>${B.pick===u.plan?'This is your current plan.':CONFIG.plans[B.pick].price>p.price?`Starts now. ${naira(Math.round((CONFIG.plans[B.pick].price-p.price)*Math.max(0,(c.renew-today())/(c.renew-c.start))))} for the rest of this cycle.`:`Starts on ${fmt(c.renew)}.`}</p><button class="b-btn" data-act="bill-apply" ${B.pick===u.plan?'disabled':''}>Confirm</button></div></section>`
+    : B.panel==='pause'?`<section class="b-panel"><div class="b-ph"><h2>Pause a month</h2>${x}</div><p class="b-help">No pickups and no charge that month. One pause a year.</p>
+      ${u.pausedYear===String(today().getFullYear())?`<p class="b-note">You've used this year's pause.</p>`:`<div class="ob-areas">${pauseOpts.map(m=>`<button class="ob-chip ${B.month===m?'on':''}" data-act="bill-month" data-m="${m}">${MON_L[Number(m.slice(5))-1]} ${m.slice(0,4)}</button>`).join('')}</div><div class="b-pf"><p></p><button class="b-btn" data-act="bill-pause" ${B.month?'':'disabled'}>Pause ${B.month?MON_L[Number(B.month.slice(5))-1]:''}</button></div>`}</section>`
+    : B.panel==='day'?`<section class="b-panel"><div class="b-ph"><h2>Pickup day and time</h2>${x}</div>
+      <div class="ob-days">${[1,2,3,4,5,6].map(d=>`<button class="ob-day ${(B.day??u.pickupDay)===d?'on':''}" data-act="bill-day" data-d="${d}"><b>${DOW[d]}</b></button>`).join('')}</div>
+      <div class="ob-wins" style="margin-top:12px">${CONFIG.windows.map((w,i)=>`<button class="ob-chip ${(B.win??u.window)===i?'on':''}" data-act="bill-win" data-w="${i}">${w}</button>`).join('')}</div>
+      <div class="b-pf"><p></p><button class="b-btn" data-act="bill-dayapply">Save</button></div></section>`
+    : B.panel==='prefs'?`<section class="b-panel"><div class="b-ph"><h2>Laundry preferences</h2>${x}</div>
+      <div class="ob-pref"><div><b>Everyday wear</b></div>${bSeg('everyday',['Folded','On hangers'],pr.everyday||'Folded')}</div>
+      <div class="ob-pref"><div><b>Shirts and dresses</b></div>${bSeg('shirts',['On hangers','Folded'],pr.shirts||'On hangers')}</div>
+      ${u.plan==='fresh'?'':`<div class="ob-pref"><div><b>Ironing</b></div>${bSeg('iron',['Everything','Shirts and trousers','No ironing'],pr.iron||'Everything')}</div>`}
+      <div class="ob-pref"><div><b>Detergent</b></div>${bSeg('detergent',['Standard','Unscented'],pr.detergent||'Standard')}</div>
+      <div class="ob-pref"><div><b>Fabric softener</b></div>${bSeg('softener',['Yes','No'],pr.softener===false?'No':'Yes')}</div>
+      ${u.plan==='fresh'?'':`<div class="ob-pref"><div><b>Starch</b></div>${bSeg('starch',['None','Light','Firm'],pr.starch||'None')}</div>`}
+      <div class="b-pf"><p>Saved automatically.</p><button class="b-btn" data-act="bill-panel" data-p="">Done</button></div></section>` : '';
+  const row=(l,v,act)=>`<div class="b-row"><span>${l}</span><b>${v}</b>${act||''}</div>`;
+  return shell('app/billing', `
+    <h1 class="d-h1">Plan &amp; billing</h1>
+    <section class="b-plan">
+      <div class="b-pl"><div class="b-tags">${tags}</div><p class="d-k">Your plan</p><h2>${p.name}</h2><p class="b-price">${naira(p.price)}<span>/month</span></p><p class="b-meta">${p.items} clothes · ${p.pickups} pickups · ${p.pickups} deliveries</p></div>
+      <div class="b-acts">${u.status==='cancelled'?`<button class="b-btn" data-act="restart">Restart plan</button>`:`<button class="b-btn" data-act="bill-panel" data-p="change">Change plan</button>${u.pauseMonth?`<button class="b-btn2" data-act="resume">Cancel pause</button>`:`<button class="b-btn2" data-act="bill-panel" data-p="pause">Pause a month</button>`}`}</div>
+    </section>
+    ${panel}
+    <div class="b-grid">
+      <section class="b-card"><p class="d-k">Next payment</p><p class="b-big">${u.status==='cancelled'?'None':naira(nextAmt)}</p><p class="b-sub">${u.status==='cancelled'?'Plan ends '+fmt(c.end):fmt(c.renew)}</p></section>
+      <section class="b-card b-pay"><div class="b-payh"><span>Paystack</span>${I.card}</div><p class="b-big">${u.payment&&u.payment.type==='card'&&u.payment.last4?'•••• '+u.payment.last4:'Card · Transfer · USSD'}</p><button class="b-link" data-act="pay-method">Update</button></section>
+    </div>
+    <h2 class="b-h2">Account</h2>
+    <section class="b-list">
+      ${row('Pickup', u.pickupDay!=null?`${DOW_L[u.pickupDay]}s, ${CONFIG.windows[u.window||0]}`:'Not set', u.status!=='cancelled'?`<button class="b-link" data-act="bill-panel" data-p="day">Change</button>`:'')}
+      ${row('Address', u.addresses&&u.addresses[0]?esc(addrLine(u,0)):'Not set', `<button class="b-link" data-act="add-address">Add</button>`)}
+      ${row('Preferences', [pr.everyday||'Folded', u.plan==='fresh'?'':'iron '+(pr.iron||'everything').toLowerCase(), (pr.detergent||'Standard').toLowerCase()+' detergent'].filter(Boolean).join(' · '), `<button class="b-link" data-act="bill-panel" data-p="prefs">Edit</button>`)}
+      ${row('Commitment', committed?'Until '+fmtY(commitEnd):'None', '')}
+      ${row('Member since', MON_L[parse(u.joined).getMonth()]+' '+parse(u.joined).getFullYear(), '')}
+    </section>
+    <h2 class="b-h2">Notifications</h2>
+    <section class="b-list">${[['whatsapp','WhatsApp updates'],['sms','SMS backup'],['email','Email receipts']].map(n=>`<button class="b-row b-sw" role="switch" aria-checked="${!!u.notifs[n[0]]}" data-act="notif" data-k="${n[0]}"><span>${n[1]}</span><i class="${u.notifs[n[0]]?'on':''}"></i></button>`).join('')}</section>
+    <h2 class="b-h2">Billing history</h2>
+    <section class="b-list">
+      ${u.status!=='cancelled'?`<div class="b-row b-bill"><span>${fmt(c.renew)}</span><b>${(u.pendingPlan?CONFIG.plans[u.pendingPlan]:p).name}</b><em>${naira(nextAmt)}</em><i class="b-st">Upcoming</i></div>`:''}
+      ${u.bills.map((b,i)=>`<button class="b-row b-bill" data-act="receipt" data-i="${i}"><span>${fmt(b.date)}</span><b>${esc(b.desc.split(',')[0])}</b><em>${naira(b.amount)}</em><i class="b-st b-ok">${b.status}</i></button>`).join('')}
+    </section>
+    <section class="d-refer"><div><h2>Give a free pickup, get one</h2><p>Share your code. You both get a free pickup.</p></div><div class="d-code"><b>${esc(u.referral||'WASH-'+u.phone.slice(-4))}</b><button data-act="copy" data-v="${esc(u.referral||'')}">Copy</button></div></section>
+    ${u.status!=='cancelled'?`<p class="b-cancel">${committed?`Founding commitment runs to ${fmtY(commitEnd)}.`:`<button class="b-link b-red" data-act="cancel-plan">Cancel subscription</button>`}</p>`:''}`);
+}
+document.addEventListener('click',function(e){ const b=e.target.closest('[data-pf]'); if(!b) return; const u=me(); if(!u) return; u.prefs=u.prefs||{}; const k=b.dataset.pf, v=b.dataset.v; u.prefs[k]= k==='softener' ? v==='Yes' : v; save(); rerender(); });
+function viewDashboard(){
+  const u=me(); const p=plan(u); const c=cycleOf(u); const orders=myOrders();
+  const active=orders.filter(o=>o.status>=1&&o.status<6&&!o.cancelled).sort((a,b)=>a.date.localeCompare(b.date))[0];
+  const upcoming=orders.filter(o=>o.status===0&&!o.cancelled).sort((a,b)=>a.date.localeCompare(b.date)); const next=upcoming[0];
+  const inCycle=cycleRegular(u); const used=inCycle.filter(o=>o.status>=1).length;
+  const clothes=orders.filter(o=>!o.cancelled&&parse(o.date)>=c.start&&parse(o.date)<=c.end).reduce((s,o)=>s+(o.items||0),0);
+  const hr=new Date().getHours(); const greet=hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
+  const acts=activity(u); const steps=['Picked up','Tagged','Washing','Packed','Delivered'], map=[1,2,3,4,6];
+  const vid=`<div class="d-hm"><video src="img/hero-wm.mp4" poster="img/hero-wm.jpg" autoplay muted loop playsinline aria-hidden="true"></video></div>`;
+  const hero=active?`<section class="d-hero"><div class="d-hl"><p class="d-k">In progress</p><h2 class="d-h">${STATUSES[active.status]}</h2><p class="d-s">Back ${fmt(returnDate(active))}${active.items?` · ${active.items} clothes`:''}</p>
+      <ol class="d-track">${map.map((st,i)=>{ const cls=active.status>=st?'done':(active.status===st-1||(st===6&&active.status===5))?'now':''; return `<li class="${cls}"><i></i><span>${steps[i]}</span></li>`; }).join('')}</ol>
+      <div class="d-btns"><a class="d-btn" href="#/app/track/${active.id}">Track</a></div></div>${vid}</section>`
+    :`<section class="d-hero"><div class="d-hl"><p class="d-k">${next?'Next pickup':u.status==='paused'?'Paused':'Nothing booked'}</p><h2 class="d-h">${next?fmt(next.date):'Book a pickup'}</h2>${next?`<p class="d-s">${CONFIG.windows[next.window]}</p>`:''}
+      <div class="d-btns">${next?`<a class="d-btn" href="#/app/schedule">Reschedule</a>${next.type==='regular'?`<button class="d-btn2" data-act="skip" data-id="${next.id}">Skip</button>`:''}`:`<a class="d-btn" href="#/app/schedule">Schedule</a>`}</div></div>${vid}</section>`;
+  return shell('app', `
+    <div class="d-head"><div><p class="d-date">${fmtL(today())}</p><h1 class="d-h1">${greet}, ${esc(u.name.split(' ')[0])}</h1></div><a class="d-cta" href="#/app/schedule">${I.plus}<span>Schedule</span></a></div>
+    ${u.status==='cancelled'?`<div class="d-banner">Plan ends ${fmtY(c.end)}. <a href="#/app/billing">Restart</a></div>`:''}
+    ${hero}
+    <div class="d-stats">
+      <section class="d-stat">${dRing(clothes,p.items,'Clothes')}<div><p class="d-k2">Clothes</p><p class="d-big">${clothes}<small> / ${p.items}</small></p></div></section>
+      <section class="d-stat">${dRing(used,p.pickups,'Pickups')}<div><p class="d-k2">Pickups</p><p class="d-big">${used}<small> / ${p.pickups}</small></p></div></section>
+      <a class="d-stat d-plan" href="#/app/billing"><div><p class="d-k2">${p.name}</p><p class="d-big">Renews ${fmt(c.renew).split(' ').slice(1).join(' ')}</p></div><span class="d-chev">›</span></a>
+    </div>
+    <div class="d-grid">
+      <section class="d-card"><div class="d-ch"><h2>Coming up</h2></div>
+        ${upcoming.length?`<ul class="d-list">${upcoming.slice(0,3).map(o=>{ const d=parse(o.date); return `<li><span class="d-cal"><b>${d.getDate()}</b><i>${MON[d.getMonth()]}</i></span><div><b>${typeName(o.type)}</b><span>${CONFIG.windows[o.window]}</span></div></li>`; }).join('')}</ul>`:'<p class="d-empty">Nothing scheduled.</p>'}</section>
+      <section class="d-card"><div class="d-ch"><h2>Activity</h2><a href="#/app/orders">All orders</a></div>
+        ${acts.length?`<ol class="d-feed">${acts.slice(0,3).map(a=>`<li><i></i><div><b>${esc(a.t)}</b><span>${fmtTime(a.at)}</span></div></li>`).join('')}</ol>`:'<p class="d-empty">No activity yet.</p>'}</section>
+    </div>`);
 }
