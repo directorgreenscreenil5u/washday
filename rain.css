@@ -2329,3 +2329,26 @@ a.d-plan:hover .d-chev{transform:translateX(4px)}
 .ws.dark .hp-card .hp-sub{color:#98989D}
 .ws.dark .sp-wait{background:rgba(255,159,10,.14);color:#FFB340}
 .ws.dark .sp-quick button[data-q="Talk to a person"]{background:#F5F5F7!important;color:#000!important}
+
+/* ===== v57 · credit balance ===== */
+.d-stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:1100px){.d-stats{grid-template-columns:1fr 1fr}.d-plan{grid-column:auto}}
+.d-cri{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:#E8F7EE;color:#1E8E3E;flex:none}
+.d-cri svg{width:22px;height:22px}
+.d-cr .d-big{color:#1E8E3E}
+.b-credit{margin-top:16px;padding:24px 26px;border-radius:24px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.05)}
+.bc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.bc-big{margin:6px 0 4px;font-size:34px;font-weight:600;letter-spacing:-.03em;color:#1E8E3E}
+
+.bc-ic{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:#E8F7EE;color:#1E8E3E}
+.bc-ic svg{width:24px;height:24px}
+.bc-log{list-style:none;margin:16px 0 0;padding:0;border-top:1px solid #F0F0F3}
+.bc-log li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #F0F0F3}
+.bc-log li:last-child{border-bottom:0}
+.bc-log b{display:block;font-size:14.5px;font-weight:500}.bc-log span{font-size:12.5px;color:#86868B}
+.bc-log em{font-style:normal;font-weight:600;color:#1E8E3E;white-space:nowrap}.bc-log em.neg{color:#86868B}
+.ws.dark .b-credit{background:#1C1C1E!important;box-shadow:0 0 0 1px rgba(255,255,255,.06)!important}
+.ws.dark .bc-log,.ws.dark .bc-log li{border-color:rgba(255,255,255,.08)}
+.ws.dark .bc-big,.ws.dark .d-cr .d-big,.ws.dark .bc-log em{color:#30D158!important}
+.ws.dark .d-cri,.ws.dark .bc-ic{background:rgba(48,209,88,.16);color:#30D158}
+@media (max-width:560px){.d-stat.d-cr{flex-direction:column;align-items:flex-start;gap:12px;padding:16px!important}.d-cri{width:40px;height:40px}.d-stat.d-plan{grid-column:auto}.d-plan .d-big{font-size:18px!important}}
