@@ -326,35 +326,18 @@ const USES = [
   ['tagging','Businesses','Uniforms, towels and linen for salons, spas, gyms and small hotels, counted in and out every time.','quote']
 ];
 const HL = [
-  ['img/bts-rider2.jpg','Counted at your door.','Your rider counts every piece with you before leaving, and the full list lands on WhatsApp straight away. No weighing, no guessing.','Pickup · Tue 8:14 am','Counting at pickup','Washday rider in uniform arriving with clean laundry'],
+  ['img/bts-rider3.jpg','Counted at your door.','Your rider counts every piece with you before leaving, and the full list lands on WhatsApp straight away. No weighing, no guessing.','Pickup · Tue 8:14 am','Counting at pickup','Washday rider counting clothes with a customer at her door'],
   ['img/bts-tag.jpg','Tagged and counted again.','Every piece gets a QR tag tied to you. We count again at the studio and before delivery, and the final number is printed on your sealed bag.','Studio · Lekki · 10:02','Tagging','Washday technician attaching a QR tag to a folded shirt'],
   ['img/bts-wash.jpg','Never mixed with anyone else&rsquo;s clothes.','Your clothes go into a machine on their own, never in a shared load with other customers. Your detergent and folding preferences are saved and used every time.','Your clothes · WD-1042','Washing','Technician loading one customer bag into its own machine'],
   ['img/woman.jpg','Backed in writing.','Lost or damaged? We pay you back on a published scale, and every complaint gets a reply within 24 hours.','Delivered · Thu 10:41 am','Guarantee','A customer receiving her clean laundry at the door']
 ];
-const HLUI = [`<div class="pc">
-              <div class="pc-h"><div><p>Pickup count</p><b>WD-1042</b></div><span class="cnt-ok">${SI.check}Confirmed</span></div>
-              <div class="pc-big"><span class="pc-n">32</span><span class="pc-u">items</span></div>
-              <div class="pc-g">${[['8','Shirts'],['5','Trousers'],['6','T-shirts'],['3','Native'],['2','Towels'],['8','Others']].map(x=>`<span><b>${x[0]}</b>${x[1]}</span>`).join('')}</div>
-              <div class="pc-m"><div class="lim-h"><span>This month</span><b>32 of 100 items</b></div><div class="lim-b"><em></em></div></div>
-            </div>
-            <div class="wa"><p class="wa-n">Washday</p><p>Hi Ada, Tunde has collected <b>32 items</b>. Full list and photo attached.</p><span class="wa-t">8:14 am</span></div>`,`<div class="cnt">
-              <div class="cnt-h"><div><p>Item count</p><b>WD-1042</b></div><span class="cnt-ok">${SI.check}Match</span></div>
-              <div class="cnt-r cnt-th"><span>Item</span><span>In</span><span>Out</span></div>
-              ${[['Shirts',8],['Trousers',5],['T-shirts',6],['Native wear',3],['Towels',2],['Underwear',8]].map((r,k)=>`<div class="cnt-r" style="--k:${k}"><span>${r[0]}</span><span>${r[1]}</span><span>${r[1]}</span></div>`).join('')}
-              <div class="cnt-r cnt-t"><span>Total</span><span>32</span><span>32</span></div>
-            </div>
-            <div class="tagx"><span class="tagx-hole"></span><p class="tagx-b">washday</p><span class="tagx-qr" data-qr="${SITE_URL}#/scan/WD-T-0007"></span><p class="tagx-n">WD-T-0007</p><p class="tagx-c">Ada O. · Shirt</p></div>`,`<div class="mc">
-              <div class="mc-top"><span class="mc-id">Machine 03</span><span class="mc-live"><i></i>Running</span></div>
-              <div class="mc-door"><svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="92" class="mc-trk"/><circle cx="100" cy="100" r="92" class="mc-ring" pathLength="1"/></svg><div class="mc-glass"><span class="mc-w"></span></div><div class="mc-c"><b>24</b><span>min left</span></div></div>
-              <div class="mc-own"><span class="mc-av">AO</span><div><b>Only your clothes</b><span>WD-1042 · Ada O.</span></div></div>
-              <div class="mc-prefs"><span>30°C wash</span><span>Fragrance-free</span><span>Shirts on hangers</span></div>
-            </div>`,`<div class="gt">
-              <p class="gt-k">Washday guarantee</p>
-              <h4>If something goes wrong, we put it right.</h4>
-              <ul><li>${SI.check}<span><b>Lost item</b>Paid back on our published scale</span></li><li>${SI.check}<span><b>Damaged item</b>Repaired, or paid back</span></li><li>${SI.check}<span><b>Any complaint</b>Answered within 24 hours</span></li></ul>
-              <div class="gt-f"><span class="gt-sig">Washday Ltd</span><span class="gt-d">Lagos</span></div>
-              <svg class="gt-seal" viewBox="0 0 120 120"><defs><path id="gtc" d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0"/></defs><circle cx="60" cy="60" r="58" fill="#2340E8"/><circle cx="60" cy="60" r="31" fill="none" stroke="rgba(255,255,255,.4)"/><text font-size="10.5" font-weight="600" letter-spacing="2.6" fill="#fff"><textPath href="#gtc">WASHDAY · GUARANTEED · LAGOS ·</textPath></text><path d="M48 61l8 8 16-17" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </div>`];
+const GX = (ttl,sub,acc,time) => `<div class="gx"><span class="gx-ic">${SI.appi}</span><div class="gx-b"><p class="gx-h"><b>Washday</b><time>${time||'now'}</time></p><p class="gx-t">${ttl}</p><p class="gx-s">${sub}</p></div>${acc}</div>`;
+const HLUI = [
+  GX('Pickup confirmed','Tunde counted your clothes with you at the door.','<span class="gx-num"><b>32</b><i>items</i></span>','8:14 am'),
+  GX('Tagged and registered','WD-T-0007 · White shirt · Ada O.',`<span class="gx-qr" data-qr="${SITE_URL}#/scan/WD-T-0007"></span>`,'10:02 am'),
+  GX('Washing now · Machine 03','Only your clothes. 30°C, fragrance-free.','<span class="gx-ring"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="19" class="gx-rt"/><circle cx="22" cy="22" r="19" class="gx-rf" pathLength="1"/></svg><b>24m</b></span>','11:20 am'),
+  GX('Delivered · 32 of 32 items','Counted out, sealed and covered by our guarantee.',`<span class="gx-ok">${SI.check}</span>`,'Thu 10:41 am')
+];
 const BS = [
   ['tag','Counted in. Counted out.','Every piece is tagged to you and counted at pickup, then again before delivery. The number is printed on your sealed bag.'],
   ['scale','Weighed at your door.','Your rider weighs the bag in front of you. The weight and a photo arrive on WhatsApp before they leave.'],
@@ -1224,7 +1207,7 @@ route();
 
 function bsGo(i){ UI.bs=i; document.querySelectorAll('.bs').forEach(function(root){ root.querySelectorAll('.bs-it').forEach(function(b,k){ b.classList.toggle('on',k===i); b.setAttribute('aria-selected',k===i); }); root.querySelectorAll('.bs-v').forEach(function(v,k){ v.classList.toggle('on',k===i); }); }); if(i===1) bsWeigh(); }
 function bsWeigh(){ var t0=performance.now(); (function f(t){ var p=Math.min(1,(t-t0)/1100); var e=1-Math.pow(1-p,3); document.querySelectorAll('.scl-v').forEach(function(el){ el.textContent=(6.4*e).toFixed(2); }); if(p<1) requestAnimationFrame(f); })(t0); }
-function hlGo(i,how){ UI.hl=i; document.querySelectorAll('.hl').forEach(function(root){ var cs=root.querySelectorAll('.hl-card'); cs.forEach(function(c,k){ c.classList.toggle('on',k===i); }); root.querySelectorAll('.hl-dot').forEach(function(d,k){ d.classList.toggle('on',k===i); }); if(how!=='noscroll'){ var tr=root.querySelector('.hl-track'), c=cs[i]; if(tr&&c){ root._prog=Date.now(); tr.scrollTo({left:c.offsetLeft-parseFloat(getComputedStyle(tr).paddingLeft), behavior: how==='jump'?'auto':'smooth'}); } } }); if(i===0) hlCount(); }
+function hlGo(i,how){ UI.hl=i; document.querySelectorAll('.hl').forEach(function(root){ var cs=root.querySelectorAll('.hl-card'); cs.forEach(function(c,k){ c.classList.toggle('on',k===i); }); root.querySelectorAll('.hl-dot').forEach(function(d,k){ d.classList.toggle('on',k===i); }); if(how!=='noscroll'){ var tr=root.querySelector('.hl-track'), c=cs[i]; if(tr&&c){ root._prog=Date.now(); tr.scrollTo({left:c.offsetLeft-parseFloat(getComputedStyle(tr).paddingLeft), behavior: how==='jump'?'auto':'smooth'}); } } }); }
 function hlCount(){ var t0=performance.now(); (function f(t){ var p=Math.min(1,(t-t0)/1000); var e=1-Math.pow(1-p,3); document.querySelectorAll('.pc-n').forEach(function(el){ el.textContent=Math.round(32*e); }); if(p<1) requestAnimationFrame(f); })(t0); }
 (function(){
   document.addEventListener('animationend',function(e){ if(e.target.matches&&e.target.matches('.hl-dot.on i')) hlGo(((UI.hl||0)+1)%4); });
