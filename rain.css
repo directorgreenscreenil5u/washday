@@ -1318,3 +1318,10 @@ html.intro-media .ahero .ah-media{visibility:visible}
 #intro3.iris .i3-brand,#intro3.iris .i3-tag,#intro3.iris .i3-skip{opacity:0!important;transition:opacity .28s ease!important}
 #intro3.iris .i3-vig{opacity:.6;transition:opacity .4s}
 @media (max-width:640px){.hl-card.c0 .hl-img{object-position:64% 50%}}
+
+/* v32: intro hands off into the hero machine */
+html{scrollbar-gutter:stable}
+html.i3-hide .ahero .ah-media{visibility:hidden!important}
+#intro3 .i3-clone{z-index:2;pointer-events:none}
+#intro3 .i3-clone .ah-vid{display:block;width:100%}
+#intro3.iris .i3-vig{opacity:.4;transition:opacity .5s}
