@@ -976,3 +976,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Geist','Inter',
   .hl-card.c1 .hl-img{object-position:62% 50%}
   .hl-card.c2 .hl-img{object-position:74% 50%}
 }
+/* v23 rider photo: card on the left */
+.hl-card.c0 .hl-ui{left:clamp(18px,3vw,36px);right:auto}
+@media (max-width:640px){.hl-card.c0 .hl-img{object-position:50% 50%}.hl-card.c0 .hl-ui{left:14px}}
