@@ -648,3 +648,45 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Geist','Inter',
 .lt-card.c1{left:-250px;top:38%}
 @media (max-width:1100px){.lt-card.c1{left:-190px}.lt-card.c2{right:-200px}}
 @media (max-width:900px){.lt-card.c2{right:auto;top:auto}}
+/* v18: authentic iOS notification, Live Activity, icons */
+.lt-ico{width:40px;height:40px;flex:none;display:block;filter:drop-shadow(0 1px 1px rgba(0,0,0,.08))}
+.lt-ico svg{width:100%;height:100%;display:block}
+.lt-ico.sm{width:22px;height:22px}.lt-ico.md{width:44px;height:44px}
+.ios-n{width:350px;display:flex;gap:12px;align-items:flex-start;padding:14px 16px 14px 14px;border-radius:24px;background:rgba(250,250,252,.74);backdrop-filter:blur(40px) saturate(1.9);-webkit-backdrop-filter:blur(40px) saturate(1.9);box-shadow:0 0 0 .5px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.04),0 22px 60px -12px rgba(17,24,39,.22);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Geist',sans-serif}
+.ios-nb{flex:1;min-width:0}
+.ios-nh{display:flex;justify-content:space-between;align-items:baseline}
+.ios-nh b{font-size:15px;font-weight:600;color:#000;letter-spacing:-.015em}
+.ios-nh time{font-size:13px;color:rgba(60,60,67,.6)}
+.ios-nt{font-size:15px;font-weight:600;color:#000;letter-spacing:-.015em;margin-top:1px}
+.ios-nx{font-size:15px;line-height:1.3;color:#000;letter-spacing:-.01em;margin-top:1px}
+.ios-la{width:340px;padding:18px 18px 16px;border-radius:28px;background:rgba(18,18,20,.94);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);color:#fff;box-shadow:0 0 0 .5px rgba(255,255,255,.08) inset,0 30px 70px -14px rgba(17,24,39,.5);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Geist',sans-serif}
+.ios-la-top{display:flex;justify-content:space-between;align-items:flex-start}
+.ios-la-k{font-size:14px;color:rgba(235,235,245,.6);font-weight:500}
+.ios-la-eta{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Geist',sans-serif;font-size:34px;font-weight:700;letter-spacing:-.03em;line-height:1.05;margin-top:2px;font-variant-numeric:tabular-nums}
+.ios-la-track{position:relative;display:flex;align-items:center;margin-top:16px;height:28px}
+.ios-la-track::before{content:"";position:absolute;left:6px;right:14px;top:50%;height:6px;margin-top:-3px;border-radius:3px;background:rgba(255,255,255,.16)}
+.ios-la-a{position:relative;z-index:1;width:12px;height:12px;border-radius:50%;background:#6E86FF;box-shadow:0 0 0 3px rgba(18,18,20,.94)}
+.ios-la-fill{position:absolute;left:6px;top:50%;height:6px;margin-top:-3px;width:46%;border-radius:3px;background:linear-gradient(90deg,#6E86FF,#fff);transition:width 1.2s ease}
+.ios-la-fill i{position:absolute;right:-15px;top:50%;width:30px;height:30px;margin-top:-15px;border-radius:50%;background:#fff;color:#2340E8;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.ios-la-fill i svg{width:17px;height:17px}
+.ios-la-b{position:absolute;right:0;top:50%;margin-top:-13px;width:26px;height:26px;border-radius:50%;background:#2C2C2E;color:#fff;display:flex;align-items:center;justify-content:center}
+.ios-la-b svg{width:14px;height:14px}
+.ios-la-foot{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:13px;color:rgba(235,235,245,.65)}
+.ios-la-foot b{margin-left:auto;color:#fff;font-weight:600;font-variant-numeric:tabular-nums}
+.ios-la-av{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#6E86FF,#2340E8);color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center}
+/* dynamic island */
+.lt-island{width:156px;padding:0 12px 0 6px}
+.lt-ia2{width:24px;height:24px;display:block}.lt-ia2 svg{width:100%;height:100%;display:block}
+.lt-ib2{font-size:14px;font-weight:600;color:#fff;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+/* tracker nodes */
+.lt-tn span{width:30px;height:30px}
+.lt-tn span svg{width:15px;height:15px}
+.lt-tn.done span{background:#2340E8;color:#fff}
+.lt-tn.now span{background:#fff;color:#2340E8;box-shadow:0 0 0 2px #2340E8,0 0 0 6px rgba(35,64,232,.15)}
+.lt-tn.now span svg{width:17px;height:17px}
+@keyframes ltnow{50%{box-shadow:0 0 0 2px #2340E8,0 0 0 9px rgba(35,64,232,.06)}}
+.lt-tn:not(.done):not(.now) span{background:#F2F2F7;color:#C7C7CC}
+.lt-card.c1{left:-300px;top:40%}
+.lt-card.c2{right:-300px;top:15%}
+@media (max-width:1180px){.lt-card.c1{left:-220px}.lt-card.c2{right:-220px}}
+@media (max-width:900px){.lt-card.c2{right:auto;top:auto}}
