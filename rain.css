@@ -1927,3 +1927,13 @@ button.b-bill:hover{background:#FAFAFB}
   .cu-detail{padding:4px 16px 18px}
   .cu-search{top:104px}
 }
+
+/* v47 · back buttons on staff pages */
+.authmain{position:relative}
+.st-back{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:8px 14px 8px 8px;border-radius:999px;background:#F2F2F5;color:#1D1D1F;font-size:14px;font-weight:500;transition:background .15s}
+.st-back:hover{background:#E8E8ED}
+.st-back svg{width:18px;height:18px}
+.authmain>.st-back{position:absolute;top:max(20px,env(safe-area-inset-top));left:20px;z-index:3}
+.st-l{display:flex;align-items:center;gap:12px}
+.st-bar .st-back{padding:6px 12px 6px 6px;font-size:13px}
+@media (max-width:760px){.st-bar .st-back{padding:6px 8px;font-size:0;gap:0}.st-bar .st-back svg{width:18px;height:18px}}
