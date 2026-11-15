@@ -189,6 +189,17 @@ function pxDetail(n){ const k=prPick(n), p=CONFIG.plans[k], over=Math.max(0,n-p.
   return `<div class="pxd-a"><p class="pxd-k">${p.name}</p><p class="pxd-price"><b>${naira(p.price)}</b><span>/ month</span></p><p class="pxd-per">${naira(per)} per item${over?` · <em>+${naira(over*CONFIG.extraItem)} for ${over} extra</em>`:''}</p></div>
   <ul class="pxd-b"><li>${SI.bag2}<span><b>${p.pickups} pickup${p.pickups>1?'s':''} · ${p.pickups} deliver${p.pickups>1?'ies':'y'}</b> a month</span></li><li>${SI.drop}<span>${p.service}</span></li><li>${SI.tag}<span>Every item tagged and counted</span></li></ul>
   <div class="pxd-c"><button class="btn btn-lg px-cta" data-act="pick-plan" data-plan="${k}">Choose ${p.name}</button><p>Pause or change any month</p></div>`; }
+function pzTable(){ const K=PLAN_KEYS, P=K.map(k=>CONFIG.plans[k]), hl=1;
+  const Y='<svg class="pt-y" viewBox="0 0 20 20" aria-label="Included"><path d="M5 10.5l3.2 3.2L15 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>', N='<span class="pt-n" aria-label="Not included">–</span>';
+  const has=(p,f)=>p.extra.includes(f);
+  const rows=[['Clothes a month',P.map(p=>`<b>${p.items}</b>`)],['Pickups a month',P.map(p=>p.pickups)],['Deliveries a month',P.map(p=>p.pickups)],['Wash, dry and fold',P.map(()=>Y)],['Ironing',K.map(k=>k==='fresh'?N:Y)],['Every item tagged and counted',P.map(()=>Y)],['Live order tracking',P.map(p=>has(p,'Live order tracking')?Y:N)],['Priority pickup slots',P.map(p=>has(p,'Priority pickup windows')?Y:N)],['Extra clothes',P.map(()=>`${naira(CONFIG.extraItem)} each`)]];
+  const cell=(i,html,cls)=>`<div class="pt-c ${i===hl?'pt-hl':''} ${cls||''}">${html}</div>`;
+  return `<div class="pt" role="table" aria-label="Compare plans">
+    <div class="pt-r pt-head" role="row"><div class="pt-l"></div>${P.map((p,i)=>cell(i,`${i===hl?'<span class="pt-pop">Most popular</span>':''}<p class="pt-name">${p.name}</p><p class="pt-price">${naira(p.price)}<span>/mo</span></p><p class="pt-per">${naira(Math.round(p.price/p.items))} per item</p>`,'top')).join('')}</div>
+    ${rows.map(r=>`<div class="pt-r" role="row"><div class="pt-l" role="rowheader">${r[0]}</div>${r[1].map((v,i)=>cell(i,v)).join('')}</div>`).join('')}
+    <div class="pt-r pt-foot" role="row"><div class="pt-l"></div>${K.map((k,i)=>cell(i,`<button class="btn pt-cta ${i===hl?'on':''}" data-act="pick-plan" data-plan="${k}">Choose<span class="pt-cn"> ${P[i].name}</span></button>`,'bot')).join('')}</div>
+  </div>
+  <p class="pt-note">Pickup and delivery always included. Pause or change your plan any month.</p>`; }
 function pzFit(k,n){ const p=CONFIG.plans[k], over=Math.max(0,n-p.items); return over?`${n} items · +${naira(over*CONFIG.extraItem)} for ${over} extra`:`Fits your ${n} items`; }
 function pzCard(k,n){ const p=CONFIG.plans[k], on=prPick(n)===k, per=Math.round(p.price/p.items);
   const rows=[['Clothes',`${p.items} items`],['Pickups',`${p.pickups} a month`],['Deliveries',`${p.pickups} a month`],['Care',k==='fresh'?'Wash, dry, fold':'Wash, iron, hang'],['Updates',p.extra.includes('Live order tracking')?'Live tracking':'WhatsApp'],['Pickup slots',p.extra.includes('Priority pickup windows')?'Priority':'Standard']];
@@ -488,15 +499,7 @@ function viewHome(){
         <h2 class="pr-h">Pay for your clothes.<br><span>Not the kilos.</span></h2>
         <p class="pr-sub">Every piece is counted with you at the door. Pickup and delivery always included. Pause or change your plan any month.</p>
       </div>
-      <div class="pz" style="--sel:${PLAN_KEYS.indexOf(prPick(UI.prN||100))}">
-        <div class="pz-q">
-          <div class="pz-qt"><p class="pz-ql">How many clothes do you wash in a month?</p><p class="pz-n"><b class="pr-n">${UI.prN||100}</b><span>items</span></p></div>
-          <input class="pr-range px-range" type="range" min="20" max="250" step="5" value="${UI.prN||100}" aria-label="Clothes per month" style="--p:${(((UI.prN||100)-20)/230*100).toFixed(1)}%">
-          <div class="px-scale"><span>20</span><span>250+</span></div>
-        </div>
-        <div class="pz-track" role="radiogroup" aria-label="Plans">${PLAN_KEYS.map(k=>pzCard(k,UI.prN||100)).join('')}</div>
-        <div class="pz-dots" aria-hidden="true">${PLAN_KEYS.map((k,i)=>`<i class="${prPick(UI.prN||100)===k?'on':''}"></i>`).join('')}</div>
-      </div>
+      ${pzTable()}
       <div class="pz-x">
         <div class="pz-xh"><h3>Priced separately</h3><p>Big or delicate pieces get their own wash, so they're charged on their own.</p></div>
         <dl class="pz-xl">${[['Duvet or comforter','each',naira(CONFIG.duvet)],['Curtains','per panel',naira(CONFIG.curtain)],['Suits and native attire','dry cleaned, per piece',naira(CONFIG.dryCleanItem)],['Express 24-hour return','per pickup','+'+naira(CONFIG.express)],['Extra clothes','per item over your plan',naira(CONFIG.extraItem)]].map(x=>`<div class="pz-xi"><dt>${x[0]}<span>${x[1]}</span></dt><dd>${x[2]}</dd></div>`).join('')}</dl>
