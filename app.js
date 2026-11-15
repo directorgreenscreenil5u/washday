@@ -1,17 +1,3 @@
-/* Opening intro: washing machine spins, then we zoom through the door into the site */
-(function(){
-  try{
-    var h=location.hash||''; if(h && !/^#\/?(home\/.*)?$/.test(h)) return;
-    if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  }catch(e){ return; }
-  var logo='<svg viewBox="0 0 40 40"><defs><linearGradient id="inIc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4A63FF"/><stop offset="1" stop-color="#1B32CF"/></linearGradient></defs><rect width="40" height="40" rx="9.2" fill="url(#inIc)"/><circle cx="20" cy="20.5" r="11" fill="#fff"/><path d="M10.6 22.2c2.6-1.9 5.1-1.9 7.6 0s5.1 1.9 7.6 0 4.2-1.6 5.2-.7A11 11 0 0 1 9.2 22.9c.4-.2.9-.4 1.4-.7z" fill="#2340E8"/><circle cx="20" cy="20.5" r="11" fill="none" stroke="#fff" stroke-width="2.4"/></svg>';
-  var d=document.createElement('div'); d.id='intro'; d.setAttribute('aria-hidden','true');
-  d.innerHTML='<div class="in-wm"><div class="in-panel"><span class="in-lcd">0:48</span><span class="in-dots"><i></i><i></i><i></i></span><span class="in-knob"></span></div><div class="in-door"><div class="in-glass"><span class="in-water"></span><span class="in-water b"></span><div class="in-tumble"><i></i><i></i><i></i><i></i></div></div></div></div><div class="in-brand">'+logo+'<span>washday</span></div><p class="in-tag">Laundry, handled.</p>';
-  document.documentElement.classList.add('intro-on'); document.body.appendChild(d);
-  var lcd=d.querySelector('.in-lcd'), s=48, iv=setInterval(function(){ s=Math.max(45,s-1); lcd.textContent='0:'+s; },420);
-  var done=false; function finish(fast){ if(done) return; done=true; clearInterval(iv); d.classList.add('zoom'); setTimeout(function(){ d.classList.add('out'); document.documentElement.classList.remove('intro-on'); }, fast?300:520); setTimeout(function(){ d.remove(); }, fast?900:1150); }
-  var t=setTimeout(finish,1950); d.addEventListener('click',function(){ clearTimeout(t); finish(true); });
-})();
 /* =========================================================
    WASHDAY · laundry subscription web app
    Runs in the browser and saves to localStorage for now.
@@ -1436,3 +1422,36 @@ function pxSet(root,n,fromTile){ const prevK=prPick(UI.prN||100); UI.prN=n; cons
   const d=root.querySelector('.px-detail'); d.innerHTML=pxDetail(n); if(k!==prevK){ d.classList.remove('sw'); void d.offsetWidth; d.classList.add('sw'); } }
 document.addEventListener('input',function(e){ const r=e.target; if(!r.classList||!r.classList.contains('px-range')) return; pxSet(r.closest('.px'),+r.value); });
 document.addEventListener('click',function(e){ const b=e.target.closest('.px-plan'); if(!b) return; pxSet(b.closest('.px'),+b.dataset.n,true); });
+
+/* Opening intro v2: start close on the real drum, pull back, then glide the machine into the hero */
+(function(){
+  try{ var h=location.hash||''; if(h && !/^#\/?$/.test(h)) return; if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return; }catch(e){ return; }
+  var media=document.querySelector('.ahero .ah-media'); if(!media||!media.animate) return;
+  window.scrollTo(0,0);
+  var root=document.documentElement; root.classList.add('intro-on','intro-media');
+  var r=media.getBoundingClientRect(); var vw=innerWidth, vh=innerHeight;
+  var ov=document.createElement('div'); ov.id='intro2'; ov.setAttribute('aria-hidden','true');
+  var bg=document.createElement('div'); bg.className='in2-bg'; var hb=getComputedStyle(document.querySelector('.ahero')).backgroundColor; if(hb && hb!=='rgba(0, 0, 0, 0)') bg.style.background=hb;
+  var cl=media.cloneNode(true); cl.classList.add('in2-clone');
+  cl.style.cssText='position:fixed;left:'+r.left+'px;top:'+r.top+'px;width:'+r.width+'px;height:'+r.height+'px;margin:0;max-width:none;transform-origin:50% 54%';
+  var brand=document.createElement('div'); brand.className='in2-brand'; brand.innerHTML='<span class="in2-ic">'+SI.appi+'</span><span>washday</span>';
+  ov.appendChild(bg); ov.appendChild(cl); ov.appendChild(brand); document.body.appendChild(ov);
+  var v=cl.querySelector('video'); if(v){ v.muted=true; v.currentTime=0; var pp=v.play&&v.play(); if(pp&&pp.catch) pp.catch(function(){}); }
+  var s=Math.min(1, (vw*0.92)/r.width, (vh*0.66)/r.height);
+  var cy=vh*0.45, dx=vw/2-(r.left+r.width/2), dy=cy-(r.top+r.height/2);
+  brand.style.top=Math.min(vh-70, cy+r.height*s*0.4+14)+'px';
+  var mid='translate('+dx+'px,'+dy+'px) scale('+s+')';
+  cl.animate([{transform:'translate('+dx+'px,'+dy+'px) scale('+(s*3.2)+')',filter:'blur(16px)',opacity:0},{offset:.35,opacity:1},{transform:mid,filter:'blur(0px)',opacity:1}],{duration:1500,easing:'cubic-bezier(.16,1,.3,1)',fill:'forwards'});
+  brand.animate([{opacity:0,transform:'translateY(12px)',letterSpacing:'.2em'},{opacity:1,transform:'none',letterSpacing:'-.045em'}],{duration:900,delay:650,easing:'cubic-bezier(.16,1,.3,1)',fill:'forwards'});
+  var done=false;
+  function land(){ if(done) return; done=true;
+    brand.animate([{opacity:1,transform:'none'},{opacity:0,transform:'translateY(-8px)'}],{duration:300,fill:'forwards',easing:'ease-in'});
+    cl.animate([{transform:mid},{transform:'translate(0px,0px) scale(1)'}],{duration:1000,easing:'cubic-bezier(.65,0,.25,1)',fill:'forwards'});
+    bg.animate([{opacity:1},{opacity:0}],{duration:700,delay:250,fill:'forwards',easing:'ease-out'});
+    setTimeout(function(){ root.classList.add('intro-reveal'); root.classList.remove('intro-on'); },420);
+    setTimeout(function(){ root.classList.remove('intro-media'); cl.animate([{opacity:1},{opacity:0}],{duration:220,fill:'forwards'}); },1020);
+    setTimeout(function(){ ov.remove(); },1300);
+    setTimeout(function(){ root.classList.remove('intro-reveal'); },2600);
+  }
+  var t=setTimeout(land,2150); ov.addEventListener('click',function(){ clearTimeout(t); land(); });
+})();
