@@ -40,6 +40,7 @@ Object.assign(CONFIG, {
 });
 const LEGAL_NAV=[['terms','Terms of service'],['privacy','Privacy policy'],['guarantee','Damage and loss guarantee'],['contact','Contact']];
 const SVGI={
+  wallet:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2V5"/><circle cx="16.5" cy="13.5" r="1.5"/></svg>',
   call:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>',
   wa:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z"/></svg>',
   person:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>'
@@ -123,7 +124,8 @@ function rollBilling(u){
       const over = u.pendingCharges||0; u.pendingCharges=0;
       if (u.pendingPlan){ u.plan=u.pendingPlan; u.pendingPlan=null; }
       if (u.status==='cancelled') continue;
-      u.bills.unshift({ date:d, kind:'renewal', desc: paused ? plan(u).name+' · paused month' : plan(u).name+', '+MON_L[start.getMonth()]+(over?' + extra charges':''), amount:(paused?0:plan(u).price)+over, status:'Paid' });
+      let amt=(paused?0:plan(u).price)+over; const use=Math.min(credit(u),amt); if(use){ amt-=use; u.credit=credit(u)-use; (u.creditLog=u.creditLog||[]).unshift({at:start.getTime(),amt:-use,desc:'Used on '+MON_L[start.getMonth()]+' bill'}); }
+      u.bills.unshift({ date:d, kind:'renewal', desc: paused ? plan(u).name+' · paused month' : plan(u).name+', '+MON_L[start.getMonth()]+(over?' + extra charges':'')+(use?' · '+naira(use)+' credit used':''), amount:amt, status:'Paid' });
     }
   }
 }
@@ -1693,7 +1695,7 @@ function viewBilling(){
   const u=me(); const p=plan(u); const c=cycleOf(u);
   const B=UI.bill||(UI.bill={panel:null,pick:u.plan,month:null});
   const commitEnd=u.commitEnd?parse(u.commitEnd):null; const committed=commitEnd&&commitEnd>today();
-  const nextAmt=(u.pendingPlan?CONFIG.plans[u.pendingPlan].price:p.price)+(u.pendingCharges||0);
+  const grossAmt=(u.pendingPlan?CONFIG.plans[u.pendingPlan].price:p.price)+(u.pendingCharges||0); const crUse=Math.min(credit(u),grossAmt); const nextAmt=grossAmt-crUse;
   const pauseOpts=[1,2,3].map(n=>iso(addMonths(c.start,n)).slice(0,7));
   const pr=u.prefs||{}; const x=`<button class="b-x" data-act="bill-panel" data-p="" aria-label="Close">×</button>`;
   const tags=[u.founding?'<span class="b-tag b-tag-g">Founding member</span>':'', u.status!=='active'?`<span class="b-tag">${u.status==='paused'?'Paused':'Cancelled'}</span>`:'', u.pauseMonth&&u.status==='active'?`<span class="b-tag">Pausing ${MON_L[Number(u.pauseMonth.slice(5))-1]}</span>`:'', u.pendingPlan?`<span class="b-tag">Switching to ${CONFIG.plans[u.pendingPlan].name} on ${fmt(c.renew)}</span>`:''].join('');
@@ -1723,9 +1725,10 @@ function viewBilling(){
     </section>
     ${panel}
     <div class="b-grid">
-      <section class="b-card"><p class="d-k">Next payment</p><p class="b-big">${u.status==='cancelled'?'None':naira(nextAmt)}</p><p class="b-sub">${u.status==='cancelled'?'Plan ends '+fmt(c.end):fmt(c.renew)}</p></section>
+      <section class="b-card"><p class="d-k">Next payment</p><p class="b-big">${u.status==='cancelled'?'None':naira(nextAmt)}</p><p class="b-sub">${u.status==='cancelled'?'Plan ends '+fmt(c.end):fmt(c.renew)+(crUse?' · '+naira(crUse)+' credit applied':'')}</p></section>
       <section class="b-card b-pay"><div class="b-payh"><span>Paystack</span>${I.card}</div><p class="b-big">${u.payment&&u.payment.type==='card'&&u.payment.last4?'•••• '+u.payment.last4:'Card · Transfer · USSD'}</p><button class="b-link" data-act="pay-method">Update</button></section>
     </div>
+    ${creditCard(u)}
     <h2 class="b-h2">Account</h2>
     <section class="b-list">
       ${row('Pickup', u.pickupDay!=null?`${DOW_L[u.pickupDay]}s, ${CONFIG.windows[u.window||0]}`:'Not set', u.status!=='cancelled'?`<button class="b-link" data-act="bill-panel" data-p="day">Change</button>`:'')}
@@ -1766,6 +1769,7 @@ function viewDashboard(){
     <div class="d-stats">
       <section class="d-stat">${dRing(clothes,p.items,'Clothes')}<div><p class="d-k2">Clothes</p><p class="d-big">${clothes}<small> / ${p.items}</small></p></div></section>
       <section class="d-stat">${dRing(used,p.pickups,'Pickups')}<div><p class="d-k2">Pickups</p><p class="d-big">${used}<small> / ${p.pickups}</small></p></div></section>
+      <a class="d-stat d-cr" href="#/app/billing"><span class="d-cri">${SVGI.wallet}</span><div><p class="d-k2">Credit</p><p class="d-big">${naira(credit(u))}</p></div></a>
       <a class="d-stat d-plan" href="#/app/billing"><div><p class="d-k2">${p.name}</p><p class="d-big">Renews ${fmt(c.renew).split(' ').slice(1).join(' ')}</p></div><span class="d-chev">›</span></a>
     </div>
     <div class="d-grid">
@@ -1807,7 +1811,7 @@ function viewCustomers(){
     const hay=[u.name,'0'+u.phone,u.phone,custAddr(u),tg.map(t=>t.code).join(' ')].join(' ').toLowerCase();
     const open=C.sel===u.phone;
     return `<div class="cu-row ${open?'open':''}" data-hay="${esc(hay)}"><button class="cu-main" data-cu="sel" data-p="${u.phone}"><span class="cu-av">${esc(ini)}</span><span class="cu-who"><b>${esc(u.name||'Unnamed')}</b><span>0${u.phone}</span></span><span class="cu-addr">${esc(custAddr(u))||'<i>No address</i>'}</span><span class="cu-meta">${u.plan?`<em class="cu-plan">${plan(u).name}</em>`:'<em class="cu-walk">No plan yet</em>'}<small>${used} item${used===1?'':'s'} · ${tg.length-used} spare tag${tg.length-used===1?'':'s'}</small></span><span class="cu-chev">›</span></button>
-      ${open?`<div class="cu-detail"><div class="cu-acts"><button class="b-btn" data-cu="more" data-p="${u.phone}">Print more tags</button><a class="b-btn2" href="#/scan" data-cu="scan" data-p="${u.phone}">Open in tag station</a></div>
+      ${open?`<div class="cu-detail"><div class="cu-acts"><button class="b-btn" data-cu="more" data-p="${u.phone}">Print more tags</button><button class="b-btn2" data-cr="open" data-p="${u.phone}">Add credit${credit(u)?' · '+naira(credit(u)):''}</button><a class="b-btn2" href="#/scan" data-cu="scan" data-p="${u.phone}">Open in tag station</a></div>
         ${tg.filter(t=>!t.reserved).length?`<div class="cu-items">${tg.filter(t=>!t.reserved).map(t=>`<div class="cu-it">${t.photo?`<img src="${t.photo}" alt="">`:'<span class="cu-ph"></span>'}<div><b>${esc(t.type)}${t.color?' · '+esc(t.color):''}</b><span>${t.code} · ${t.out?'Counted out':'In studio'}</span></div></div>`).join('')}</div>`:'<p class="cu-empty">No items registered yet. Tags are ready to scan at pickup.</p>'}
         ${tg.filter(t=>t.reserved).length?`<p class="cu-spare">Spare tags: ${tg.filter(t=>t.reserved).map(t=>t.code).join(', ')}</p>`:''}</div>`:''}</div>`; }).join('');
   return `<div class="ws-staff">
@@ -1986,6 +1990,7 @@ function demoFill(u){
   const x=mk(4,0,null,[],0,'extra'); x.items=null; x.kg=null;
   [a,b,c,d,x].forEach(o=>DB.orders.push(o));
   u.cycleStart=u.cycleStart||iso(addDays(T,-10));
+  if(!u.creditLog||!u.creditLog.length){ u.credit=3000; u.creditLog=[{at:c.history[3]?c.history[3].at:Date.now(),amt:3000,desc:'Goodwill credit · ink mark on a white shirt ('+c.id+')'}]; }
   const p=plan(u); if(!u.bills||!u.bills.length) u.bills=[{date:iso(addDays(T,-10)),kind:'renewal',desc:p.name+', this month',amount:p.price,status:'Paid'},{date:iso(addDays(T,-40)),kind:'renewal',desc:p.name+', last month',amount:p.price,status:'Paid'}];
   save();
 }
@@ -2028,7 +2033,7 @@ function supReply(q,u){ q=q.toLowerCase(); const act=myOrders().filter(o=>o.stat
   if(/where|track|status|order|ready|when/.test(q)&&act) return `Your order ${act.id} is at "${STATUSES[act.status]}". It's due back ${fmt(returnDate(act))}. You can follow every step on the order page.`;
   if(/pickup|time|resched|move|change.*day|window/.test(q)) return 'You can move your next pickup from Schedule, up to 12 hours before it. Want me to hold a different time for you? Tell me the day and window.';
   if(/miss|lost|damag|stain|torn|wrong/.test(q)) return "Sorry about that. Every item is tagged, so we'll trace it. Tell me which order and what's missing, and if you can, send a photo. We reply to every report within 24 hours.";
-  if(/bill|pay|charge|refund|card|price|invoice/.test(q)) return 'Your plan is billed monthly through Paystack. Your invoices are under Plan & billing. If a charge looks wrong, tell me the date and amount and I will check it.';
+  if(/bill|pay|charge|refund|card|price|invoice/.test(q)) return 'Your plan is billed monthly through Paystack. Your invoices and credit balance are under Plan & billing, and any credit comes off your next bill automatically. If a charge looks wrong, tell me the date and amount and I will check it.';
   if(/pause|cancel|stop/.test(q)) return 'You can pause for a month or cancel from Plan & billing. Your plan stays active until the end of the month you paid for.';
   return 'Thanks, got it. A member of the team will pick this up shortly. You will see the reply right here.'; }
 function supSend(text){ const u=me(); if(!u) return; text=String(text||'').trim(); if(!text) return; supSeed(u);
@@ -2109,3 +2114,19 @@ document.addEventListener('click',function(e){ const b=e.target.closest('[data-s
 function staffHandoffs(){ const L=handoffs().filter(h=>!h.done); if(!L.length) return '';
   return `<section class="hp-queue"><div class="hp-qh"><span class="hp-dot"></span><h2>${L.length} customer${L.length>1?'s':''} waiting to talk to a person</h2></div>
     ${L.map(h=>`<div class="hp-qi"><div><b>${esc(h.name)}</b><span>0${h.phone}${h.order?' · '+esc(h.order):''} · ${fmtTime(h.at)}</span><p>“${esc(h.text)}”</p></div><div class="hp-qa"><a class="hp-b hp-wa" href="https://wa.me/234${h.phone}?text=${encodeURIComponent('Hi '+h.name.split(' ')[0]+', this is Washday support. How can we help?')}" target="_blank" rel="noopener">${SVGI.wa}WhatsApp</a><a class="hp-b hp-call" href="tel:0${h.phone}">${SVGI.call}Call</a><button class="hp-b hp-done" data-hp="done" data-id="${h.id}">Handled</button></div></div>`).join('')}</section>`; }
+
+/* ===== v57 · Credit balance ===== */
+function credit(u){ return Math.max(0,Math.round((u&&u.credit)||0)); }
+function addCredit(u,amt,desc){ amt=Math.round(amt); if(!u||!amt) return; u.credit=credit(u)+amt; (u.creditLog=u.creditLog||[]).unshift({at:Date.now(),amt:amt,desc:desc}); save(); }
+function creditCard(u){ const L=(u.creditLog||[]).slice(0,5);
+  return `<section class="b-credit" id="credit"><div class="bc-top"><div><p class="d-k">Credit balance</p><p class="bc-big">${naira(credit(u))}</p><p class="b-sub">${credit(u)?'Taken off your next bill automatically.':'Refunds, compensation and referral rewards land here.'}</p></div><span class="bc-ic">${SVGI.wallet}</span></div>
+    ${L.length?`<ul class="bc-log">${L.map(e=>`<li><div><b>${esc(e.desc)}</b><span>${fmtTime(e.at)}</span></div><em class="${e.amt<0?'neg':''}">${e.amt<0?'−':'+'}${naira(Math.abs(e.amt))}</em></li>`).join('')}</ul>`:''}</section>`; }
+document.addEventListener('click',function(e){ const b=e.target.closest('[data-cr]'); if(!b) return; e.preventDefault(); e.stopPropagation(); const p=b.dataset.p, u=DB.users[p]; if(!u) return;
+  if(b.dataset.cr==='open'){ modal(`<h2 class="cardh" style="font-size:22px">Add credit for ${esc(u.name.split(' ')[0])}</h2><p class="muted" style="margin-top:6px">Current balance ${naira(credit(u))}. It comes off their next bill.</p>
+      <div class="ob-areas" style="margin-top:16px">${[1000,2500,5000,10000].map(n=>`<button class="ob-chip" data-cr="amt" data-p="${p}" data-n="${n}">${naira(n)}</button>`).join('')}</div>
+      <label class="ob-field" style="margin-top:12px"><span>Amount (₦)</span><input id="crAmt" inputmode="numeric" placeholder="e.g. 3000"></label>
+      <label class="ob-field"><span>Reason</span><select id="crWhy"><option>Compensation for a damaged item</option><option>Compensation for a lost item</option><option>Missed pickup refund</option><option>Referral reward</option><option>Goodwill credit</option></select></label>
+      <div class="row" style="gap:8px;margin-top:16px"><button class="btn btn-dark" data-cr="save" data-p="${p}">Add credit</button><button class="btn btn-light" data-act="modal-close">Cancel</button></div>`); return; }
+  if(b.dataset.cr==='amt'){ const i=document.getElementById('crAmt'); if(i) i.value=b.dataset.n; return; }
+  if(b.dataset.cr==='save'){ const n=parseInt(String((document.getElementById('crAmt')||{}).value||'').replace(/\D/g,''),10); if(!n){ toast('Enter an amount'); return; } addCredit(u,n,(document.getElementById('crWhy')||{}).value||'Credit'); $('#modal').innerHTML=''; rerender(); toast(naira(n)+' credit added for '+u.name.split(' ')[0],true); }
+},true);
