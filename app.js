@@ -146,9 +146,9 @@ function refresh(){ const u = me(); if(!u) return; rollBilling(u); ensureUpcomin
 
 /* ---------- Router ---------- */
 let UI = {};
-const TITLES = { login:'Log in', signup:'Create account', subscribe:'Start your plan', app:'Dashboard', 'app/schedule':'Schedule a pickup', 'app/track':'Track order', 'app/orders':'Orders', 'app/billing':'Plan and billing', staff:'Staff', scan:'Tag station', terms:'Terms of service', privacy:'Privacy policy', guarantee:'Damage and loss guarantee', contact:'Contact' };
+const TITLES = { login:'Log in', signup:'Create account', subscribe:'Start your plan', app:'Dashboard', 'app/schedule':'Schedule a pickup', 'app/track':'Track order', 'app/orders':'Orders', 'app/billing':'Plan and billing', 'app/support':'Support', staff:'Staff', scan:'Tag station', terms:'Terms of service', privacy:'Privacy policy', guarantee:'Damage and loss guarantee', contact:'Contact' };
 function go(path){ location.hash = '#/' + path; }
-function splitRoute(h){ if (h.startsWith('scan/')) return ['scan', h.slice(5)]; if (h.startsWith('app/track/')) return ['app/track', h.slice(10)]; if (h.startsWith('home/')) return ['', h.slice(5)]; return [h, null]; }
+function splitRoute(h){ if (h.startsWith('scan/')) return ['scan', h.slice(5)]; if (h.startsWith('app/track/')) return ['app/track', h.slice(10)]; if (h.startsWith('app/support/')) return ['app/support', h.slice(12)]; if (h.startsWith('home/')) return ['', h.slice(5)]; return [h, null]; }
 function route(){
   const h = location.hash.replace(/^#\/?/,''); const [path, arg] = splitRoute(h);
   if (path.startsWith('app')){ if (!me()) { UI.after = h; return go('login'); } if (!me().plan) return go('subscribe'); refresh(); }
@@ -911,7 +911,7 @@ function viewTrack(id){
     <a href="#/app/orders" class="small" style="font-weight:600;text-decoration:none">← All orders</a>
     <div class="between" style="margin-top:8px;align-items:flex-end">
       <div><h1 class="apph1">Order ${o.id}</h1><p class="muted" style="margin-top:6px">${typeName(o.type)} · ${o.status===0?'Pickup':'Picked up'} ${fmtL(o.date)}</p></div>
-      <div class="row" style="gap:10px">${o.status===0&&!o.cancelled?`<a class="btn btn-light" href="#/app/schedule">Reschedule</a>`:''}${o.status>=1?`<button class="btn btn-light" data-act="report-open" data-id="${o.id}">Report a problem</button>`:''}<a class="btn btn-dark" href="https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent('Hi, about order '+o.id)}" target="_blank" rel="noopener">${I.chat}Message us</a></div>
+      <div class="row" style="gap:10px">${o.status===0&&!o.cancelled?`<a class="btn btn-light" href="#/app/schedule">Reschedule</a>`:''}${o.status>=1?`<button class="btn btn-light" data-act="report-open" data-id="${o.id}">Report a problem</button>`:''}<a class="btn btn-dark" href="#/app/support/${o.id}">${I.chat}Message us</a></div>
     </div>
     ${R?`<section class="card" style="margin-top:20px;border:2px solid var(--orange)" aria-label="Report a problem">${R.sent?`<div style="display:flex;gap:16px;align-items:center"><span style="width:48px;height:48px;border-radius:50%;background:var(--green-bg);color:var(--green);display:flex;align-items:center;justify-content:center">${I.check}</span><div><p style="font-size:18px;font-weight:700">Report received · ticket #R-${R.ticket}</p><p class="small muted">We'll message you on WhatsApp within 24 hours.</p></div></div>`:`
       <div class="between"><h2 class="cardh" style="font-size:22px">Report a problem with ${o.id}</h2><button class="chip" style="width:40px;height:40px;padding:0;border-radius:50%;border:0" data-act="report-close" aria-label="Close">×</button></div>
@@ -1075,7 +1075,7 @@ function viewStaff(){
 /* =========================================================
    EVENTS
    ========================================================= */
-const ROUTES = { '': viewHome, login: viewAuth, signup: viewAuth, subscribe: viewSubscribe, app: viewDashboard, 'app/schedule': viewSchedule, 'app/track': viewTrack, 'app/orders': viewOrders, 'app/billing': viewBilling, staff: viewStaff, 'staff/customers': viewCustomers, scan: (a)=>viewScan(a), terms: ()=>viewTerms(), privacy: ()=>viewPrivacy(), guarantee: ()=>viewGuarantee(), contact: ()=>viewContact() };
+const ROUTES = { '': viewHome, login: viewAuth, signup: viewAuth, subscribe: viewSubscribe, app: viewDashboard, 'app/schedule': viewSchedule, 'app/track': viewTrack, 'app/orders': viewOrders, 'app/billing': viewBilling, staff: viewStaff, 'staff/customers': viewCustomers, scan: (a)=>viewScan(a), 'app/support': (a)=>viewSupport(a), terms: ()=>viewTerms(), privacy: ()=>viewPrivacy(), guarantee: ()=>viewGuarantee(), contact: ()=>viewContact() };
 const quoteForm = () => modal(`<form data-form="quote" style="display:flex;flex-direction:column;gap:14px"><h2 class="cardh" style="font-size:24px">Request a business or estate quote</h2><label class="field">Business or estate name<input class="input" name="org"></label><label class="field">Contact phone<input class="input" name="phone" type="tel"></label><label class="field">What do you need washed?<textarea class="input" name="need" rows="3" placeholder="e.g. 20 staff uniforms weekly, 60 towels"></textarea></label><div class="row" style="gap:10px"><button class="btn btn-dark">Send request</button><button type="button" class="btn btn-light" data-act="modal-close">Cancel</button></div></form>`);
 document.addEventListener('click', e=>{
   const t = e.target.closest('[data-act]'); if(!t) return;
@@ -1608,14 +1608,14 @@ document.addEventListener('click',function(e){ const b=e.target.closest('[data-o
 /* ===== Customer app v2: shell + dashboard ===== */
 function shell(active, inner){
   const u=me(); const p=plan(u); const dk=isDark(u);
-  const items=[['app','Home',I.home],['app/schedule','Schedule',I.cal],['app/orders','Orders',I.list],['app/billing','Plan & billing',I.card]];
+  const items=[['app','Home',I.home],['app/schedule','Schedule',I.cal],['app/orders','Orders',I.list],['app/support','Support',I.chat],['app/billing','Plan & billing',I.card]];
   const initials=u.name.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();
   return `<div class="ws${dk?' dark':''}">
     <aside class="ws-side">
       <a class="ws-logo" href="#/">${LOGO()}<span>washday</span></a>
       <nav aria-label="Account">${items.map(i=>`<a href="#/${i[0]}" class="${active===i[0]?'on':''}" ${active===i[0]?'aria-current="page"':''}>${i[2]}<span>${i[1]}</span></a>`).join('')}</nav>
       <div class="ws-foot">
-        <a class="ws-help" href="https://wa.me/${CONFIG.whatsapp}" target="_blank" rel="noopener">${I.chat}<span><b>Need help?</b>Chat with us on WhatsApp</span></a>
+        <a class="ws-help" href="#/app/support">${I.chat}<span><b>Need help?</b>Chat with our team</span></a>
         <button class="ws-me" data-act="me-open" aria-label="Profile and settings">${avatarHtml(u)}<div><b>${esc(u.name)}</b><span>${p?p.name:'No plan'}${u.status&&u.status!=='active'?' · '+u.status:''}</span></div><i class="ws-more">•••</i></button>
       </div>
     </aside>
@@ -1624,7 +1624,7 @@ function shell(active, inner){
     <nav class="ws-tabs" aria-label="App">${items.map(i=>`<a href="#/${i[0]}" class="${active===i[0]?'on':''}">${i[2]}<span>${i[1].split(' ')[0]}</span></a>`).join('')}</nav>
   </div>`;
 }
-function dRing(v,max,label){ const pc=max?Math.min(1,v/max):0, r=34, c=2*Math.PI*r; return `<svg class="d-ring" viewBox="0 0 80 80" aria-label="${label}"><circle cx="40" cy="40" r="${r}" fill="none" stroke="#ECEDF2" stroke-width="7"/><circle cx="40" cy="40" r="${r}" fill="none" stroke="#2340E8" stroke-width="7" stroke-linecap="round" stroke-dasharray="${(c*pc).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 40 40)"/></svg>`; }
+function dRing(v,max,label){ const pc=max?Math.min(1,v/max):0, r=34, c=2*Math.PI*r; return `<svg class="d-ring" viewBox="0 0 80 80" aria-label="${label}"><circle cx="40" cy="40" r="${r}" fill="none" stroke="#ECEDF2" stroke-width="7"/><circle class="d-rv" cx="40" cy="40" r="${r}" fill="none" stroke="#2340E8" stroke-width="7" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c*(1-pc)).toFixed(1)}" style="--c:${c.toFixed(1)}" transform="rotate(-90 40 40)"/></svg>`; }
 function viewDashboardV2(){
   const u=me(); const p=plan(u); const c=cycleOf(u); const orders=myOrders();
   const active=orders.filter(o=>o.status>=1&&o.status<6&&!o.cancelled).sort((a,b)=>a.date.localeCompare(b.date))[0];
@@ -1651,8 +1651,8 @@ function viewDashboardV2(){
     ${u.status==='cancelled'?`<div class="d-banner">Your plan is cancelled and ends on ${fmtY(c.end)}. <a href="#/app/billing">Restart it</a></div>`:''}
     ${hero}
     <div class="d-stats">
-      <section class="d-stat">${dRing(clothes,p.items,'Clothes used')}<div><p class="d-k">Clothes this month</p><p class="d-big">${clothes}<small> of ${p.items}</small></p><p class="d-sm">${Math.max(0,p.items-clothes)} left · extras ${naira(CONFIG.extraItem)} each</p></div></section>
-      <section class="d-stat">${dRing(used+booked,p.pickups,'Pickups')}<div><p class="d-k">Pickups</p><p class="d-big">${used}<small> of ${p.pickups} used</small></p><p class="d-sm">${booked?booked+' booked':'None booked'} · ${p.pickups} deliveries included</p></div></section>
+      <section class="d-stat">${dRing(clothes,p.items,'Clothes used')}<div><p class="d-k">Clothes this month</p><p class="d-big"><span data-count="${clothes}">${clothes}</span><small> of ${p.items}</small></p><p class="d-sm">${Math.max(0,p.items-clothes)} left · extras ${naira(CONFIG.extraItem)} each</p></div></section>
+      <section class="d-stat">${dRing(used+booked,p.pickups,'Pickups')}<div><p class="d-k">Pickups</p><p class="d-big"><span data-count="${used}">${used}</span><small> of ${p.pickups} used</small></p><p class="d-sm">${booked?booked+' booked':'None booked'} · ${p.pickups} deliveries included</p></div></section>
       <section class="d-stat d-plan"><div><p class="d-k">${p.name}</p><p class="d-big">${naira(p.price)}<small>/mo</small></p><p class="d-sm">Renews ${fmt(c.renew)} · <a href="#/app/billing">Manage</a></p></div></section>
     </div>
     <div class="d-grid">
@@ -1984,7 +1984,7 @@ function washedCard(u){
   const o=lastDelivered(u); if(!o) return '';
   const list=o.list&&o.list.length?o.list:[['Items',o.items||0]]; const when=o.history.find(h=>h.s===6);
   return `<section class="d-card d-washed"><div class="d-ch"><h2>Last delivery</h2><a href="#/app/track/${o.id}">${o.id}</a></div>
-    <div class="d-wtop"><p class="d-wbig">${o.items}<small> of ${o.items} back</small></p><p class="d-wsub">Delivered ${when?fmtTime(when.at):fmt(o.date)}${o.kg?` · ${o.kg} kg`:''}</p></div>
+    <div class="d-wtop"><p class="d-wbig"><span data-count="${o.items}">${o.items}</span><small> of ${o.items} back</small></p><p class="d-wsub">Delivered ${when?fmtTime(when.at):fmt(o.date)}${o.kg?` · ${o.kg} kg`:''}</p></div>
     <ul class="d-wlist">${list.map(r=>`<li><b>${r[1]}</b><span>${esc(r[0])}</span></li>`).join('')}</ul></section>`;
 }
 function themePref(u){ return (u&&u.prefs&&u.prefs.theme)||'auto'; }
@@ -1998,7 +1998,7 @@ function meSheet(){ const u=me(); if(!u) return; const p=plan(u), t=themePref(u)
     <div class="me-seg" role="radiogroup">${[['light','Light'],['dark','Dark'],['auto','Automatic']].map(m=>`<button role="radio" aria-checked="${t===m[0]}" class="${t===m[0]?'on':''}" data-theme="${m[0]}">${m[1]}</button>`).join('')}</div>
     <div class="me-list">
       <a href="#/app/billing" data-act="modal-close">Plan and billing<i>›</i></a>
-      <a href="https://wa.me/${CONFIG.whatsapp}" target="_blank" rel="noopener">Help on WhatsApp<i>›</i></a>
+      <a href="#/app/support" data-act="modal-close">Chat with support<i>›</i></a>
       <a href="#/terms" data-act="modal-close">Terms and privacy<i>›</i></a>
     </div>
     <button class="me-out" data-act="logout">Log out</button>
@@ -2010,3 +2010,55 @@ document.addEventListener('click',function(e){
 },true);
 try{ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){ if(document.querySelector('.ws')) rerender(); }); }catch(e){}
 new MutationObserver(syncTheme).observe(document.getElementById('app'),{childList:true});
+
+/* ===== v52 · Support chat ===== */
+var SUP_QUICK=['Where is my order?','Change my pickup time','Something is missing','Question about billing'];
+function supSeed(u){ if(!u.chat||!u.chat.length){ u.chat=[{from:'wd',t:'Hi '+String(u.name||'').split(' ')[0]+', this is Washday support. Ask us anything about your pickups, orders or plan. We usually reply within a few minutes, 7am to 8pm.',at:Date.now()-60000}]; save(); } }
+function supReply(q,u){ q=q.toLowerCase(); const act=myOrders().filter(o=>o.status>=1&&o.status<6&&!o.cancelled)[0];
+  if(/where|track|status|order|ready|when/.test(q)&&act) return `Your order ${act.id} is at "${STATUSES[act.status]}". It's due back ${fmt(returnDate(act))}. You can follow every step on the order page.`;
+  if(/pickup|time|resched|move|change.*day|window/.test(q)) return 'You can move your next pickup from Schedule, up to 12 hours before it. Want me to hold a different time for you? Tell me the day and window.';
+  if(/miss|lost|damag|stain|torn|wrong/.test(q)) return "Sorry about that. Every item is tagged, so we'll trace it. Tell me which order and what's missing, and if you can, send a photo. We reply to every report within 24 hours.";
+  if(/bill|pay|charge|refund|card|price|invoice/.test(q)) return 'Your plan is billed monthly through Paystack. Your invoices are under Plan & billing. If a charge looks wrong, tell me the date and amount and I will check it.';
+  if(/pause|cancel|stop/.test(q)) return 'You can pause for a month or cancel from Plan & billing. Your plan stays active until the end of the month you paid for.';
+  return 'Thanks, got it. A member of the team will pick this up shortly. You will see the reply right here.'; }
+function supSend(text){ const u=me(); if(!u) return; text=String(text||'').trim(); if(!text) return; supSeed(u);
+  u.chat.push({from:'me',t:text,at:Date.now(),ctx:UI.supOrder||null}); save(); UI.supTyping=true; rerender(); supScroll();
+  setTimeout(function(){ const v=me(); if(!v) return; v.chat.push({from:'wd',t:supReply(text,v),at:Date.now()}); save(); UI.supTyping=false; if(location.hash.indexOf('app/support')>-1){ rerender(); supScroll(); } }, 1400+Math.random()*900); }
+function supScroll(){ setTimeout(function(){ const b=document.querySelector('.sp-thread'); if(b) b.scrollTop=b.scrollHeight; },30); }
+function viewSupport(arg){
+  const u=me(); supSeed(u); if(arg) UI.supOrder=arg;
+  const o=UI.supOrder?DB.orders.find(x=>x.id===UI.supOrder):null;
+  const fmtT=function(at){ const d=new Date(at); return d.toLocaleTimeString('en-NG',{hour:'numeric',minute:'2-digit'}); };
+  const msgs=u.chat.map(function(m,i){ return `<div class="sp-m ${m.from==='me'?'me':'wd'}" style="--i:${Math.max(0,i-u.chat.length+4)}">${m.from==='wd'?`<span class="sp-ic">${SI.appi}</span>`:''}<div><p>${esc(m.t)}</p><time>${m.ctx?esc(m.ctx)+' · ':''}${fmtT(m.at)}</time></div></div>`; }).join('');
+  return shell('app/support', `
+    <div class="d-head"><div><p class="d-date">Replies in minutes · 7am to 8pm</p><h1 class="d-h1">Support</h1></div></div>
+    <div class="sp-grid">
+      <section class="sp-chat">
+        <header class="sp-top"><span class="sp-ic sp-ic-lg">${SI.appi}</span><div><b>Washday support</b><span><i class="sp-on"></i>Online now</span></div></header>
+        <div class="sp-thread" aria-live="polite">${msgs}${UI.supTyping?'<div class="sp-m wd"><span class="sp-ic">'+SI.appi+'</span><div class="sp-typing"><i></i><i></i><i></i></div></div>':''}</div>
+        <div class="sp-quick">${o?`<span class="sp-ctx">About ${esc(o.id)} <button data-sp="clear" aria-label="Remove">×</button></span>`:''}${SUP_QUICK.map(q=>`<button data-sp="q" data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+        <form class="sp-bar" data-form="sup"><input name="m" placeholder="Type a message" autocomplete="off" aria-label="Message"><button aria-label="Send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></form>
+      </section>
+      <aside class="sp-side">
+        <section class="d-card"><div class="d-ch"><h2>Other ways to reach us</h2></div>
+          <div class="sp-ways">
+            <a class="sp-way" href="https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent('Hi Washday'+(o?', about order '+o.id:''))}" target="_blank" rel="noopener"><span class="sp-wi sp-wa">${I.chat}</span><div><b>WhatsApp</b><span>Chat on your phone</span></div><i>›</i></a>
+            ${CONFIG.phone?`<a class="sp-way" href="tel:${CONFIG.phone.replace(/\s/g,'')}"><span class="sp-wi">☏</span><div><b>Call us</b><span>${esc(CONFIG.phone)}</span></div><i>›</i></a>`:''}
+            ${CONFIG.email?`<a class="sp-way" href="mailto:${CONFIG.email}"><span class="sp-wi">@</span><div><b>Email</b><span>${esc(CONFIG.email)}</span></div><i>›</i></a>`:''}
+            <a class="sp-way" href="#/app/orders"><span class="sp-wi">${I.list}</span><div><b>Report a problem</b><span>Pick the order first</span></div><i>›</i></a>
+          </div></section>
+        <section class="d-card"><div class="d-ch"><h2>Quick answers</h2></div>
+          <div class="sp-faq">${FAQS.slice(0,6).map((f,i)=>`<details><summary>${f[0]}<i>+</i></summary><p>${f[1]}</p></details>`).join('')}</div></section>
+      </aside>
+    </div>`);
+}
+document.addEventListener('click',function(e){ const b=e.target.closest('[data-sp]'); if(!b) return; e.preventDefault();
+  if(b.dataset.sp==='q') supSend(b.dataset.q);
+  if(b.dataset.sp==='clear'){ UI.supOrder=null; location.hash='#/app/support'; } });
+document.addEventListener('submit',function(e){ const f=e.target; if(f.dataset.form!=='sup') return; e.preventDefault(); const v=f.elements.m.value; f.elements.m.value=''; supSend(v); setTimeout(function(){ const i=document.querySelector('.sp-bar input'); if(i) i.focus(); },60); });
+
+/* ===== v52 · Micro-interactions ===== */
+var WS_LAST='';
+function countUp(root){ (root||document).querySelectorAll('[data-count]').forEach(function(el){ if(el.dataset.cd) return; el.dataset.cd=1; const to=+el.dataset.count||0; if(!to||matchMedia('(prefers-reduced-motion: reduce)').matches){ el.textContent=to; return; } const t0=performance.now(), D=900; (function f(t){ const k=Math.min(1,(t-t0)/D), e=1-Math.pow(1-k,3); el.textContent=Math.round(to*e); if(k<1) requestAnimationFrame(f); })(t0); }); }
+new MutationObserver(function(){ const ws=document.querySelector('.ws'); if(!ws) { WS_LAST=''; return; } const r=location.hash; if(r!==WS_LAST){ WS_LAST=r; ws.classList.add('ws-enter'); setTimeout(function(){ const w=document.querySelector('.ws'); if(w) w.classList.remove('ws-enter'); },1200); countUp(ws); } else { ws.querySelectorAll('[data-count]').forEach(function(el){ el.textContent=el.dataset.count; }); } }).observe(document.getElementById('app'),{childList:true});
+document.addEventListener('pointerdown',function(e){ const b=e.target.closest('.ws a,.ws button,.me-modal a,.me-modal button'); if(!b) return; b.classList.add('mi-press'); const up=function(){ b.classList.remove('mi-press'); window.removeEventListener('pointerup',up); window.removeEventListener('pointercancel',up); }; window.addEventListener('pointerup',up); window.addEventListener('pointercancel',up); });
