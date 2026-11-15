@@ -1019,3 +1019,45 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Geist','Inter',
   .hl-ui,.hl-card.c0 .hl-ui,.hl-card.c2 .hl-ui{left:10px!important;right:10px!important;bottom:10px!important}
   .gx{width:auto;box-sizing:border-box}
 }
+
+/* ===== v25 · logo mark + highlight micro-interactions ===== */
+.wm{display:inline-flex;align-items:center;gap:8px}
+.wm-ic{display:inline-block;width:28px;height:28px;flex:none;border-radius:7px;overflow:hidden;box-shadow:0 1px 2px rgba(35,64,232,.25)}
+.wm-ic svg{display:block;width:100%;height:100%}
+.logo .wm-ic{width:30px;height:30px}
+.wm:hover .wm-ic{transform:rotate(-8deg) scale(1.06);transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+.wm .wm-ic{transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+.hl-chip{display:none!important}
+/* cards: inactive recede, active comes forward */
+.hl-card .hl-media{transition:transform .8s cubic-bezier(.2,.8,.2,1),opacity .6s ease}
+.hl-card:not(.on){cursor:pointer}
+@media (min-width:641px){.hl-card:not(.on) .hl-media{transform:scale(.965);opacity:.55}.hl-card:not(.on):hover .hl-media{opacity:.8}}
+/* notification arrives */
+.hl-ui{opacity:0!important;transform:translateY(26px) scale(.94)!important;filter:blur(8px);transition:opacity .55s .35s,transform 1s .35s cubic-bezier(.34,1.45,.64,1),filter .55s .35s!important}
+.hl.seen .hl-card.on .hl-ui{opacity:1!important;transform:none!important;filter:none}
+@keyframes gxPop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:none}}
+@keyframes gxUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.hl.seen .hl-card.on .gx-ic{animation:gxPop .7s .5s both cubic-bezier(.34,1.56,.64,1)}
+.hl.seen .hl-card.on .gx-h{animation:gxUp .5s .62s both}
+.hl.seen .hl-card.on .gx-t{animation:gxUp .5s .7s both}
+.hl.seen .hl-card.on .gx-s{animation:gxUp .5s .78s both}
+.hl.seen .hl-card.on .gx-num,.hl.seen .hl-card.on .gx-qr,.hl.seen .hl-card.on .gx-ring{animation:gxPop .7s .8s both cubic-bezier(.34,1.56,.64,1)}
+.gx-qr{position:relative;overflow:hidden}
+.gx-qr::after{content:"";position:absolute;left:0;right:0;top:-40%;height:40%;background:linear-gradient(180deg,rgba(91,120,255,0),rgba(91,120,255,.55),rgba(91,120,255,0));opacity:0}
+.hl.seen .hl-card.on .gx-qr::after{animation:qrScan 1.5s 1.2s ease-in-out 2}
+@keyframes qrScan{0%{top:-40%;opacity:1}100%{top:100%;opacity:1}}
+.hl.seen .hl-card.on .gx-ok{animation:gxPop .7s .85s both cubic-bezier(.34,1.56,.64,1),okPulse 2.2s 1.7s ease-out infinite}
+@keyframes okPulse{0%{box-shadow:0 0 0 0 rgba(91,120,255,.65)}70%{box-shadow:0 0 0 14px rgba(91,120,255,0)}100%{box-shadow:0 0 0 0 rgba(91,120,255,0)}}
+.gx-ok svg path{stroke-dasharray:20;stroke-dashoffset:0}
+.hl.seen .hl-card.on .gx-ok svg path{animation:okDraw .5s 1.2s both ease-out}
+@keyframes okDraw{from{stroke-dashoffset:20}to{stroke-dashoffset:0}}
+.hl-card.on .gx-rf{stroke-dashoffset:1}
+.hl.seen .hl-card.on .gx-rf{stroke-dashoffset:.42;transition-delay:1s}
+.gx-ring b{transition:opacity .3s}
+/* caption rises with the slide */
+.hl.seen .hl-card.on .hl-cap p{animation:gxUp .6s .15s both}
+.hl-cap b{transition:color .4s}
+/* gentle live 'now' pulse on the time */
+.hl.seen .hl-card.on .gx-h time{animation:gxUp .5s .62s both}
+@media (prefers-reduced-motion:reduce){.hl-ui{transition:none!important;filter:none}.hl.seen .hl-card.on *{animation:none!important}}
+@media (max-width:640px){.hl-card.c0 .hl-img{object-position:52% 50%}}
