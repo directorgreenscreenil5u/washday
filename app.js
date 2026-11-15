@@ -358,7 +358,7 @@ const USES = [
   ['tagging','Businesses','Uniforms, towels and linen for salons, spas, gyms and small hotels, counted in and out every time.','quote']
 ];
 const HL = [
-  ['img/bts-van5.jpg','Counted at your door.','Your rider counts every piece with you before leaving, and the full list lands on WhatsApp straight away. No weighing, no guessing.','Pickup · Tue 8:14 am','Counting at pickup','Washday driver handing a basket of clean laundry to a customer at a cobalt van'],
+  ['img/bts-van6.jpg','Counted at your door.','Your rider counts every piece with you before leaving, and the full list lands on WhatsApp straight away. No weighing, no guessing.','Pickup · Tue 8:14 am','Counting at pickup','Washday driver handing a basket of clean laundry to a customer at a cobalt van'],
   ['img/bts-tag.jpg','Tagged and counted again.','Every piece gets a QR tag tied to you. We count again at the studio and before delivery, and the final number is printed on your sealed bag.','Studio · Lekki · 10:02','Tagging','Washday technician attaching a QR tag to a folded shirt'],
   ['img/bts-wash.jpg','Never mixed with anyone else&rsquo;s clothes.','Your clothes go into a machine on their own, never in a shared load with other customers. Your detergent and folding preferences are saved and used every time.','Your clothes · WD-1042','Washing','Technician loading one customer bag into its own machine'],
   ['img/woman.jpg','Backed in writing.','Lost or damaged? We pay you back on a published scale, and every complaint gets a reply within 24 hours.','Delivered · Thu 10:41 am','Guarantee','A customer receiving her clean laundry at the door']
@@ -1434,7 +1434,14 @@ document.addEventListener('click',function(e){ const b=e.target.closest('.px-pla
   var v=ov.querySelector('video'); try{ v.muted=true; var pp=v.play(); if(pp&&pp.catch) pp.catch(function(){}); }catch(e){}
   requestAnimationFrame(function(){ ov.classList.add('go'); });
   var done=false;
-  function end(){ if(done) return; done=true; ov.classList.add('out'); root.classList.add('intro-reveal'); root.classList.remove('intro-on');
-    setTimeout(function(){ ov.remove(); },1000); setTimeout(function(){ root.classList.remove('intro-reveal'); },2400); }
+  function end(){ if(done) return; done=true; ov.classList.add('iris');
+    var film=ov.querySelector('.i3-film'); var vw=innerWidth, vh=innerHeight, R=Math.hypot(vw,vh)/2+60, D=1150, t0=0;
+    setTimeout(function(){ root.classList.add('intro-reveal'); root.classList.remove('intro-on'); },380);
+    function step(t){ if(!t0) t0=t; var p=Math.min(1,(t-t0)/D); var e=p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
+      var r=Math.max(0,e*R), m='radial-gradient(circle at 50% 50%, transparent '+r+'px, rgba(0,0,0,.35) '+(r+18)+'px, #000 '+(r+46)+'px)';
+      ov.style.webkitMaskImage=m; ov.style.maskImage=m;
+      film.style.transform='scale('+(1+0.35*e)+')'; film.style.transition='none';
+      if(p<1) requestAnimationFrame(step); else { ov.remove(); setTimeout(function(){ root.classList.remove('intro-reveal'); },1600); } }
+    setTimeout(function(){ requestAnimationFrame(step); },260); }
   var t=setTimeout(end,4300); ov.addEventListener('click',function(){ clearTimeout(t); end(); });
 })();
