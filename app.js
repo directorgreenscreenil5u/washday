@@ -154,7 +154,7 @@ Object.assign(IMG, { hero3d:'img/hero3d.webp', moon:'img/moon.webp', shirtpink:'
 Object.assign(IMG, { hero:'img/hero.jpg', moon:'img/hero.jpg', hero3d:'img/hero.jpg', bagpink:'img/basket.jpg', iron:'img/iron.jpg', native:'img/native.jpg', towels:'img/bed.jpg', woman:'img/woman.jpg', family:'img/family.jpg', rider:'img/rider.jpg', tagging:'img/tagging.jpg', folded:'img/folded.jpg', shirt:'img/shirts.jpg', shirtpink:'img/shirts.jpg', heroVid:'img/hero-wm.mp4', heroPoster:'img/hero-wm.jpg' });
 Object.assign(IMG, { bagpink:'img/svc-wash.jpg', iron:'img/svc-iron.jpg', native:'img/svc-dry.jpg', towels:'img/svc-bed.jpg' });
 Object.assign(IMG, { rider:'img/rider-pro2.jpg' });
-Object.assign(IMG, { usePro:'img/use-pro.jpg', useFamily:'img/use-family2.jpg', useEstate:'img/use-estate2.jpg', useBiz:'img/use-business2.jpg' });
+Object.assign(IMG, { usePro:'img/use-pro.jpg', useFamily:'img/use-family3.jpg', useEstate:'img/use-estate3.jpg', useBiz:'img/use-business3.jpg' });
 const ARR = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 const ARR_UP = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg>';
 function siteHeader(){
@@ -1478,22 +1478,30 @@ document.addEventListener('scroll',function(e){ const t=e.target; if(!t.classLis
     var rv=real.querySelector('video'), cv=cl.querySelector('video');
     if(cv){ try{ cv.muted=true; if(rv) cv.currentTime=rv.currentTime||0; var q=cv.play(); if(q&&q.catch) q.catch(function(){}); }catch(e){} }
     ov.appendChild(cl);
-    var Sm=Math.min(S,Math.max(2,1600/r.width*1.1)), T0='translate('+(cx-r.left-Sm*dx)+'px,'+(cy-r.top-Sm*dy)+'px) scale('+Sm+')';
+    /* One continuous camera move: the drum film and the real machine share one stage, so they move as one */
     var hb=getComputedStyle(document.querySelector('.ahero')).backgroundColor||'rgb(242, 241, 244)';
-    film.style.transition='none'; film.style.transformOrigin=cx+'px '+cy+'px'; var pR=Math.min(ri*1.04,cy,vh-cy,cx,vw-cx)-2, pm='radial-gradient(circle at '+cx+'px '+cy+'px, #000 '+(pR*0.9)+'px, transparent '+pR+'px)'; film.style.webkitMaskImage=pm; film.style.maskImage=pm;
-    /* 1. camera pulls back from the drum (film shrinks to where the hero drum will sit) */
-    film.animate([{transform:'scale(1)'},{transform:'scale('+Math.min(1,rh*Sm*0.98/pR)+')'}],{duration:900,easing:'cubic-bezier(.55,0,.35,1)',fill:'forwards'});
-    var vg=ov.querySelector('.i3-vig'); if(vg) vg.animate([{opacity:getComputedStyle(vg).opacity},{opacity:0}],{duration:600,fill:'forwards'});
-    /* 2. lights come up: the real machine fades in exactly over the drum */
-    setTimeout(function(){ ov.style.transition='background-color .7s ease'; ov.style.background=hb; },650);
-    cl.animate([{opacity:0,transform:T0},{opacity:1,transform:T0}],{duration:650,delay:650,easing:'ease-in-out',fill:'forwards'}).onfinish=function(){
-      film.style.visibility='hidden'; ov.style.cursor='default';
-      root.style.overflowY='auto'; var r2=real.getBoundingClientRect(), T1='translate('+(r2.left-r.left)+'px,'+(r2.top-r.top)+'px) scale('+(r2.width/r.width)+')';
-      /* 3. settle into the hero */
-      var pull=cl.animate([{transform:T0},{transform:T1}],{duration:1300,easing:'cubic-bezier(.45,0,.2,1)',fill:'forwards'});
-      setTimeout(function(){ ov.style.background=hb.replace(/^rgb\((.*)\)$/,'rgba($1, 0)'); root.classList.add('intro-reveal'); root.classList.remove('intro-on'); },1050);
-      pull.onfinish=function(){ root.style.overflowY=''; try{ if(rv&&cv) rv.currentTime=cv.currentTime; }catch(e){} root.classList.remove('i3-hide'); requestAnimationFrame(function(){ ov.remove(); }); setTimeout(function(){ root.classList.remove('intro-reveal'); },1600); };
-    }; }
+    var tx=cx-r.left-S*dx, ty=cy-r.top-S*dy, T0='translate('+tx+'px,'+ty+'px) scale('+S+')';
+    var stage=document.createElement('div'); stage.className='i3-stage';
+    stage.style.cssText='position:absolute;left:'+r.left+'px;top:'+r.top+'px;width:'+r.width+'px;height:'+r.height+'px;transform-origin:0 0;transform:'+T0+';will-change:transform;z-index:2';
+    cl.style.left='0px'; cl.style.top='0px'; cl.style.opacity='0';
+    var fx=(0-r.left-tx)/S, fy=(0-r.top-ty)/S;
+    var pR=Math.min(ri*1.05,cy,vh-cy,cx,vw-cx)-2;
+    film.style.transition='none'; film.style.cssText+=';position:absolute;inset:auto;left:'+fx+'px;top:'+fy+'px;width:'+vw+'px;height:'+vh+'px;transform-origin:0 0;transform:scale('+(1/S)+');opacity:1';
+    var fm='radial-gradient(circle at '+cx+'px '+cy+'px, #000 '+(pR*0.92)+'px, transparent '+pR+'px)';
+    ov.appendChild(stage); stage.appendChild(film); stage.appendChild(cl);
+    var vg=ov.querySelector('.i3-vig'); if(vg) vg.animate([{opacity:getComputedStyle(vg).opacity},{opacity:0}],{duration:500,fill:'forwards'});
+    film.style.webkitMaskImage=fm; film.style.maskImage=fm;
+    root.style.overflowY='auto'; var r2=real.getBoundingClientRect(); var T1='translate('+(r2.left-r.left)+'px,'+(r2.top-r.top)+'px) scale('+(r2.width/r.width)+')';
+    var D=2600, ease='cubic-bezier(.6,0,.2,1)';
+    var move=stage.animate([{transform:T0},{transform:T1}],{duration:D,easing:ease,fill:'forwards'});
+    cl.animate([{opacity:0,offset:0},{opacity:0,offset:.14},{opacity:1,offset:.42},{opacity:1,offset:1}],{duration:D,fill:'forwards'});
+    film.animate([{opacity:1,offset:0},{opacity:1,offset:.3},{opacity:0,offset:.5},{opacity:0,offset:1}],{duration:D,fill:'forwards'});
+    ov.animate([{backgroundColor:'#000',offset:0},{backgroundColor:'#000',offset:.3},{backgroundColor:hb,offset:.5},{backgroundColor:hb,offset:1}],{duration:D,fill:'forwards'});
+    ov.style.cursor='default';
+    setTimeout(function(){ root.classList.add('intro-reveal'); root.classList.remove('intro-on'); },D*0.78);
+    setTimeout(function(){ ov.animate([{opacity:1},{opacity:0}],{duration:450,fill:'forwards'}); },D*0.86);
+    move.onfinish=function(){ root.style.overflowY=''; try{ if(rv&&cv) rv.currentTime=cv.currentTime; }catch(e){} root.classList.remove('i3-hide'); requestAnimationFrame(function(){ ov.remove(); }); setTimeout(function(){ root.classList.remove('intro-reveal'); },1600); };
+  }
   var t=setTimeout(end,4300); ov.addEventListener('click',function(){ clearTimeout(t); end(); });
 })();
 
