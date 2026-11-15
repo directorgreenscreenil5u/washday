@@ -7,7 +7,7 @@
 const CONFIG = {
   brand: 'Washday',
   whatsapp: '2348000000000',
-  areas: [ {name:'Yaba', open:true}, {name:'Surulere', open:true}, {name:'Ikeja', open:true}, {name:'Lekki', open:false}, {name:'Victoria Island', open:false} ],
+  areas: [ {name:'Lagos Mainland', open:true}, {name:'Lagos Island', open:false} ],
   plans: {
     fresh:     { name:'Fresh Start',  price:20000, items:50,  pickups:1, kg:8,  service:'Wash, dry and fold',            blurb:'For one person who wants their weekends back.', extra:[], img:'folded' },
     weekly:    { name:'Weekly Fresh', price:35000, items:100, pickups:2, kg:8,  service:'Wash, dry, iron, hang or fold', blurb:'A pickup every week, ironed and ready to wear.', extra:['Live order tracking'], tag:'Best for most homes', img:'shirt' },
@@ -24,6 +24,21 @@ const CONFIG = {
   staffPin: '2468'
 };
 const IMG = { hero:'img/hero.webp', shirt:'img/shirt.webp', folded:'img/folded.webp', woman:'img/woman.webp', rider:'img/rider.webp', tagging:'img/tagging.webp', native:'img/native.webp', family:'img/family.webp' };
+Object.assign(CONFIG, {
+  email: '',            // e.g. hello@washday.ng  (shown on Contact + Privacy once set)
+  phone: '',            // e.g. 0803 000 0000
+  studio: 'Yaba, Lagos', // full studio address before launch
+  rc: '',               // CAC registration number, e.g. RC 1234567
+  legalUpdated: '15 November 2026',
+  guarantee: [ // compensation scale: confirm before launch
+    ['Everyday clothes','Shirts, T-shirts, trousers, jeans, dresses, skirts, nightwear','₦15,000'],
+    ['Native and occasion wear','Agbada, kaftan, aso-oke, lace, ankara outfits, suits','₦40,000'],
+    ['Household linen','Bedsheets, towels, duvets, curtains','₦20,000'],
+    ['Declared premium items','Designer or high-value pieces you declare at pickup','₦100,000']
+  ],
+  guaranteeCap: '₦150,000'
+});
+const LEGAL_NAV=[['terms','Terms of service'],['privacy','Privacy policy'],['guarantee','Damage and loss guarantee'],['contact','Contact']];
 const PLAN_KEYS = ['fresh','weekly','household'];
 const STATUSES = ['Scheduled','Picked up','Tagged and counted','Washing and ironing','Quality check and packed','Out for delivery','Delivered'];
 const STATUS_HELP = ['Your rider will come in the chosen window.','Bag weighed at your door. Confirmation sent on WhatsApp.','Every item tagged to you and counted.','Washed on its own, never mixed with other loads.','Items counted again and sealed with the count on the bag.','Rider is on the way.','Confirm your item count and rate the load.'];
@@ -131,7 +146,7 @@ function refresh(){ const u = me(); if(!u) return; rollBilling(u); ensureUpcomin
 
 /* ---------- Router ---------- */
 let UI = {};
-const TITLES = { login:'Log in', signup:'Create account', subscribe:'Start your plan', app:'Dashboard', 'app/schedule':'Schedule a pickup', 'app/track':'Track order', 'app/orders':'Orders', 'app/billing':'Plan and billing', staff:'Staff', scan:'Tag station' };
+const TITLES = { login:'Log in', signup:'Create account', subscribe:'Start your plan', app:'Dashboard', 'app/schedule':'Schedule a pickup', 'app/track':'Track order', 'app/orders':'Orders', 'app/billing':'Plan and billing', staff:'Staff', scan:'Tag station', terms:'Terms of service', privacy:'Privacy policy', guarantee:'Damage and loss guarantee', contact:'Contact' };
 function go(path){ location.hash = '#/' + path; }
 function splitRoute(h){ if (h.startsWith('scan/')) return ['scan', h.slice(5)]; if (h.startsWith('app/track/')) return ['app/track', h.slice(10)]; if (h.startsWith('home/')) return ['', h.slice(5)]; return [h, null]; }
 function route(){
@@ -173,7 +188,9 @@ const FAQS = [
   ['What counts as one item?','Each piece of clothing is one item: a shirt, a pair of trousers, a T-shirt, a dress, a towel. A two-piece outfit counts as two. Duvets, curtains, suits and native attire for dry cleaning are priced separately.'],
   ['What if I go over my items for the month?',`We wash them anyway and add ${naira(CONFIG.extraItem)} per extra item to your next bill. You see the count on WhatsApp before we leave your door.`],
   ['Can I pause or cancel my plan?','Yes. Pause for one billing month a year when you travel, switch plans from your account, or cancel before your next billing date. Unused pickups do not roll over.'],
-  ['What if something is lost or damaged?','Every item is tagged and counted, so this is rare. If it happens, we pay you back using our published compensation scale and reply to every complaint within 24 hours.'],
+  ['What if something is lost or damaged?','Every item is tagged and counted, so this is rare. If it happens, we pay you back using our <a href="#/guarantee">published compensation scale</a> and reply to every complaint within 24 hours.'],
+  ['Which areas do you cover?','All of Lagos Mainland. Lagos Island is coming next.'],
+  ['Can I drop off my clothes?','No. Washday is online and pickup only. Book on the website and your rider comes to you.'],
   ['How do I pay?','Online by card, bank transfer or USSD through Paystack, billed monthly. Riders never collect cash.'],
   ['What are the pickup times?','Pick a fixed day and a two-hour window between 7am and 8pm, Monday to Saturday. Move a single pickup from your account up to 12 hours before.']
 ];
@@ -330,13 +347,13 @@ const TRK = [
   { t:'Delivered', d:'Confirm the count and rate your load.', ic:'check', s:'Delivered', ct:'Delivered at 10:41am', cd:'Tap to confirm 32 items received' }
 ];
 const SVC3 = {
-  wash: { label:'Wash & fold', ti:'drop', img:'bagpink', head:'Everyday clothes, done.', sub:'Hand over one bag. Get it back clean, fresh and neatly folded.', price:'Included in every plan',
-    rows:[['scale','Counted at your door','Your rider counts every piece with you and sends the count on WhatsApp.'],['tag','Every item tagged','Each piece is tagged to you and counted in and out.'],['shield','Never mixed','Your load is washed on its own, with your detergent preferences.']] },
+  wash: { label:'Wash & fold', ti:'drop', img:'bagpink', head:'Everyday clothes, done.', sub:'One bag out. One bag back, clean, fresh and folded the way you like.', price:'Included in every plan',
+    rows:[['scale','Counted at your door','Every piece counted with you. The list lands on WhatsApp.'],['tag','Tagged to your name','Each piece has its own tag, so nothing gets lost or swapped.'],['shield','Never mixed','Your clothes never share a machine with a stranger’s.']] },
   iron: { label:'Ironing', ti:'hanger', img:'iron', head:'Pressed and ready to wear.', sub:'Shirts on hangers, trousers creased, straight from the bag to your day.', price:'Included in Weekly Fresh and Full House',
     rows:[['hanger','Hung or folded','Tell us once and we remember how you like each item.'],['clock','Back in 48 hours','Or 24 hours with express return when you need it sooner.'],['sparkle','Crisp every time','Steam-pressed by hand, collars and cuffs included.']] },
   dry: { label:'Dry cleaning', ti:'sparkle', img:'native', head:'From agbada to tuxedo.', sub:'Native attire, suits and gowns, cleaned and pressed with care.', price:`From ${naira(CONFIG.dryCleanItem)} per item`,
     rows:[['sparkle','Delicate fabrics','Aso-oke, lace, ankara and embroidery handled by specialists.'],['camera','Photographed on arrival','Existing stains or damage are flagged before we start.'],['zip','Returned covered','Every piece comes back pressed, on a hanger, in a garment cover.']] },
-  bed: { label:'Bedding', ti:'layers', img:'towels', head:'Duvets, sheets and curtains.', sub:'Big items washed properly, without taking over your weekend.', price:`${naira(CONFIG.duvet)} a duvet, priced separately`,
+  bed: { label:'Bedding', ti:'layers', img:'towels', head:'Duvets, sheets and curtains.', sub:'The big, heavy wash you keep putting off. Done.', price:`${naira(CONFIG.duvet)} a duvet, priced separately`,
     rows:[['layers','Washed on their own','Large items get their own cycle and a full dry.'],['shield','Hygienic wash','Hot wash for sheets and towels to keep them truly clean.'],['zip','Sealed and fresh','Folded and returned in a sealed zip bag.']] }
 };
 Object.assign(SI, {
@@ -374,23 +391,23 @@ const SVC2 = [
   { label:'Bedding', head:'Duvets, sheets<br>and curtains.', img:'towels', facts:[['layers','Washed on their own'],['zip','Returned in a sealed bag']], price:`Included on Full House, or ${naira(CONFIG.duvet)} a duvet` }
 ];
 const USES = [
-  ['usePro','Busy professionals','Long days, no time, no generator to spare. Hand over one bag a week and get your weekends back.','fresh'],
-  ['useFamily','Families','Kids\' clothes, school uniforms, towels and bedding. Full House covers 200 items a month.','household'],
-  ['useEstate','Estates','One collection point for every resident, a fixed pickup day and a residents\' discount.','quote'],
-  ['useBiz','Businesses','Uniforms, towels and linen for salons, spas, gyms and small hotels, counted in and out every time.','quote']
+  ['usePro','Busy professionals','Traffic already takes your evenings. Laundry shouldn’t take your weekends. One bag a week, done.','fresh'],
+  ['useFamily','Families','School uniforms, kids’ clothes, towels and bedding. Up to 200 pieces a month, all counted, none mixed up.','household'],
+  ['useEstate','Estates','One pickup point, one fixed day and a better rate for every resident.','quote'],
+  ['useBiz','Businesses','Uniforms, towels and linen for salons, spas, gyms and hotels. Counted in, counted out.','quote']
 ];
 const HL = [
-  ['img/bts-van6.jpg','Counted at your door.','Your rider counts every piece with you before leaving, and the full list lands on WhatsApp straight away. No weighing, no guessing.','Pickup · Tue 8:14 am','Counting at pickup','Washday driver handing a basket of clean laundry to a customer at a cobalt van'],
-  ['img/bts-tag.jpg','Tagged and counted again.','Every piece gets a QR tag tied to you. We count again at the studio and before delivery, and the final number is printed on your sealed bag.','Studio · Yaba · 10:02','Tagging','Washday technician attaching a QR tag to a folded shirt'],
-  ['img/bts-wash.jpg','Never mixed with anyone else&rsquo;s clothes.','Your clothes go into a machine on their own, never in a shared load with other customers. Your detergent and folding preferences are saved and used every time.','Your clothes · WD-1042','Washing','Technician loading one customer bag into its own machine'],
-  ['img/woman.jpg','Backed in writing.','Lost or damaged? We pay you back on a published scale, and every complaint gets a reply within 24 hours.','Delivered · Thu 10:41 am','Guarantee','A customer receiving her clean laundry at the door']
+  ['img/bts-van6.jpg','Counted with you.','Your rider counts every piece at your door and sends you the list on WhatsApp before leaving. No scales. No guessing.','Pickup · Tue 8:14 am','Counting at pickup','Washday driver handing a basket of clean laundry to a customer at a cobalt van'],
+  ['img/bts-tag.jpg','Tagged to your name.','Every piece gets its own QR tag. We count again at the studio, and again before your bag is sealed.','Studio · Yaba · 10:02','Tagging','Washday technician attaching a QR tag to a folded shirt'],
+  ['img/bts-wash.jpg','Washed alone.','Your clothes never share a machine with anyone else&rsquo;s. Your detergent and folding preferences go in every time.','Your clothes · WD-1042','Washing','Technician loading one customer bag into its own machine'],
+  ['img/woman.jpg','Promised in writing.','If anything is lost or damaged, we pay you back. Every complaint gets an answer within 24 hours.','Delivered · Thu 10:41 am','Guarantee','A customer receiving her clean laundry at the door']
 ];
 const GX = (ttl,sub,acc,time) => `<div class="gx"><span class="gx-ic">${SI.appi}</span><div class="gx-b"><p class="gx-h"><b>Washday</b><time>${time||'now'}</time></p><p class="gx-t">${ttl}</p><p class="gx-s">${sub}</p></div>${acc}</div>`;
 const HLUI = [
-  GX('Pickup confirmed','Tunde counted your clothes with you at the door.','<span class="gx-num"><b>32</b><i>items</i></span>','8:14 am'),
+  GX('Pickup confirmed','32 items counted with you at the door.','<span class="gx-num"><b>32</b><i>items</i></span>','8:14 am'),
   GX('Tagged and registered','WD-T-0007 · White shirt · Ada O.',`<span class="gx-qr" data-qr="${SITE_URL}#/scan/WD-T-0007"></span>`,'10:02 am'),
   GX('Washing now · Machine 03','Only your clothes. 30°C, fragrance-free.','<span class="gx-ring"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="19" class="gx-rt"/><circle cx="22" cy="22" r="19" class="gx-rf" pathLength="1"/></svg><b>24m</b></span>','11:20 am'),
-  GX('Delivered · 32 of 32 items','Counted out, sealed and covered by our guarantee.',`<span class="gx-ok">${SI.check}</span>`,'Thu 10:41 am')
+  GX('Delivered · 32 of 32 items','Every piece back. Sealed and guaranteed.',`<span class="gx-ok">${SI.check}</span>`,'Thu 10:41 am')
 ];
 const BS = [
   ['tag','Counted in. Counted out.','Every piece is tagged to you and counted at pickup, then again before delivery. The number is printed on your sealed bag.'],
@@ -407,14 +424,14 @@ const ACCS = [
 function viewHome(){
   const u = me(); const tab = UI.svc2 || 'wash'; const S = SVC[tab]; const acc = UI.acc ?? 0;
   const open = CONFIG.areas.filter(a=>a.open).map(a=>a.name);
-  const marqItems = ['◐ Yaba','◑ Surulere','48-hour return','Every item tagged','◒ Ikeja','Paystack','◓ Lekki · soon','WhatsApp updates','◐ Victoria Island · soon'];
+  const marqItems = ['◐ All of Lagos Mainland','48-hour return','Every item tagged','Paystack','◓ Lagos Island · soon','WhatsApp updates'];
   return `
   ${isFounding()?`<div class="annc">Founding members get ${Math.round(CONFIG.foundingDiscount*100)}% off.<a href="#/subscribe">Claim yours</a></div>`:''}
   ${siteHeader()}
   <main>
   <section class="ahero">
-    <h1 class="ah-h1">Laundry, handled.</h1>
-    <p class="ah-sub">Picked up. Cleaned. Back in 48 hours.</p>
+    <h1 class="ah-h1">Never do laundry again.</h1>
+    <p class="ah-sub">Picked up at your door. Back in 48 hours, pressed and counted.</p>
     <div class="ah-ctas"><a class="ah-btn" href="#/home/plans">Choose a plan</a><a class="ah-link" href="#/home/how">Learn more <span aria-hidden="true">›</span></a></div>
     <div class="ah-media"><video class="ah-vid" src="${IMG.heroVid}" poster="${IMG.heroPoster}" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>${wmOverlay()}</div>
   </section>
@@ -439,7 +456,7 @@ function viewHome(){
       <div class="lt-head">
         <p class="lt-eyebrow">Live tracking</p>
         <h2 class="lt-h">Watch your laundry<br>come home.</h2>
-        <p class="lt-lead">Every update, from pickup to your doorstep, right on your phone.</p>
+        <p class="lt-lead">From your door to the machine and back. You see every step.</p>
       </div>
       <div class="lt-stage2">
         <div class="lt-ph">
@@ -477,7 +494,7 @@ function viewHome(){
     <div class="bs">
       <div class="bs-head">
         <p class="bs-eye">Behind the scenes</p>
-        <h2 class="bs-h">Laundry done properly.<br><span>Counted, tagged and photographed. Every time.</span></h2>
+        <h2 class="bs-h">Every shirt accounted for.<br><span>Nothing goes missing. Nothing gets mixed.</span></h2>
       </div>
       <div class="hl ${UI.hlSeen?'seen':''}">
         <div class="hl-track">${HL.map((h,i)=>`<figure class="hl-card c${i} ${(UI.hl||0)===i?'on':''}">
@@ -499,18 +516,18 @@ function viewHome(){
       <div class="pr-head">
         <p class="pr-eye">Pricing</p>
         <h2 class="pr-h">Pay for your clothes.<br><span>Not the kilos.</span></h2>
-        <p class="pr-sub">Every piece is counted with you at the door. Pickup and delivery always included. Pause or change your plan any month.</p>
+        <p class="pr-sub">No scales. No surprises. Pickup and delivery included on every plan, and you can pause or switch any month.</p>
       </div>
       ${pzTable()}
       <div class="pz-x">
-        <div class="pz-xh"><h3>Priced separately</h3><p>Big or delicate pieces get their own wash, so they're charged on their own.</p></div>
+        <div class="pz-xh"><h3>Priced separately</h3><p>Heavy and delicate pieces get special handling, so they’re priced on their own.</p></div>
         <dl class="pz-xl">${[['Duvet or comforter','each',naira(CONFIG.duvet)],['Curtains','per panel',naira(CONFIG.curtain)],['Suits and native attire','dry cleaned, per piece',naira(CONFIG.dryCleanItem)],['Express 24-hour return','per pickup','+'+naira(CONFIG.express)],['Extra clothes','per item over your plan',naira(CONFIG.extraItem)]].map(x=>`<div class="pz-xi"><dt>${x[0]}<span>${x[1]}</span></dt><dd>${x[2]}</dd></div>`).join('')}</dl>
       </div>
     </div>
   </section>
 
   <section id="uses" class="wrap section">
-    <div style="text-align:center;margin-bottom:36px"><span class="tag">Who it's for</span><h2 class="h2">Designed for real-life laundry</h2></div>
+    <div style="text-align:center;margin-bottom:36px"><span class="tag">Who it's for</span><h2 class="h2">Made for Lagos life</h2></div>
     <div style="display:flex;flex-direction:column;gap:20px">
       ${USES.map((x,i)=>`<div class="stack" style="top:${100+i*18}px"><div class="ucard"><div><h3 style="font-family:var(--display);font-size:30px;font-weight:500;letter-spacing:-.03em">${x[1]}</h3><p class="muted" style="margin-top:12px;font-size:16px;max-width:420px;line-height:1.6">${x[2]}</p>${x[3]==='quote'?`<button class="ulink" data-act="quote">Request a quote ${ARR}</button>`:`<button class="ulink" data-act="pick-plan" data-plan="${x[3]}">See ${CONFIG.plans[x[3]].name} ${ARR}</button>`}</div><div class="img"><img class="photo" src="${IMG[x[0]]}" alt="" loading="lazy"></div></div></div>`).join('')}
     </div>
@@ -520,14 +537,14 @@ function viewHome(){
     <div class="panel" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;padding:clamp(18px,4vw,48px);align-items:center">
       <div>
         <span class="tag">Coverage</span>
-        <h2 class="h2">Starting in ${open.join(' and ')}</h2>
-        <p class="lead" style="margin-top:14px">Tight routes mean riders arrive on time. New areas open as each one fills up.</p>
+        <h2 class="h2">Starting on the Mainland</h2>
+        <p class="lead" style="margin-top:14px">Anywhere on Lagos Mainland. Book online and we come to you. No shop, no queue. Lagos Island is next.</p>
         <div class="row" style="gap:8px;margin-top:22px">${CONFIG.areas.map(a=>`<span style="font-size:14px;font-weight:500;padding:9px 16px;border-radius:999px;${a.open?'background:#0A0A0B;color:#fff':'background:#fff;color:var(--muted)'}">${a.name}${a.open?'':' · soon'}</span>`).join('')}</div>
       </div>
       <form data-form="waitlist" novalidate style="background:#fff;border-radius:24px;padding:28px;display:flex;flex-direction:column;gap:12px">
-        <p style="font-family:var(--display);font-size:22px;font-weight:500;letter-spacing:-.02em">Not in your area yet?</p>
-        <p class="muted small">Join the waitlist and we'll message you when we open near you.</p>
-        <label><span class="sr">Area or estate</span><input class="input" name="area" placeholder="Area or estate"></label>
+        <p style="font-family:var(--display);font-size:22px;font-weight:500;letter-spacing:-.02em">On the Island?</p>
+        <p class="muted small">We’re coming to Lekki, Victoria Island and Ikoyi next. Leave your WhatsApp number and you’ll be the first to know.</p>
+        <label><span class="sr">Your area</span><input class="input" name="area" placeholder="Your area, e.g. Lekki Phase 1"></label>
         <label><span class="sr">WhatsApp number</span><input class="input" name="phone" type="tel" placeholder="WhatsApp number"></label>
         <button class="btn btn-dark btn-lg">Notify me ${ARR}</button>
       </form>
@@ -544,18 +561,7 @@ function viewHome(){
   </section>
   </main>
 
-  <footer class="rfoot">
-    <div class="row" style="gap:48px;justify-content:space-between">
-      <div style="max-width:340px"><a class="wm" href="#/" aria-label="Washday home"><span class="wm-ic">${SI.appi}</span><span>washday</span></a><p class="muted" style="margin-top:14px">Monthly laundry subscription with pickup and delivery in Lagos.</p></div>
-      <div class="row" style="gap:64px;font-size:15px">
-        <div style="display:flex;flex-direction:column;gap:12px"><b style="font-weight:600">Service</b><a href="#/home/services">Services</a><a href="#/home/how">How it works</a><a href="#/home/plans">Pricing</a><a href="#/home/areas">Areas</a></div>
-        <div style="display:flex;flex-direction:column;gap:12px"><b style="font-weight:600">Account</b><a href="#/login">Log in</a><a href="#/subscribe">Get started</a><a href="#/app/orders">Track an order</a></div>
-        <div style="display:flex;flex-direction:column;gap:12px"><b style="font-weight:600">Help</b><a href="#/home/faq">FAQ</a><a href="#" data-act="policy">Damage and loss policy</a><a href="https://wa.me/${CONFIG.whatsapp}" target="_blank" rel="noopener">WhatsApp</a><a href="#/staff">Staff login</a></div>
-      </div>
-    </div>
-    <div class="between" style="margin-top:48px;padding-top:20px;border-top:1px solid var(--line2);font-size:14px;color:var(--muted)"><span>© ${new Date().getFullYear()} ${CONFIG.brand}. Lagos, Nigeria.</span><span>Payments secured by Paystack</span></div>
-    <div class="rwm" aria-hidden="true">washday</div>
-  </footer>`;
+  ${siteFooter()}`;
 }
 
 function viewAuth(){
@@ -594,7 +600,7 @@ function viewAuth(){
         <p class="demo-note">Demo mode: your code is <b>${UI.otp}</b>. In production this is sent by SMS or WhatsApp.</p>
         <p class="small soft" style="text-align:center">Didn't get it? <button type="button" class="linkbtn" data-act="auth-resend">Resend code</button></p>
       </form>`}
-      <p class="xs soft" style="text-align:center;margin-top:36px">By continuing you agree to our Terms and Privacy policy. <a href="#/">Back to home</a></p>
+      <p class="xs soft" style="text-align:center;margin-top:36px">By continuing you agree to our <a href="#/terms">Terms</a> and <a href="#/privacy">Privacy policy</a>. <a href="#/">Back to home</a></p>
     </div></div>
   </div>`;
 }
@@ -647,7 +653,7 @@ function viewSubscribeOld(){
     </div>
     <h2 style="font-size:16px;font-weight:600;margin:28px 0 14px">Payment method</h2>
     <div style="display:flex;flex-direction:column;gap:10px">${[['card','Card','Visa, Mastercard or Verve. Saved for monthly billing.'],['transfer','Bank transfer','Pay to a dedicated account number. We remind you before each renewal.'],['ussd','USSD','Dial a code from your bank. Works without internet.']].map(m=>{const on=s.method===m[0];return `<button type="button" class="choice ${on?'on':''}" aria-pressed="${on}" data-act="sub-method" data-m="${m[0]}" style="display:flex;gap:14px;align-items:center">${radio(on)}<span><b style="display:block">${m[1]}</b><span class="small soft">${m[2]}</span></span></button>`;}).join('')}</div>
-    <label class="check" style="margin-top:22px"><input type="checkbox" data-bind="agree" ${s.agree?'checked':''}> ${isFounding()?'I agree to the 3-month founding-member commitment, the Terms, and the damage and loss policy. ':'I agree to the Terms and the damage and loss policy. '}My plan renews monthly until I cancel.</label>
+    <label class="check" style="margin-top:22px"><input type="checkbox" data-bind="agree" ${s.agree?'checked':''}> ${isFounding()?'I agree to the 3-month founding-member commitment, the <a href="#/terms" target="_blank">Terms</a>, and the <a href="#/guarantee" target="_blank">damage and loss guarantee</a>. ':'I agree to the <a href="#/terms" target="_blank">Terms</a> and the <a href="#/guarantee" target="_blank">damage and loss guarantee</a>. '}My plan renews monthly until I cancel.</label>
     ${UI.subErr?`<p class="err" role="alert" style="margin-top:10px">${esc(UI.subErr)}</p>`:''}`;
   return `<div style="min-height:100vh;background:var(--bg)">
     <header class="flowbar"><div class="wrap between" style="padding-top:14px;padding-bottom:14px">
@@ -1069,7 +1075,7 @@ function viewStaff(){
 /* =========================================================
    EVENTS
    ========================================================= */
-const ROUTES = { '': viewHome, login: viewAuth, signup: viewAuth, subscribe: viewSubscribe, app: viewDashboard, 'app/schedule': viewSchedule, 'app/track': viewTrack, 'app/orders': viewOrders, 'app/billing': viewBilling, staff: viewStaff, 'staff/customers': viewCustomers, scan: (a)=>viewScan(a) };
+const ROUTES = { '': viewHome, login: viewAuth, signup: viewAuth, subscribe: viewSubscribe, app: viewDashboard, 'app/schedule': viewSchedule, 'app/track': viewTrack, 'app/orders': viewOrders, 'app/billing': viewBilling, staff: viewStaff, 'staff/customers': viewCustomers, scan: (a)=>viewScan(a), terms: ()=>viewTerms(), privacy: ()=>viewPrivacy(), guarantee: ()=>viewGuarantee(), contact: ()=>viewContact() };
 const quoteForm = () => modal(`<form data-form="quote" style="display:flex;flex-direction:column;gap:14px"><h2 class="cardh" style="font-size:24px">Request a business or estate quote</h2><label class="field">Business or estate name<input class="input" name="org"></label><label class="field">Contact phone<input class="input" name="phone" type="tel"></label><label class="field">What do you need washed?<textarea class="input" name="need" rows="3" placeholder="e.g. 20 staff uniforms weekly, 60 towels"></textarea></label><div class="row" style="gap:10px"><button class="btn btn-dark">Send request</button><button type="button" class="btn btn-light" data-act="modal-close">Cancel</button></div></form>`);
 document.addEventListener('click', e=>{
   const t = e.target.closest('[data-act]'); if(!t) return;
@@ -1085,7 +1091,7 @@ document.addEventListener('click', e=>{
     hl: ()=>{ hlGo(+t.dataset.i); },
     hlpp: ()=>{ UI.hlPaused=!UI.hlPaused; document.querySelectorAll('.hl').forEach(function(r){ r.classList.toggle('paused',!!UI.hlPaused); }); },
     acc: ()=>{ const i=+t.dataset.i; UI.acc = UI.acc===i?-1:i; rerender(); },
-    policy: ()=> modal(`<h2 class="cardh" style="font-size:24px">Our damage and loss guarantee</h2><div class="muted" style="margin-top:14px;display:flex;flex-direction:column;gap:12px;font-size:15px"><p>Every item is tagged to you and counted at pickup and again before delivery. Anything already stained or damaged is photographed before washing.</p><p>If we lose or damage an item, report it within 48 hours of delivery from your order page. We reply within 24 hours and pay you back using our published compensation scale, credited to your account or paid by transfer.</p><p class="demo-note">Add your compensation scale and cap here before launch.</p></div><button class="btn btn-dark" style="margin-top:20px" data-act="modal-close">Close</button>`),
+    policy: ()=>{ location.hash='#/guarantee'; },
     'pick-plan': ()=>{ UI.pickedPlan=t.dataset.plan; UI.sub=null; if(!me()){ UI.after='subscribe'; UI.authInit=false; go('signup'); } else if (me().plan){ UI.bill={panel:'change',pick:t.dataset.plan}; go('app/billing'); } else go('subscribe'); },
     quote: quoteForm,
     'auth-mode': ()=>{ UI.authMode=t.dataset.m; UI.authStep='phone'; UI.authErr=''; rerender(); },
@@ -1546,7 +1552,7 @@ function viewSubscribe(){
     </section>
     <section class="ob-card"><h2 class="ob-st">Receipt email</h2><label class="ob-field"><span>Email</span><input data-sb="email" type="email" inputmode="email" autocomplete="email" value="${esc(s.email)}" placeholder="you@example.com"></label>
       <div class="ob-paywith"><span>Pay with</span><i>Card</i><i>Bank transfer</i><i>USSD</i><i>Bank</i></div>
-      <label class="ob-check"><input type="checkbox" data-bind="agree" ${s.agree?'checked':''}><span>${isFounding()?'I agree to the 3-month founding-member commitment, the Terms, and the damage and loss policy. ':'I agree to the Terms and the damage and loss policy. '}My plan renews monthly until I cancel.</span></label>
+      <label class="ob-check"><input type="checkbox" data-bind="agree" ${s.agree?'checked':''}><span>${isFounding()?'I agree to the 3-month founding-member commitment, the <a href="#/terms" target="_blank">Terms</a>, and the <a href="#/guarantee" target="_blank">damage and loss guarantee</a>. ':'I agree to the <a href="#/terms" target="_blank">Terms</a> and the <a href="#/guarantee" target="_blank">damage and loss guarantee</a>. '}My plan renews monthly until I cancel.</span></label>
       ${CONFIG.paystackKey?'':'<p class="ob-demo">Test mode: Paystack is not connected yet, so this completes as a demo and nothing is charged.</p>'}
     </section>`; }
   const err=UI.subErr?`<p class="ob-err" role="alert">${esc(UI.subErr)}</p>`:'';
@@ -1789,7 +1795,7 @@ function viewCustomers(){
   const rows=list.map(u=>{ const tg=custTags(u.phone); const used=tg.filter(t=>!t.reserved).length; const ords=DB.orders.filter(o=>o.phone===u.phone).length; const ini=String(u.name||'?').split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();
     const hay=[u.name,'0'+u.phone,u.phone,custAddr(u),tg.map(t=>t.code).join(' ')].join(' ').toLowerCase();
     const open=C.sel===u.phone;
-    return `<div class="cu-row ${open?'open':''}" data-hay="${esc(hay)}"><button class="cu-main" data-cu="sel" data-p="${u.phone}"><span class="cu-av">${esc(ini)}</span><span class="cu-who"><b>${esc(u.name||'Unnamed')}</b><span>0${u.phone}</span></span><span class="cu-addr">${esc(custAddr(u))||'<i>No address</i>'}</span><span class="cu-meta">${u.plan?`<em class="cu-plan">${plan(u).name}</em>`:'<em class="cu-walk">Walk-in</em>'}<small>${used} item${used===1?'':'s'} · ${tg.length-used} spare tag${tg.length-used===1?'':'s'}</small></span><span class="cu-chev">›</span></button>
+    return `<div class="cu-row ${open?'open':''}" data-hay="${esc(hay)}"><button class="cu-main" data-cu="sel" data-p="${u.phone}"><span class="cu-av">${esc(ini)}</span><span class="cu-who"><b>${esc(u.name||'Unnamed')}</b><span>0${u.phone}</span></span><span class="cu-addr">${esc(custAddr(u))||'<i>No address</i>'}</span><span class="cu-meta">${u.plan?`<em class="cu-plan">${plan(u).name}</em>`:'<em class="cu-walk">No plan yet</em>'}<small>${used} item${used===1?'':'s'} · ${tg.length-used} spare tag${tg.length-used===1?'':'s'}</small></span><span class="cu-chev">›</span></button>
       ${open?`<div class="cu-detail"><div class="cu-acts"><button class="b-btn" data-cu="more" data-p="${u.phone}">Print more tags</button><a class="b-btn2" href="#/scan" data-cu="scan" data-p="${u.phone}">Open in tag station</a></div>
         ${tg.filter(t=>!t.reserved).length?`<div class="cu-items">${tg.filter(t=>!t.reserved).map(t=>`<div class="cu-it">${t.photo?`<img src="${t.photo}" alt="">`:'<span class="cu-ph"></span>'}<div><b>${esc(t.type)}${t.color?' · '+esc(t.color):''}</b><span>${t.code} · ${t.out?'Counted out':'In studio'}</span></div></div>`).join('')}</div>`:'<p class="cu-empty">No items registered yet. Tags are ready to scan at pickup.</p>'}
         ${tg.filter(t=>t.reserved).length?`<p class="cu-spare">Spare tags: ${tg.filter(t=>t.reserved).map(t=>t.code).join(', ')}</p>`:''}</div>`:''}</div>`; }).join('');
@@ -1859,3 +1865,94 @@ function staffBar(on){
     <nav class="st-nav"><a href="#/staff" class="${on==='orders'?'on':''}">Orders</a><a href="#/staff/customers" class="${on==='customers'?'on':''}">Customers</a><a href="#/scan" class="${on==='scan'?'on':''}">Tag station</a></nav>
     <div class="st-r">${on==='orders'?'<button class="b-link" data-act="staff-export">Export</button>':''}${on==='scan'?'<button class="b-link" data-act="tag-print">Print tags</button>':''}<button class="b-link" data-act="staff-out">Lock</button></div></header>`;
 }
+
+function siteFooter(){ return `<footer class="rfoot">
+    <div class="row" style="gap:48px;justify-content:space-between">
+      <div style="max-width:340px"><a class="wm" href="#/" aria-label="Washday home"><span class="wm-ic">${SI.appi}</span><span>washday</span></a><p class="muted" style="margin-top:14px">Laundry on a monthly plan. Picked up and delivered across Lagos Mainland.</p></div>
+      <div class="row" style="gap:64px;font-size:15px">
+        <div style="display:flex;flex-direction:column;gap:12px"><b style="font-weight:600">Service</b><a href="#/home/services">Services</a><a href="#/home/how">How it works</a><a href="#/home/plans">Pricing</a><a href="#/home/areas">Areas</a></div>
+        <div style="display:flex;flex-direction:column;gap:12px"><b style="font-weight:600">Account</b><a href="#/login">Log in</a><a href="#/subscribe">Get started</a><a href="#/app/orders">Track an order</a></div>
+        <div style="display:flex;flex-direction:column;gap:12px"><b style="font-weight:600">Help</b><a href="#/home/faq">FAQ</a><a href="#/contact">Contact us</a><a href="https://wa.me/${CONFIG.whatsapp}" target="_blank" rel="noopener">WhatsApp</a><a href="#/staff">Staff login</a></div>
+        <div style="display:flex;flex-direction:column;gap:12px"><b style="font-weight:600">Legal</b><a href="#/terms">Terms of service</a><a href="#/privacy">Privacy policy</a><a href="#/guarantee">Damage and loss guarantee</a></div>
+      </div>
+    </div>
+    <div class="between" style="margin-top:48px;padding-top:20px;border-top:1px solid var(--line2);font-size:14px;color:var(--muted)"><span>© ${new Date().getFullYear()} ${CONFIG.brand}${CONFIG.rc?' · '+esc(CONFIG.rc):''}. Lagos, Nigeria.</span><span>Payments secured by Paystack</span></div>
+    <div class="rwm" aria-hidden="true">washday</div>
+  </footer>`; }
+
+/* ===== v50 · Legal + contact pages ===== */
+function legalShell(key, eyebrow, title, intro, secs){
+  const toc = secs.length>3 ? `<nav class="lg-toc" aria-label="On this page"><p>On this page</p>${secs.map((s,i)=>`<a href="#" data-lg="${i}">${s[0]}</a>`).join('')}</nav>` : '';
+  return `${siteHeader()}
+  <main class="lg">
+    <div class="lg-tabs" role="tablist">${LEGAL_NAV.map(n=>`<a href="#/${n[0]}" class="${n[0]===key?'on':''}">${n[1]}</a>`).join('')}</div>
+    <header class="lg-head"><p class="lg-eye">${eyebrow}</p><h1>${title}</h1>${intro?`<p class="lg-intro">${intro}</p>`:''}${key!=='contact'?`<p class="lg-date">Last updated ${CONFIG.legalUpdated}</p>`:''}</header>
+    <div class="lg-body">${toc}<div class="lg-main">${secs.map((s,i)=>`<section class="lg-sec" id="lg-${i}"><h2>${s[0]}</h2>${s[1]}</section>`).join('')}</div></div>
+  </main>
+  ${siteFooter()}`;
+}
+function contactLine(){ return `WhatsApp us on <a href="https://wa.me/${CONFIG.whatsapp}" target="_blank" rel="noopener">our support line</a>${CONFIG.email?`, email <a href="mailto:${CONFIG.email}">${CONFIG.email}</a>`:''}${CONFIG.phone?` or call ${esc(CONFIG.phone)}`:''}`; }
+function viewTerms(){
+  const P=CONFIG.plans, n=naira;
+  return legalShell('terms','Legal','Terms of service','These terms explain how your Washday subscription works. Please read them before you start a plan. When you subscribe, you agree to them.',[
+    ['Who we are',`<p>Washday is a laundry subscription service with pickup and delivery in Lagos, Nigeria${CONFIG.rc?` (${esc(CONFIG.rc)})`:''}. In these terms, "we" and "us" mean Washday, and "you" means the person who holds the account.</p><p>You must be at least 18 years old to open an account and pay for a plan.</p>`],
+    ['Your plan and billing',`<ul><li>Plans are billed monthly in advance through Paystack, by card, bank transfer or USSD. Riders never collect cash.</li><li>Your plan renews automatically on the same date each month until you cancel.</li><li>Each plan includes a number of pickups and items per month: Fresh Start (${P.fresh.pickups} pickup, ${P.fresh.items} items), Weekly Fresh (${P.weekly.pickups} pickups, ${P.weekly.items} items) and Full House (${P.household.pickups} pickups, ${P.household.items} items).</li><li>Items above your monthly allowance are washed anyway and charged at ${n(CONFIG.extraItem)} each on your next bill. You see the count on WhatsApp before your rider leaves.</li><li>Unused pickups and items do not roll over to the next month.</li><li>Duvets, curtains, dry cleaning and express returns are priced separately, as shown on our pricing page.</li><li>We will give you at least 30 days' notice before changing the price of your plan.</li></ul>`],
+    ['Founding members',`<p>If you joined at the founding-member price, you agree to stay on your plan for your first 3 months. After that you can pause, change or cancel like any other member. If you cancel within the first 3 months, the founding discount for the months you used may be charged back.</p>`],
+    ['Pickups and delivery',`<ul><li>You choose a regular pickup day and a two-hour window between 7am and 8pm, Monday to Saturday.</li><li>You can move a single pickup from your account up to 12 hours before it is due.</li><li>Our standard return time is 48 hours from pickup. Express return is 24 hours for an extra charge.</li><li>Someone needs to be available to hand over and receive your bag. If no one is available after your rider has waited 10 minutes and tried to call you, the pickup may count as used.</li><li>We currently serve all of Lagos Mainland. We may decline addresses outside our service area.</li></ul>`],
+    ['Counting and tagging',`<p>Your rider counts every item with you at pickup and sends the list on WhatsApp. Each item is tagged to you and counted again at our studio and before delivery. If you disagree with a count, tell us at the door or within 48 hours of delivery. After that, the count on the list is treated as correct.</p>`],
+    ['What we do not accept',`<p>For the safety of our staff and other customers' clothes, we do not accept:</p><ul><li>Items soiled with blood, vomit, faeces or other bodily fluids, or with chemicals, paint or oil</li><li>Leather, suede, fur and items labelled "do not wash" and "do not dry clean"</li><li>Wedding gowns and heavily beaded or sequinned pieces, unless we agree in advance</li><li>Rugs, carpets, shoes and bags</li></ul><p>Please empty all pockets. We are not responsible for cash, jewellery, phones or other things left in clothing.</p>`],
+    ['Care and condition of your clothes',`<p>We follow the care label on each item. Before washing, we check for stains, tears and loose buttons, and photograph any damage we find. We tell you about it before we start.</p><p>Some things are outside our control. Stains that are permanent, dyes that are not colourfast, and fabric that is already worn may not come out perfectly. We will always tell you if a stain could not be removed.</p>`],
+    ['Pause, change or cancel',`<ul><li><b>Pause:</b> you can pause your plan for one billing month in each 12 months, for example when you travel.</li><li><b>Change:</b> you can move to a different plan from your account. The new plan starts on your next billing date.</li><li><b>Cancel:</b> you can cancel from your account at any time before your next billing date. Your plan stays active until the end of the month you have paid for.</li></ul>`],
+    ['Refunds',`<p>Monthly fees are not refunded for pickups you did not use. If we fail to provide a pickup or delivery you paid for, and it was our fault, we will either reschedule it within 48 hours or give you a credit or refund for that pickup, whichever you prefer. Refunds are paid back to your original payment method within 7 working days.</p>`],
+    ['Lost or damaged items',`<p>If we lose or damage an item, we pay you back under our <a href="#/guarantee">damage and loss guarantee</a>. Our total liability for any single order is limited to the amounts in that guarantee. We are not liable for indirect losses, such as missed events or travel costs.</p>`],
+    ['Unclaimed items',`<p>If we cannot deliver your clothes after three attempts, we will keep them safely at our studio and contact you. Items not collected or rebooked within 60 days may be donated to charity after we have given you a final written notice.</p>`],
+    ['Respect for our team',`<p>Our riders and studio staff will always treat you and your home with respect. We ask the same in return. We may suspend an account where a member of our team is threatened or abused.</p>`],
+    ['Changes to these terms',`<p>We may update these terms as the service grows. If a change affects you in a significant way, we will tell you on WhatsApp or by email at least 14 days before it takes effect.</p>`],
+    ['Law and disputes',`<p>These terms are governed by the laws of the Federal Republic of Nigeria and Lagos State. If something goes wrong, please talk to us first; most problems are solved within a day. Nothing in these terms takes away your rights under the Federal Competition and Consumer Protection Act.</p>`],
+    ['Contact us',`<p>${contactLine()}. See our <a href="#/contact">contact page</a> for hours.</p>`]
+  ]);
+}
+function viewPrivacy(){
+  return legalShell('privacy','Legal','Privacy policy','How Washday collects, uses and protects your personal information, in line with the Nigeria Data Protection Act 2023.',[
+    ['Who is responsible',`<p>Washday${CONFIG.rc?` (${esc(CONFIG.rc)})`:''}, ${esc(CONFIG.studio)}, is the data controller for the personal information described here.</p>`],
+    ['What we collect',`<ul><li><b>Account details:</b> your name, phone number and email address.</li><li><b>Addresses:</b> pickup and delivery addresses, building or estate, landmarks and gate notes. If you tap "Use my location", we use your device location once to fill in your address.</li><li><b>Orders:</b> pickup dates, item counts, tag codes, preferences such as detergent and folding, and photos of items that arrive stained or damaged.</li><li><b>Payments:</b> your plan, invoices and payment status. Card and bank details are entered directly with Paystack. We never see or store your full card number.</li><li><b>Messages:</b> what you send us on WhatsApp, SMS or email.</li></ul>`],
+    ['How we use it',`<ul><li>To collect, clean and return your clothes and keep you updated on each order</li><li>To bill your plan and send receipts</li><li>To answer questions, handle complaints and pay compensation</li><li>To keep our riders and customers safe, and to prevent fraud</li><li>To improve our service, using totals and trends rather than individual details where we can</li><li>To send offers and news, only if you have said yes. You can say no at any time.</li></ul>`],
+    ['Our legal basis',`<p>We use your information because we need it to provide the service you signed up for, because you have given consent (for example, for marketing or location), because we have a legitimate interest in running a safe and efficient service, or because the law requires it (for example, tax records).</p>`],
+    ['Who we share it with',`<p>We never sell your personal information. We share only what is needed with:</p><ul><li>Our riders and studio team, who see your name, address and order details</li><li>Paystack, to process payments</li><li>Messaging providers, to send SMS, WhatsApp and email updates</li><li>Hosting and software providers that store our data securely for us</li><li>Government or law enforcement bodies, only where the law requires it</li></ul>`],
+    ['Storage outside Nigeria',`<p>Some of our providers may store data on servers outside Nigeria. Where this happens, we make sure appropriate safeguards are in place, as required by the Nigeria Data Protection Act.</p>`],
+    ['How long we keep it',`<ul><li>Account and order details: while your account is open, and for up to 2 years after you close it</li><li>Photos of damaged items: 90 days after delivery, or until a claim is settled</li><li>Billing records: as long as Nigerian tax law requires</li></ul>`],
+    ['How we protect it',`<p>Access to your details is limited to the people who need them. Staff use their own logins, connections are encrypted, and payments are handled by Paystack. If a breach ever puts your information at risk, we will tell you and the Nigeria Data Protection Commission as the law requires.</p>`],
+    ['Your rights',`<p>You can ask us to:</p><ul><li>Show you the personal information we hold about you</li><li>Correct anything that is wrong</li><li>Delete your information, where we no longer need to keep it</li><li>Stop using it for marketing, or object to other uses</li><li>Withdraw consent you have given</li><li>Send your information to you or another provider in a common format</li></ul><p>${contactLine()} to make a request. We will reply within 30 days. If you are not happy with our answer, you can complain to the Nigeria Data Protection Commission (ndpc.gov.ng).</p>`],
+    ['Children',`<p>Washday accounts are for adults aged 18 and over. We do not knowingly collect information from children.</p>`],
+    ['Cookies and storage',`<p>Our website stores a small amount of information in your browser to keep you logged in and remember your choices. We do not use advertising trackers.</p>`],
+    ['Changes to this policy',`<p>If we make an important change, we will let you know before it takes effect. The date at the top shows when this policy was last updated.</p>`]
+  ]);
+}
+function viewGuarantee(){
+  const G=CONFIG.guarantee;
+  return legalShell('guarantee','Our promise','Damage and loss guarantee','Every item is tagged to you and counted three times. If we still lose or damage something, we pay you back.',[
+    ['How we look after your clothes',`<ul class="lg-steps"><li><b>Counted at your door.</b> Your rider counts every item with you and sends the list on WhatsApp.</li><li><b>Tagged and checked.</b> Each piece gets a QR tag. Existing stains or damage are photographed before washing and sent to you.</li><li><b>Washed on its own.</b> Your clothes never share a machine with anyone else's.</li><li><b>Counted again.</b> We count before sealing your bag and print the number on it.</li></ul>`],
+    ['How to report a problem',`<ol><li>Report it within 48 hours of delivery, from your order page or on WhatsApp. A photo helps.</li><li>We reply within 24 hours and look into it using your tag history.</li><li>Most claims are settled within 5 working days.</li></ol>`],
+    ['What we pay',`<p>If an item is lost, or damaged beyond repair while in our care, we pay its current value up to the amounts below. If it can be repaired, we pay for the repair instead.</p>
+      <div class="lg-table"><div class="lg-tr lg-th"><span>Item type</span><span>Examples</span><span>We pay up to</span></div>${G.map(r=>`<div class="lg-tr"><span><b>${r[0]}</b></span><span>${r[1]}</span><span class="lg-amt">${r[2]}</span></div>`).join('')}</div>
+      <p class="lg-note">The most we pay for any single order is ${CONFIG.guaranteeCap}. For anything worth more, tell your rider at pickup so we can record it as a declared item.</p>`],
+    ['How you are paid',`<p>You choose: a credit on your next bill, or a bank transfer within 7 working days of the claim being agreed.</p>`],
+    ['What is not covered',`<ul><li>Damage or stains that were photographed and reported to you before washing</li><li>Things left in pockets, such as cash, jewellery or phones</li><li>Normal wear, fading, and dyes that are not colourfast</li><li>Items on our "do not accept" list in the <a href="#/terms">terms of service</a></li><li>Problems reported more than 48 hours after delivery</li></ul>`]
+  ]);
+}
+function viewContact(){
+  const open=CONFIG.areas.filter(a=>a.open).map(a=>a.name), soon=CONFIG.areas.filter(a=>!a.open).map(a=>a.name);
+  return legalShell('contact','Help','Talk to us','A real person replies on WhatsApp, usually within minutes during working hours.',[
+    ['Ways to reach us',`<div class="lg-cards">
+      <a class="lg-card" href="https://wa.me/${CONFIG.whatsapp}" target="_blank" rel="noopener"><b>WhatsApp</b><span>Fastest for orders, pickups and questions</span><em>Open chat ${ARR}</em></a>
+      ${CONFIG.email?`<a class="lg-card" href="mailto:${CONFIG.email}"><b>Email</b><span>For receipts, privacy and business enquiries</span><em>${CONFIG.email}</em></a>`:''}
+      ${CONFIG.phone?`<a class="lg-card" href="tel:${CONFIG.phone.replace(/\s/g,'')}"><b>Phone</b><span>Monday to Saturday</span><em>${esc(CONFIG.phone)}</em></a>`:''}
+      <a class="lg-card" href="#/app/orders"><b>Track an order</b><span>Live status for every bag</span><em>Open orders ${ARR}</em></a></div>`],
+    ['Hours',`<p>Monday to Saturday, 7am to 8pm. Messages sent on Sunday are answered first thing Monday morning.</p>`],
+    ['Where we work',`<p>We pick up and deliver anywhere on Lagos Mainland. Lagos Island is coming soon. We’re online and pickup only, so there’s no shop to visit.</p>`],
+    ['Complaints',`<p>Every complaint gets a reply within 24 hours. For a lost or damaged item, see our <a href="#/guarantee">damage and loss guarantee</a>.</p>`]
+  ]);
+}
+document.addEventListener('click',function(e){ const a=e.target.closest('[data-lg]'); if(!a) return; e.preventDefault(); const el=document.getElementById('lg-'+a.dataset.lg); if(el) window.scrollTo({top:el.getBoundingClientRect().top+scrollY-80,behavior:'smooth'}); });
+
+setInterval(function(){ var t=document.querySelector('.lg-tabs a.on'); if(t&&!t.dataset.sv){ t.dataset.sv=1; t.parentNode.scrollLeft=t.offsetLeft-16; } },300);
