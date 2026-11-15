@@ -1,3 +1,18 @@
+/* Opening intro: washing machine spins, then we zoom through the door into the site */
+(function(){
+  try{
+    var h=location.hash||''; if(h && !/^#\/?(home\/.*)?$/.test(h)) return;
+    if(sessionStorage.getItem('wd_intro')) return; sessionStorage.setItem('wd_intro','1');
+    if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  }catch(e){ return; }
+  var logo='<svg viewBox="0 0 40 40"><defs><linearGradient id="inIc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4A63FF"/><stop offset="1" stop-color="#1B32CF"/></linearGradient></defs><rect width="40" height="40" rx="9.2" fill="url(#inIc)"/><circle cx="20" cy="20.5" r="11" fill="#fff"/><path d="M10.6 22.2c2.6-1.9 5.1-1.9 7.6 0s5.1 1.9 7.6 0 4.2-1.6 5.2-.7A11 11 0 0 1 9.2 22.9c.4-.2.9-.4 1.4-.7z" fill="#2340E8"/><circle cx="20" cy="20.5" r="11" fill="none" stroke="#fff" stroke-width="2.4"/></svg>';
+  var d=document.createElement('div'); d.id='intro'; d.setAttribute('aria-hidden','true');
+  d.innerHTML='<div class="in-wm"><div class="in-panel"><span class="in-lcd">0:48</span><span class="in-dots"><i></i><i></i><i></i></span><span class="in-knob"></span></div><div class="in-door"><div class="in-glass"><span class="in-water"></span><span class="in-water b"></span><div class="in-tumble"><i></i><i></i><i></i><i></i></div></div></div></div><div class="in-brand">'+logo+'<span>washday</span></div><p class="in-tag">Laundry, handled.</p>';
+  document.documentElement.classList.add('intro-on'); document.body.appendChild(d);
+  var lcd=d.querySelector('.in-lcd'), s=48, iv=setInterval(function(){ s=Math.max(45,s-1); lcd.textContent='0:'+s; },420);
+  var done=false; function finish(fast){ if(done) return; done=true; clearInterval(iv); d.classList.add('zoom'); setTimeout(function(){ d.classList.add('out'); document.documentElement.classList.remove('intro-on'); }, fast?300:520); setTimeout(function(){ d.remove(); }, fast?900:1150); }
+  var t=setTimeout(finish,1950); d.addEventListener('click',function(){ clearTimeout(t); finish(true); });
+})();
 /* =========================================================
    WASHDAY · laundry subscription web app
    Runs in the browser and saves to localStorage for now.
@@ -9,9 +24,9 @@ const CONFIG = {
   whatsapp: '2348000000000',
   areas: [ {name:'Lekki Phase 1', open:true}, {name:'Yaba', open:true}, {name:'Ikoyi', open:false}, {name:'Surulere', open:false}, {name:'Ikeja GRA', open:false} ],
   plans: {
-    fresh:     { name:'Fresh Start',  price:20000, items:50,  pickups:2, kg:8,  service:'Wash, dry and fold',            blurb:'For one person who wants their weekends back.', extra:[], img:'folded' },
-    weekly:    { name:'Weekly Fresh', price:35000, items:100, pickups:4, kg:8,  service:'Wash, dry, iron, hang or fold', blurb:'A pickup every week, ironed and ready to wear.', extra:['Live order tracking'], tag:'Best for most homes', img:'shirt' },
-    household: { name:'Full House',   price:60000, items:200, pickups:4, kg:15, service:'Wash, dry, iron, hang or fold', blurb:'For busy homes with kids, towels and bedding.', extra:['Live order tracking','Priority pickup windows'], img:'family' }
+    fresh:     { name:'Fresh Start',  price:20000, items:50,  pickups:1, kg:8,  service:'Wash, dry and fold',            blurb:'For one person who wants their weekends back.', extra:[], img:'folded' },
+    weekly:    { name:'Weekly Fresh', price:35000, items:100, pickups:2, kg:8,  service:'Wash, dry, iron, hang or fold', blurb:'A pickup every week, ironed and ready to wear.', extra:['Live order tracking'], tag:'Best for most homes', img:'shirt' },
+    household: { name:'Full House',   price:60000, items:200, pickups:3, kg:15, service:'Wash, dry, iron, hang or fold', blurb:'For busy homes with kids, towels and bedding.', extra:['Live order tracking','Priority pickup windows'], img:'family' }
   },
   overweightPerKg: 1000,
   extraItem: 450, curtain: 3000,
@@ -152,7 +167,7 @@ window.addEventListener('hashchange', ()=>route());
 Object.assign(IMG, { hero3d:'img/hero3d.webp', moon:'img/moon.webp', shirtpink:'img/shirtpink.webp', bagpink:'img/bagpink.webp', iron:'img/iron.webp', towels:'img/towels.webp' });
 Object.assign(IMG, { hero:'img/hero.jpg', moon:'img/hero.jpg', hero3d:'img/hero.jpg', bagpink:'img/basket.jpg', iron:'img/iron.jpg', native:'img/native.jpg', towels:'img/bed.jpg', woman:'img/woman.jpg', family:'img/family.jpg', rider:'img/rider.jpg', tagging:'img/tagging.jpg', folded:'img/folded.jpg', shirt:'img/shirts.jpg', shirtpink:'img/shirts.jpg', heroVid:'img/hero-wm.mp4', heroPoster:'img/hero-wm.jpg' });
 Object.assign(IMG, { bagpink:'img/svc-wash.jpg', iron:'img/svc-iron.jpg', native:'img/svc-dry.jpg', towels:'img/svc-bed.jpg' });
-Object.assign(IMG, { rider:'img/rider-pro.jpg' });
+Object.assign(IMG, { rider:'img/rider-pro2.jpg' });
 const ARR = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 const ARR_UP = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg>';
 function siteHeader(){
@@ -175,15 +190,25 @@ const FAQS = [
   ['How do I pay?','Online by card, bank transfer or USSD through Paystack, billed monthly. Riders never collect cash.'],
   ['What are the pickup times?','Pick a fixed day and a two-hour window between 7am and 8pm, Monday to Saturday. Move a single pickup from your account up to 12 hours before.']
 ];
+const TRIPS = { fresh:[3], weekly:[3,17], household:[2,12,22] };
+function peCal(k){ const ps=TRIPS[k], ds=ps.map(d=>d+2); let h=''; for(let i=1;i<=28;i++){ const P=ps.includes(i), D=ds.includes(i); h+=`<span class="${P?'pu':D?'de':''}" style="--d:${i}">${P?'<i>↑</i>':D?'<i>↓</i>':''}</span>`; } return h; }
+function peResult(n){ const k=prPick(n), p=CONFIG.plans[k], over=Math.max(0,n-p.items), per=Math.round(p.price/p.items);
+  return `<p class="pe-k">Your best fit</p>
+    <h3 class="pe-name">${p.name}</h3>
+    <p class="pe-price"><b data-v="${p.price}">${naira(p.price)}</b><span>/ month</span></p>
+    <p class="pe-per">${p.items} items included · ${naira(per)} per item${over?`<br><em>+ ${naira(over*CONFIG.extraItem)} for ${over} extra items</em>`:''}</p>
+    <div class="pe-cal"><div class="pe-dow"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div><div class="pe-days">${peCal(k)}</div></div>
+    <div class="pe-leg"><span><i class="pu">↑</i>${p.pickups} pickup${p.pickups>1?'s':''}</span><span><i class="de">↓</i>${p.pickups} deliver${p.pickups>1?'ies':'y'}</span><span class="pe-trips">${p.pickups*2} trips a month</span></div>
+    <button class="btn btn-lg btn-block pe-cta" data-act="pick-plan" data-plan="${k}">Choose ${p.name}</button>`; }
 function prPick(n){ return n<=50?'fresh':n<=100?'weekly':'household'; }
 function prRec(n){ const k=prPick(n), p=CONFIG.plans[k]; const over=Math.max(0,n-p.items); return `Best fit: <b>${p.name}</b> · ${naira(p.price)} a month${over?` + about ${naira(over*CONFIG.extraItem)} for ${over} extra items`:''}`; }
 function prCard(k){
   const p=CONFIG.plans[k], rec=prPick(UI.prN||100)===k, per=Math.round(p.price/p.items);
   const disc=isFounding()?Math.round(p.price*(1-CONFIG.foundingDiscount)):0;
-  const feats=[p.service,`${p.pickups===4?'Weekly':'Fortnightly'} pickup and delivery`,'Every item tagged and counted',...p.extra];
+  const feats=[`${p.pickups} pickup${p.pickups>1?'s':''} and ${p.pickups} deliver${p.pickups>1?'ies':'y'} a month`,p.service,'Every item tagged and counted',...p.extra];
   return `<article class="prc ${rec?'rec':''}" data-plan="${k}">
     <span class="prc-badge">Best fit for you</span>
-    <div class="prc-top"><h3>${p.name}</h3><span>${p.pickups===4?'Every week':'Every other week'}</span></div>
+    <div class="prc-top"><h3>${p.name}</h3><span>${p.pickups*2} trips a month</span></div>
     <p class="prc-items"><b>${p.items}</b><span>items a month</span></p>
     <p class="prc-price"><b>${naira(p.price)}</b><span>/ month</span></p>
     <p class="prc-per">${naira(per)} per item${disc?` · <em>${naira(disc)}</em> first month for founding members`:''}</p>
@@ -344,7 +369,7 @@ const USES = [
   ['tagging','Businesses','Uniforms, towels and linen for salons, spas, gyms and small hotels, counted in and out every time.','quote']
 ];
 const HL = [
-  ['img/bts-van2.jpg','Counted at your door.','Your rider counts every piece with you before leaving, and the full list lands on WhatsApp straight away. No weighing, no guessing.','Pickup · Tue 8:14 am','Counting at pickup','Washday driver handing a basket of clean laundry to a customer at a cobalt van'],
+  ['img/bts-van3.jpg','Counted at your door.','Your rider counts every piece with you before leaving, and the full list lands on WhatsApp straight away. No weighing, no guessing.','Pickup · Tue 8:14 am','Counting at pickup','Washday driver handing a basket of clean laundry to a customer at a cobalt van'],
   ['img/bts-tag.jpg','Tagged and counted again.','Every piece gets a QR tag tied to you. We count again at the studio and before delivery, and the final number is printed on your sealed bag.','Studio · Lekki · 10:02','Tagging','Washday technician attaching a QR tag to a folded shirt'],
   ['img/bts-wash.jpg','Never mixed with anyone else&rsquo;s clothes.','Your clothes go into a machine on their own, never in a shared load with other customers. Your detergent and folding preferences are saved and used every time.','Your clothes · WD-1042','Washing','Technician loading one customer bag into its own machine'],
   ['img/woman.jpg','Backed in writing.','Lost or damaged? We pay you back on a published scale, and every complaint gets a reply within 24 hours.','Delivered · Thu 10:41 am','Guarantee','A customer receiving her clean laundry at the door']
@@ -465,11 +490,18 @@ function viewHome(){
         <h2 class="pr-h">Pay for your clothes.<br><span>Not the kilos.</span></h2>
         <p class="pr-sub">Every piece is counted with you at the door. Pickup and delivery always included. Pause or change your plan any month.</p>
       </div>
-      <div class="pr-calc">
-        <div class="pr-q"><p>How many clothes do you wash in a month?</p><p class="pr-val"><b class="pr-n">${UI.prN||100}</b><span>items</span></p></div>
-        <input class="pr-range" type="range" min="20" max="250" step="5" value="${UI.prN||100}" aria-label="Clothes per month" style="--p:${(((UI.prN||100)-20)/230*100).toFixed(1)}%">
-        <div class="pr-ticks"><span>20</span><span>50</span><span>100</span><span>150</span><span>200</span><span>250</span></div>
-        <p class="pr-rec">${prRec(UI.prN||100)}</p>
+      <div class="pe ${'k-'+prPick(UI.prN||100)}">
+        <div class="pe-l">
+          <p class="pe-q">How many clothes do you wash in a month?</p>
+          <p class="pe-big"><b class="pr-n">${UI.prN||100}</b><span>items</span></p>
+          <div class="pe-track">
+            <div class="pe-zones"><i style="left:0;width:${(30/230*100).toFixed(2)}%"></i><i style="left:${(30/230*100).toFixed(2)}%;width:${(50/230*100).toFixed(2)}%"></i><i style="left:${(80/230*100).toFixed(2)}%;width:${(100/230*100).toFixed(2)}%"></i><i style="left:${(180/230*100).toFixed(2)}%;width:${(50/230*100).toFixed(2)}%"></i></div>
+            <input class="pr-range" type="range" min="20" max="250" step="5" value="${UI.prN||100}" aria-label="Clothes per month" style="--p:${(((UI.prN||100)-20)/230*100).toFixed(1)}%">
+            <div class="pe-marks">${[[50,'Fresh Start'],[100,'Weekly Fresh'],[200,'Full House']].map(m=>`<span style="left:${((m[0]-20)/230*100).toFixed(2)}%" data-v="${m[0]}"><b>${m[0]}</b>${m[1]}</span>`).join('')}</div>
+          </div>
+          <p class="pe-hint">Count every shirt, trouser, dress and towel. A two-piece outfit is two items.</p>
+        </div>
+        <div class="pe-r" aria-live="polite">${peResult(UI.prN||100)}</div>
       </div>
       <div class="pr-grid">${PLAN_KEYS.map(k=>prCard(k)).join('')}</div>
       <div class="pr-xt">
@@ -1397,23 +1429,16 @@ function hlNum(){ document.querySelectorAll('.hl.seen .hl-card.on .gx-num b').fo
 document.addEventListener('click',function(e){ var c=e.target.closest('.hl-card:not(.on)'); if(!c) return; var cs=[].slice.call(c.parentNode.children); hlGo(cs.indexOf(c)); });
 setInterval(function(){ document.querySelectorAll('.hl:not(.seen)').forEach(function(el){ var r=el.getBoundingClientRect(); if(r.top<innerHeight*.7&&r.bottom>innerHeight*.3){ el.classList.add('seen'); UI.hlSeen=1; hlNum(); } }); },250);
 
-/* Pricing slider */
-document.addEventListener('input',function(e){ const r=e.target; if(!r.classList||!r.classList.contains('pr-range')) return; const n=+r.value; UI.prN=n;
+/* Pricing estimator */
+function peTween(el,to){ const from=+(el.dataset.v||to); el.dataset.v=to; if(from===to){ el.textContent=naira(to); return; } const t0=performance.now(); (function f(t){ const p=Math.min(1,(t-t0)/450), e=1-Math.pow(1-p,3); el.textContent=naira(Math.round((from+(to-from)*e)/50)*50); if(p<1) requestAnimationFrame(f); })(t0); }
+document.addEventListener('input',function(e){ const r=e.target; if(!r.classList||!r.classList.contains('pr-range')) return; const n=+r.value; const prevK=prPick(UI.prN||100); UI.prN=n;
   r.style.setProperty('--p',((n-20)/230*100).toFixed(1)+'%');
-  const root=r.closest('.pr'); const nb=root.querySelector('.pr-n'); nb.textContent=n; nb.classList.remove('bump'); void nb.offsetWidth; nb.classList.add('bump');
-  root.querySelector('.pr-rec').innerHTML=prRec(n);
-  const k=prPick(n); root.querySelectorAll('.prc').forEach(function(c){ c.classList.toggle('rec',c.dataset.plan===k); });
+  const root=r.closest('.pr'); const nb=root.querySelector('.pr-n'); nb.textContent=n;
+  const k=prPick(n); const pe=root.querySelector('.pe'); const res=root.querySelector('.pe-r');
+  const oldPrice=res.querySelector('.pe-price b'); const oldV=oldPrice?+oldPrice.dataset.v:CONFIG.plans[k].price;
+  res.innerHTML=peResult(n); const nbp=res.querySelector('.pe-price b'); nbp.dataset.v=oldV; peTween(nbp,CONFIG.plans[k].price);
+  pe.className='pe k-'+k;
+  root.querySelectorAll('.pe-marks span').forEach(function(m){ m.classList.toggle('hit', +m.dataset.v===n); });
+  if(k!==prevK){ res.classList.remove('swap'); void res.offsetWidth; res.classList.add('swap'); try{ navigator.vibrate&&navigator.vibrate(8); }catch(x){} }
+  root.querySelectorAll('.prc').forEach(function(c){ c.classList.toggle('rec',c.dataset.plan===k); });
 });
-
-/* Services tabs: swap only the services panel, no full-page redraw */
-document.addEventListener('click',function(e){
-  var t=e.target.closest('[data-act="svc2"]'); if(!t) return;
-  e.stopPropagation(); e.preventDefault();
-  if(UI.svc2===t.dataset.t || (!UI.svc2 && t.dataset.t==='wash')) return;
-  UI.svc2=t.dataset.t;
-  var old=document.getElementById('services'); if(!old) return;
-  var tmp=document.createElement('div'); tmp.innerHTML=viewHome(); var fresh=tmp.querySelector('#services'); if(!fresh) return;
-  old.querySelectorAll('.svx-tabs [data-act="svc2"]').forEach(function(b){ var on=b.dataset.t===UI.svc2; b.classList.toggle('on',on); b.setAttribute('aria-selected',on); });
-  var op=old.querySelector('.svx-panel'), np=fresh.querySelector('.svx-panel'); if(!op||!np) return;
-  np.classList.add('svx-swap'); op.replaceWith(np);
-},true);
