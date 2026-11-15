@@ -324,6 +324,12 @@ const USES = [
   ['rider','Estates','One collection point for every resident, a fixed pickup day and a residents\' discount.','quote'],
   ['tagging','Businesses','Uniforms, towels and linen for salons, spas, gyms and small hotels, counted in and out every time.','quote']
 ];
+const BS = [
+  ['tag','Counted in. Counted out.','Every piece is tagged to you and counted at pickup, then again before delivery. The number is printed on your sealed bag.'],
+  ['scale','Weighed at your door.','Your rider weighs the bag in front of you. The weight and a photo arrive on WhatsApp before they leave.'],
+  ['layers','Washed on its own.','One load, one machine. Your detergent and folding preferences are saved and used every time.'],
+  ['shield','Backed in writing.','If anything is lost or damaged, we pay you back on a published scale. Every complaint gets a reply within 24 hours.']
+];
 const ACCS = [
   ['Every item tagged and counted','Each piece gets a tag tied to you. We count at pickup and again before delivery, and the count is printed on the sealed bag.'],
   ['Weighed at your door','No surprises. The rider weighs your bag in front of you and the weight arrives on WhatsApp before they leave.'],
@@ -399,21 +405,47 @@ function viewHome(){
     </div>
   </section>
 
-  <section class="wrap section">
-    <div class="panel" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:clamp(24px,5vw,64px);align-items:center;padding:clamp(18px,4vw,48px)">
-      <div style="display:flex;justify-content:center" aria-hidden="true">
-        <div style="width:300px;background:#fff;border-radius:36px;padding:14px;box-shadow:0 30px 60px rgba(0,0,0,.08)">
-          <div style="border-radius:24px;padding:20px;color:#fff;background:linear-gradient(140deg,#2A2A2E,#0A0A0B)"><div class="between xs" style="color:#A1A1AA"><span>Weekly Fresh</span><span>Active</span></div><p style="font-family:var(--display);font-size:30px;font-weight:500;margin-top:26px;letter-spacing:-.03em">₦45,000</p><p class="xs" style="color:#A1A1AA;margin-top:2px">Renews 17 Dec</p></div>
-          <div style="padding:16px 6px 6px"><p class="xs soft">This month</p><p style="font-family:var(--display);font-size:26px;font-weight:500;letter-spacing:-.03em">2 of 4 pickups</p><div class="bar" style="margin-top:10px"><span style="width:50%;background:var(--pink)"></span></div>
-            <div class="row" style="gap:8px;margin-top:14px"><span class="btn btn-sm" style="flex:1;background:#F4F4F5">Schedule</span><span class="btn btn-sm" style="flex:1;background:#F4F4F5">Pause</span></div>
-            <p class="xs soft" style="margin-top:16px">Next pickup</p><p style="font-family:var(--display);font-size:22px;font-weight:500">Tue · 8 – 10am</p>
-            <span class="btn btn-dark btn-sm btn-block" style="margin-top:12px">Track order</span></div>
-        </div>
+  <section id="care" class="wrap section">
+    <div class="bs ${(UI.bsIn)?'in':''}">
+      <div class="bs-head">
+        <p class="bs-eye">Behind the scenes</p>
+        <h2 class="bs-h">Laundry done properly.<br><span>Weighed, counted and photographed. Every time.</span></h2>
       </div>
-      <div>
-        <h2 class="h2">Laundry done properly, behind the scenes</h2>
-        <p class="lead" style="margin-top:16px">${CONFIG.brand} runs on a simple system you can see: weights, counts and photos for every load, all visible in your account.</p>
-        <div style="display:flex;flex-direction:column;gap:10px;margin-top:28px">${ACCS.map((a,i)=>`<div class="acc ${acc===i?'open':''}"><button data-act="acc" data-i="${i}" aria-expanded="${acc===i}"><span>${a[0]}</span><span aria-hidden="true" style="font-size:22px;font-weight:300">${acc===i?'−':'+'}</span></button>${acc===i?`<p class="ans">${a[1]}</p>`:''}</div>`).join('')}</div>
+      <div class="bs-grid">
+        <div class="bs-list" role="tablist">${BS.map((b,i)=>`<button class="bs-it ${(UI.bs||0)===i?'on':''}" data-act="bs" data-i="${i}" role="tab" aria-selected="${(UI.bs||0)===i}"><span class="bs-ic">${SI[b[0]]}</span><span class="bs-tx"><b>${b[1]}</b><span class="bs-d"><span>${b[2]}</span></span></span><i class="bs-prog"><em></em></i></button>`).join('')}</div>
+        <div class="bs-stage" aria-hidden="true">
+          <div class="bs-v v0 ${(UI.bs||0)===0?'on':''}">
+            <div class="cnt">
+              <div class="cnt-h"><div><p>Item count</p><b>WD-1042</b></div><span class="cnt-ok">${SI.check}Match</span></div>
+              <div class="cnt-r cnt-th"><span>Item</span><span>In</span><span>Out</span></div>
+              ${[['Shirts',8],['Trousers',5],['T-shirts',6],['Native wear',3],['Towels',2],['Underwear',8]].map((r,k)=>`<div class="cnt-r" style="--k:${k}"><span>${r[0]}</span><span>${r[1]}</span><span>${r[1]}</span></div>`).join('')}
+              <div class="cnt-r cnt-t"><span>Total</span><span>32</span><span>32</span></div>
+            </div>
+            <div class="tagx"><span class="tagx-hole"></span><p class="tagx-b">washday</p><p class="tagx-n">WD-1042</p><p class="tagx-c">32 items · sealed</p><span class="tagx-bar"></span></div>
+          </div>
+          <div class="bs-v v1 ${(UI.bs||0)===1?'on':''}">
+            <div class="scl"><div class="scl-lcd"><span class="scl-g">88.88</span><span class="scl-v">6.40</span><i>kg</i></div><div class="scl-btns"><span>TARE</span><span>ON</span></div></div>
+            <div class="wa"><p class="wa-n">Washday</p><p>Hi Ada, your bag weighed <b>6.4 kg</b>. That's within your 8 kg limit. Photo attached.</p><span class="wa-t">8:14 am</span></div>
+            <div class="lim"><div class="lim-h"><span>This pickup</span><b>6.4 of 8 kg</b></div><div class="lim-b"><em></em></div></div>
+          </div>
+          <div class="bs-v v2 ${(UI.bs||0)===2?'on':''}">
+            <div class="mc">
+              <div class="mc-top"><span class="mc-id">Machine 03</span><span class="mc-live"><i></i>Running</span></div>
+              <div class="mc-door"><svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="92" class="mc-trk"/><circle cx="100" cy="100" r="92" class="mc-ring" pathLength="1"/></svg><div class="mc-glass"><span class="mc-w"></span></div><div class="mc-c"><b>24</b><span>min left</span></div></div>
+              <div class="mc-own"><span class="mc-av">AO</span><div><b>Only your load</b><span>WD-1042 · Ada O.</span></div></div>
+              <div class="mc-prefs"><span>30°C wash</span><span>Fragrance-free</span><span>Shirts on hangers</span></div>
+            </div>
+          </div>
+          <div class="bs-v v3 ${(UI.bs||0)===3?'on':''}">
+            <div class="gt">
+              <p class="gt-k">Washday guarantee</p>
+              <h4>If something goes wrong, we put it right.</h4>
+              <ul><li>${SI.check}<span><b>Lost item</b>Paid back on our published scale</span></li><li>${SI.check}<span><b>Damaged item</b>Repaired, or paid back</span></li><li>${SI.check}<span><b>Any complaint</b>Answered within 24 hours</span></li></ul>
+              <div class="gt-f"><span class="gt-sig">Washday Ltd</span><span class="gt-d">Lagos</span></div>
+              <svg class="gt-seal" viewBox="0 0 120 120"><defs><path id="gtc" d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0"/></defs><circle cx="60" cy="60" r="58" fill="#2340E8"/><circle cx="60" cy="60" r="31" fill="none" stroke="rgba(255,255,255,.4)"/><text font-size="10.5" font-weight="600" letter-spacing="2.6" fill="#fff"><textPath href="#gtc">WASHDAY · GUARANTEED · LAGOS ·</textPath></text><path d="M48 61l8 8 16-17" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -996,6 +1028,7 @@ document.addEventListener('click', e=>{
     faq: ()=>{ const i=+t.dataset.i; UI.faq = UI.faq===i?-1:i; rerender(); },
     svc: ()=>{ UI.svc=t.dataset.t; rerender(); },
     svc2: ()=>{ UI.svc2=t.dataset.t; rerender(); },
+    bs: ()=>{ bsGo(+t.dataset.i); },
     acc: ()=>{ const i=+t.dataset.i; UI.acc = UI.acc===i?-1:i; rerender(); },
     policy: ()=> modal(`<h2 class="cardh" style="font-size:24px">Our damage and loss guarantee</h2><div class="muted" style="margin-top:14px;display:flex;flex-direction:column;gap:12px;font-size:15px"><p>Every item is tagged to you and counted at pickup and again before delivery. Anything already stained or damaged is photographed before washing.</p><p>If we lose or damage an item, report it within 48 hours of delivery from your order page. We reply within 24 hours and pay you back using our published compensation scale, credited to your account or paid by transfer.</p><p class="demo-note">Add your compensation scale and cap here before launch.</p></div><button class="btn btn-dark" style="margin-top:20px" data-act="modal-close">Close</button>`),
     'pick-plan': ()=>{ UI.pickedPlan=t.dataset.plan; UI.sub=null; if(!me()){ UI.after='subscribe'; UI.authInit=false; go('signup'); } else if (me().plan){ UI.bill={panel:'change',pick:t.dataset.plan}; go('app/billing'); } else go('subscribe'); },
@@ -1177,4 +1210,11 @@ route();
   var io = ('IntersectionObserver' in window) ? new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }); },{threshold:.22}) : null;
   function hook(){ document.querySelectorAll('.lt-stage2:not([data-io])').forEach(function(el){ el.dataset.io=1; if(io) io.observe(el); else el.classList.add('in'); }); }
   new MutationObserver(hook).observe(document.documentElement,{childList:true,subtree:true}); hook();
+})();
+
+function bsGo(i){ UI.bs=i; document.querySelectorAll('.bs').forEach(function(root){ root.querySelectorAll('.bs-it').forEach(function(b,k){ b.classList.toggle('on',k===i); b.setAttribute('aria-selected',k===i); }); root.querySelectorAll('.bs-v').forEach(function(v,k){ v.classList.toggle('on',k===i); }); }); if(i===1) bsWeigh(); }
+function bsWeigh(){ var t0=performance.now(); (function f(t){ var p=Math.min(1,(t-t0)/1100); var e=1-Math.pow(1-p,3); document.querySelectorAll('.scl-v').forEach(function(el){ el.textContent=(6.4*e).toFixed(2); }); if(p<1) requestAnimationFrame(f); })(t0); }
+(function(){
+  document.addEventListener('animationend',function(e){ if(!e.target.matches||!e.target.matches('.bs-it.on .bs-prog em')) return; bsGo(((UI.bs||0)+1)%4); });
+  setInterval(function(){ document.querySelectorAll('.bs').forEach(function(el){ var r=el.getBoundingClientRect(); var v=r.top<innerHeight*.7&&r.bottom>innerHeight*.3; if(v){ el.classList.add('in'); UI.bsIn=1; } el.classList.toggle('play',v); }); },300);
 })();
