@@ -979,3 +979,43 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Geist','Inter',
 /* v23 rider photo: card on the left */
 .hl-card.c0 .hl-ui{left:clamp(18px,3vw,36px);right:auto}
 @media (max-width:640px){.hl-card.c0 .hl-img{object-position:50% 50%}.hl-card.c0 .hl-ui{left:14px}}
+
+/* ===== v24 · glass notification overlays on highlight photos ===== */
+.hl-ui,.hl-card.c0 .hl-ui,.hl-card.c2 .hl-ui{zoom:1!important;left:clamp(14px,2.4vw,28px)!important;right:auto!important;bottom:clamp(14px,2.4vw,28px)!important}
+.gx{display:flex;align-items:center;gap:12px;width:min(390px,calc(100vw - 80px));padding:12px 14px 12px 12px;border-radius:22px;background:rgba(30,30,32,.52);-webkit-backdrop-filter:blur(28px) saturate(1.8);backdrop-filter:blur(28px) saturate(1.8);color:#fff;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.22),0 18px 40px rgba(0,0,0,.28)}
+.gx-ic{width:38px;height:38px;flex:none;border-radius:10px;overflow:hidden}
+.gx-ic svg{width:100%;height:100%;display:block}
+.gx-b{flex:1;min-width:0}
+.gx-b p{margin:0}
+.gx-h{display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.62);line-height:1.2}
+.gx-h b{font-weight:600;color:rgba(255,255,255,.62);letter-spacing:.02em;text-transform:uppercase;font-size:11px}
+.gx-h time{font-size:12px}
+.gx-t{font-size:15px;font-weight:600;letter-spacing:-.01em;margin-top:2px!important;line-height:1.25}
+.gx-s{font-size:13px;color:rgba(255,255,255,.78);line-height:1.3;margin-top:1px!important}
+.gx-num{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;width:56px;height:56px;border-radius:16px;background:rgba(255,255,255,.14)}
+.gx-num b{font-size:22px;font-weight:600;letter-spacing:-.03em;line-height:1}
+.gx-num i{font-style:normal;font-size:10px;color:rgba(255,255,255,.7);margin-top:2px}
+.gx-qr{flex:none;width:56px;height:56px;padding:5px;border-radius:12px;background:#fff}
+.gx-qr svg{width:100%;height:100%;display:block}
+.gx-qr svg path{fill:#0B1B4D}
+.gx-ring{flex:none;position:relative;width:52px;height:52px;display:grid;place-items:center}
+.gx-ring svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.gx-rt,.gx-rf{fill:none;stroke-width:4}
+.gx-rt{stroke:rgba(255,255,255,.18)}
+.gx-rf{stroke:#7D90FF;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 1.4s .3s cubic-bezier(.2,.8,.2,1)}
+.hl-card.on .gx-rf{stroke-dashoffset:.42}
+.gx-ring b{font-size:12.5px;font-weight:600}
+.gx-ok{flex:none;width:44px;height:44px;border-radius:50%;background:#2340E8;display:grid;place-items:center;color:#fff}
+.gx-ok svg{width:24px;height:24px}
+@media (max-width:640px){
+  .gx{width:calc(86vw - 28px);padding:10px 12px 10px 10px;gap:10px;border-radius:18px}
+  .gx-ic{width:32px;height:32px}
+  .gx-t{font-size:14px}.gx-s{font-size:12px}
+  .gx-num,.gx-qr{width:46px;height:46px}.gx-num b{font-size:18px}
+  .gx-ring{width:44px;height:44px}
+}
+@media (max-width:640px){.hl-card.c0 .hl-img{object-position:76% 50%}}
+@media (max-width:640px){
+  .hl-ui,.hl-card.c0 .hl-ui,.hl-card.c2 .hl-ui{left:10px!important;right:10px!important;bottom:10px!important}
+  .gx{width:auto;box-sizing:border-box}
+}
