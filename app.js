@@ -11,7 +11,7 @@ const CONFIG = {
   plans: {
     fresh:     { name:'Fresh Start',  price:20000, items:50,  pickups:1, kg:8,  service:'Wash, dry and fold',            blurb:'For one person who wants their weekends back.', extra:[], img:'folded' },
     weekly:    { name:'Weekly Fresh', price:35000, items:100, pickups:2, kg:8,  service:'Wash, dry, iron, hang or fold', blurb:'A pickup every week, ironed and ready to wear.', extra:['Live order tracking'], tag:'Best for most homes', img:'shirt' },
-    household: { name:'Full House',   price:60000, items:200, pickups:3, kg:15, service:'Wash, dry, iron, hang or fold', blurb:'For busy homes with kids, towels and bedding.', extra:['Live order tracking','Priority pickup windows'], img:'family' }
+    household: { name:'Full House',   price:60000, items:200, pickups:3, kg:15, service:'Wash, dry, iron, hang or fold', blurb:'For busy homes with kids, towels and bedding.', extra:['Live order tracking','Priority pickup windows','Priority 48-hour return'], img:'family', fast:true }
   },
   overweightPerKg: 1000,
   extraItem: 450, curtain: 3000,
@@ -191,6 +191,7 @@ const FAQS = [
   ['What if something is lost or damaged?','Every item is tagged and counted, so this is rare. If it happens, we pay you back using our <a href="#/guarantee">published compensation scale</a> and reply to every complaint within 24 hours.'],
   ['Which areas do you cover?','All of Lagos Mainland. Lagos Island is coming next.'],
   ['Can I drop off my clothes?','No. Washday is online and pickup only. Book on the website and your rider comes to you.'],
+  ['How fast do I get my clothes back?','In 72 hours on Fresh Start and Weekly Fresh. Full House members get priority 48-hour return. Need it sooner? Express return brings it back in 24 hours for '+naira(CONFIG.express)+' a pickup.'],
   ['How do I pay?','Online by card, bank transfer or USSD through Paystack, billed monthly. Riders never collect cash.'],
   ['What are the pickup times?','Pick a fixed day and a two-hour window between 7am and 8pm, Monday to Saturday. Move a single pickup from your account up to 12 hours before.']
 ];
@@ -211,7 +212,7 @@ function pxDetail(n){ const k=prPick(n), p=CONFIG.plans[k], over=Math.max(0,n-p.
 function pzTable(){ const K=PLAN_KEYS, P=K.map(k=>CONFIG.plans[k]), hl=1;
   const Y='<svg class="pt-y" viewBox="0 0 20 20" aria-label="Included"><path d="M5 10.5l3.2 3.2L15 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>', N='<span class="pt-n" aria-label="Not included">–</span>';
   const has=(p,f)=>p.extra.includes(f);
-  const rows=[['Clothes a month',P.map(p=>`<b>${p.items}</b>`)],['Pickups a month',P.map(p=>p.pickups)],['Deliveries a month',P.map(p=>p.pickups)],['Wash, dry and fold',P.map(()=>Y)],['Ironing',K.map(k=>k==='fresh'?N:Y)],['Every item tagged and counted',P.map(()=>Y)],['Live order tracking',P.map(p=>has(p,'Live order tracking')?Y:N)],['Priority pickup slots',P.map(p=>has(p,'Priority pickup windows')?Y:N)],['Extra clothes',P.map(()=>`${naira(CONFIG.extraItem)} each`)]];
+  const rows=[['Clothes a month',P.map(p=>`<b>${p.items}</b>`)],['Pickups a month',P.map(p=>p.pickups)],['Deliveries a month',P.map(p=>p.pickups)],['Wash, dry and fold',P.map(()=>Y)],['Ironing',K.map(k=>k==='fresh'?N:Y)],['Every item tagged and counted',P.map(()=>Y)],['Back in',P.map(p=>p.fast?'<b class="pt-fast">48 hours</b>':'72 hours')],['Live order tracking',P.map(p=>has(p,'Live order tracking')?Y:N)],['Priority pickup slots',P.map(p=>has(p,'Priority pickup windows')?Y:N)],['Extra clothes',P.map(()=>`${naira(CONFIG.extraItem)} each`)]];
   const cell=(i,html,cls)=>`<div class="pt-c ${i===hl?'pt-hl':''} ${cls||''}">${html}</div>`;
   return `<div class="pt" role="table" aria-label="Compare plans">
     <div class="pt-r pt-head" role="row"><div class="pt-l"></div>${P.map((p,i)=>cell(i,`${i===hl?'<span class="pt-pop">Most popular</span>':''}<p class="pt-name">${p.name}</p><p class="pt-price">${naira(p.price)}<span>/mo</span></p><p class="pt-per">${naira(Math.round(p.price/p.items))} per item</p>`,'top')).join('')}</div>
@@ -221,7 +222,7 @@ function pzTable(){ const K=PLAN_KEYS, P=K.map(k=>CONFIG.plans[k]), hl=1;
   <p class="pt-note">Pickup and delivery always included. Pause or change your plan any month.</p>`; }
 function pzFit(k,n){ const p=CONFIG.plans[k], over=Math.max(0,n-p.items); return over?`${n} items · +${naira(over*CONFIG.extraItem)} for ${over} extra`:`Fits your ${n} items`; }
 function pzCard(k,n){ const p=CONFIG.plans[k], on=prPick(n)===k, per=Math.round(p.price/p.items);
-  const rows=[['Clothes',`${p.items} items`],['Pickups',`${p.pickups} a month`],['Deliveries',`${p.pickups} a month`],['Care',k==='fresh'?'Wash, dry, fold':'Wash, iron, hang'],['Updates',p.extra.includes('Live order tracking')?'Live tracking':'WhatsApp'],['Pickup slots',p.extra.includes('Priority pickup windows')?'Priority':'Standard']];
+  const rows=[['Clothes',`${p.items} items`],['Pickups',`${p.pickups} a month`],['Deliveries',`${p.pickups} a month`],['Care',k==='fresh'?'Wash, dry, fold':'Wash, iron, hang'],['Updates',p.extra.includes('Live order tracking')?'Live tracking':'WhatsApp'],['Pickup slots',p.extra.includes('Priority pickup windows')?'Priority':'Standard'],['Back in',p.fast?'48 hours, priority':'72 hours']];
   return `<article class="pz-card ${on?'on':''}" data-pz="${k}" data-n="${p.items}" role="radio" aria-checked="${on}" tabindex="0">
     <p class="pz-fit">${on?pzFit(k,n):''}</p>
     <h3 class="pz-name">${p.name}</h3><p class="pz-blurb">${p.blurb}</p>
@@ -266,7 +267,7 @@ function planCard(k, feat){
 }
 const SVC = {
   wash: { label:'Wash & fold', img:'bagpink', title:'Everyday wash and fold', rows:[[I.bag,'Weighed at your door','Your rider weighs the bag in front of you and sends the weight on WhatsApp.'],[I.tag,'Washed on its own','Your load is never mixed with anyone else\'s. Every item is tagged to you.']] },
-  iron: { label:'Ironing', img:'iron', title:'Washed, dried and pressed', rows:[[I.check,'Hung or folded, your choice','Shirts on hangers, trousers creased, ready to wear straight from the bag.'],[I.clock,'Back in 48 hours','Or 24 hours with express return when you need it sooner.']] },
+  iron: { label:'Ironing', img:'iron', title:'Washed, dried and pressed', rows:[[I.check,'Hung or folded, your choice','Shirts on hangers, trousers creased, ready to wear straight from the bag.'],[I.clock,'Back in 72 hours','48 hours on Full House, or 24 with express return.']] },
   dry: { label:'Dry cleaning', img:'native', title:'Native attire and suits', rows:[[I.shield,'Agbada, kaftans, ankara, gowns','Cleaned and pressed with care, flagged and photographed if already stained.'],[I.card,`From ${naira(CONFIG.dryCleanItem)} per item`,'Add items to any pickup, or book a dry-cleaning-only collection.']] },
   bed: { label:'Bedding', img:'towels', title:'Duvets, sheets and curtains', rows:[[I.home,'Big items, handled separately','Washed on their own and returned in a zip bag.'],[I.plus,'Included on Full House','One duvet or bedding set a month, or from '+naira(CONFIG.duvet)+' on other plans.']] }
 };
@@ -350,7 +351,7 @@ const SVC3 = {
   wash: { label:'Wash & fold', ti:'drop', img:'bagpink', head:'Everyday clothes, done.', sub:'One bag out. One bag back, clean, fresh and folded the way you like.', price:'Included in every plan',
     rows:[['scale','Counted at your door','Every piece counted with you. The list lands on WhatsApp.'],['tag','Tagged to your name','Each piece has its own tag, so nothing gets lost or swapped.'],['shield','Never mixed','Your clothes never share a machine with a stranger’s.']] },
   iron: { label:'Ironing', ti:'hanger', img:'iron', head:'Pressed and ready to wear.', sub:'Shirts on hangers, trousers creased, straight from the bag to your day.', price:'Included in Weekly Fresh and Full House',
-    rows:[['hanger','Hung or folded','Tell us once and we remember how you like each item.'],['clock','Back in 48 hours','Or 24 hours with express return when you need it sooner.'],['sparkle','Crisp every time','Steam-pressed by hand, collars and cuffs included.']] },
+    rows:[['hanger','Hung or folded','Tell us once and we remember how you like each item.'],['clock','Back in 72 hours','48 hours on Full House, or 24 with express return.'],['sparkle','Crisp every time','Steam-pressed by hand, collars and cuffs included.']] },
   dry: { label:'Dry cleaning', ti:'sparkle', img:'native', head:'From agbada to tuxedo.', sub:'Native attire, suits and gowns, cleaned and pressed with care.', price:`From ${naira(CONFIG.dryCleanItem)} per item`,
     rows:[['sparkle','Delicate fabrics','Aso-oke, lace, ankara and embroidery handled by specialists.'],['camera','Photographed on arrival','Existing stains or damage are flagged before we start.'],['zip','Returned covered','Every piece comes back pressed, on a hanger, in a garment cover.']] },
   bed: { label:'Bedding', ti:'layers', img:'towels', head:'Duvets, sheets and curtains.', sub:'The big, heavy wash you keep putting off. Done.', price:`${naira(CONFIG.duvet)} a duvet, priced separately`,
@@ -386,7 +387,7 @@ Object.assign(SI, {
 });
 const SVC2 = [
   { label:'Wash & fold', head:'Everyday clothes,<br>done.', img:'bagpink', facts:[['scale','Weighed at your door'],['tag','Every item tagged to you']], price:'Included in every plan' },
-  { label:'Ironing', head:'Pressed and<br>ready to wear.', img:'iron', facts:[['hanger','Hung or folded, your choice'],['clock','Back in 48 hours']], price:'Included in Weekly Fresh and Full House' },
+  { label:'Ironing', head:'Pressed and<br>ready to wear.', img:'iron', facts:[['hanger','Hung or folded, your choice'],['clock','Back in 72 hours']], price:'Included in Weekly Fresh and Full House' },
   { label:'Dry cleaning', head:'Agbada to<br>tuxedo.', img:'native', facts:[['sparkle','Native attire, suits and gowns'],['camera','Stains photographed on arrival']], price:`From ${naira(CONFIG.dryCleanItem)} per item` },
   { label:'Bedding', head:'Duvets, sheets<br>and curtains.', img:'towels', facts:[['layers','Washed on their own'],['zip','Returned in a sealed bag']], price:`Included on Full House, or ${naira(CONFIG.duvet)} a duvet` }
 ];
@@ -424,14 +425,14 @@ const ACCS = [
 function viewHome(){
   const u = me(); const tab = UI.svc2 || 'wash'; const S = SVC[tab]; const acc = UI.acc ?? 0;
   const open = CONFIG.areas.filter(a=>a.open).map(a=>a.name);
-  const marqItems = ['◐ All of Lagos Mainland','48-hour return','Every item tagged','Paystack','◓ Lagos Island · soon','WhatsApp updates'];
+  const marqItems = ['◐ All of Lagos Mainland','Back in 72 hours','Every item tagged','48-hour priority on Full House','Paystack','◓ Lagos Island · soon','WhatsApp updates'];
   return `
   ${isFounding()?`<div class="annc">Founding members get ${Math.round(CONFIG.foundingDiscount*100)}% off.<a href="#/subscribe">Claim yours</a></div>`:''}
   ${siteHeader()}
   <main>
   <section class="ahero">
     <h1 class="ah-h1">Never do laundry again.</h1>
-    <p class="ah-sub">Picked up at your door. Back in 48 hours, pressed and counted.</p>
+    <p class="ah-sub">Picked up at your door. Back in 72 hours, pressed and counted.</p>
     <div class="ah-ctas"><a class="ah-btn" href="#/home/plans">Choose a plan</a><a class="ah-link" href="#/home/how">Learn more <span aria-hidden="true">›</span></a></div>
     <div class="ah-media"><video class="ah-vid" src="${IMG.heroVid}" poster="${IMG.heroPoster}" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>${wmOverlay()}</div>
   </section>
@@ -682,7 +683,7 @@ function viewSubscribeOld(){
           </div>
           <div style="margin-top:20px;background:var(--bg);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;font-size:14px;color:var(--blue)">
             <span style="display:flex;gap:10px;align-items:center">${I.shield}<span style="color:var(--ink)">Loss and damage guarantee</span></span>
-            <span style="display:flex;gap:10px;align-items:center">${I.clock}<span style="color:var(--ink)">Back within 48 hours</span></span>
+            <span style="display:flex;gap:10px;align-items:center">${I.clock}<span style="color:var(--ink)">Back within ${retHours(s.plan||'weekly')} hours</span></span>
             <span style="display:flex;gap:10px;align-items:center">${I.pause}<span style="color:var(--ink)">Pause one month a year</span></span>
           </div>
         </div>
@@ -723,7 +724,9 @@ function statusPill(o){
 }
 const typeName = t => ({regular:'Plan pickup', extra:'Extra pickup', dry:'Dry cleaning'})[t];
 function addrLine(u,i){ const a=u.addresses[i]||u.addresses[0]; return a.street + (a.building?', '+a.building:'') + ', ' + a.area; }
-function returnDate(o){ return addDays(parse(o.date), o.extras.includes('express')?1:2); }
+function retDays(planKey,express){ return express?1:(CONFIG.plans[planKey]&&CONFIG.plans[planKey].fast?2:3); }
+function retHours(planKey){ return retDays(planKey)*24; }
+function returnDate(o){ const u=DB.users[o.phone]||me()||{}; return addDays(parse(o.date), retDays(u.plan,(o.extras||[]).includes('express'))); }
 function activity(u){
   const out=[];
   DB.orders.filter(o=>o.phone===u.phone).forEach(o=>o.history.forEach(h=>{ if(h.s>0) out.push({ at:h.at, t:`${o.id}: ${STATUSES[h.s]}${h.s===1&&o.kg?` · ${o.kg} kg`:''}${h.s===2&&o.items?` · ${o.items} items`:''}`, c: h.s===6?'#2E7D32':'#1F6FB2' }); }));
@@ -883,7 +886,7 @@ function viewSchedule(){
           <div class="rc-head"><span class="rc-logo">${LOGO()}<b>washday</b></span><span class="rc-no">PICKUP SLIP</span></div>
           <p class="rc-date">${fmtL(today())} · ${String(new Date().getHours()).padStart(2,'0')}:${String(new Date().getMinutes()).padStart(2,'0')}</p>
           <div class="rc-cut"></div>
-          ${[['Service',({move:'Plan pickup',extra:'Extra pickup',dry:'Dry cleaning'})[s.type]||'Pickup'],['Pickup',fmt(s.date)],['Window',CONFIG.windows[s.window]],['Address',esc(u.addresses[s.address].label)+', '+esc(u.addresses[s.address].area||'')],[s.type==='dry'?'Items':'Bags', s.type==='dry'?s.dryItems:s.bags],['Back by',fmt(addDays(parse(s.date),s.extras.includes('express')?1:2))]].map(r=>`<div class="rc-ln"><span>${r[0]}</span><i></i><b>${r[1]}</b></div>`).join('')}
+          ${[['Service',({move:'Plan pickup',extra:'Extra pickup',dry:'Dry cleaning'})[s.type]||'Pickup'],['Pickup',fmt(s.date)],['Window',CONFIG.windows[s.window]],['Address',esc(u.addresses[s.address].label)+', '+esc(u.addresses[s.address].area||'')],[s.type==='dry'?'Items':'Bags', s.type==='dry'?s.dryItems:s.bags],['Back by',fmt(addDays(parse(s.date),retDays(u.plan,s.extras.includes('express'))))]].map(r=>`<div class="rc-ln"><span>${r[0]}</span><i></i><b>${r[1]}</b></div>`).join('')}
           <div class="rc-cut"></div>
           ${cost.lines.length?cost.lines.map(l=>`<div class="rc-ln"><span>${l[0]}</span><i></i><b>${l[1]}</b></div>`).join(''):`<div class="rc-ln"><span>${plan(u).name} pickup</span><i></i><b>Included</b></div>`}
           <div class="rc-tot"><span>${cost.total?'TOTAL':'TOTAL'}</span><b>${naira(cost.total)}</b></div>
@@ -1533,12 +1536,12 @@ function viewSubscribe(){
       <div class="ob-areas">${['Call me when you arrive','Leave with security','Hand to me only','Gate code needed','Ask for the housekeeper'].map(g=>`<button type="button" class="ob-chip ${s.gate.includes(g)?'on':''}" aria-pressed="${s.gate.includes(g)}" data-ob="gate" data-v="${esc(g)}">${g}</button>`).join('')}</div>
       <label class="ob-field"><span>Anything else for the rider? (optional)</span><textarea data-sb="notes" rows="2" placeholder="e.g. Blue gate, second house on the left">${esc(s.notes)}</textarea></label>
       <label class="ob-field"><span>Phone on pickup day</span><input data-sb="contact" type="tel" inputmode="tel" value="${esc(s.contact)}"></label></section>`;
-  if(s.step===2){ const ds=obDates(s.plan,s.day); body=`<p class="ob-eyebrow">Step 3 of 4</p><h1 class="ob-h1">Pickups and care</h1><p class="ob-sub">${p.name} includes ${p.pickups} pickup${p.pickups>1?'s':''} and ${p.pickups} deliver${p.pickups>1?'ies':'y'} a month: ${obFreq(s.plan).toLowerCase()}. Everything comes back within 48 hours.</p>
+  if(s.step===2){ const ds=obDates(s.plan,s.day); body=`<p class="ob-eyebrow">Step 3 of 4</p><h1 class="ob-h1">Pickups and care</h1><p class="ob-sub">${p.name} includes ${p.pickups} pickup${p.pickups>1?'s':''} and ${p.pickups} deliver${p.pickups>1?'ies':'y'} a month: ${obFreq(s.plan).toLowerCase()}. Everything comes back within ${retHours(s.plan)} hours${CONFIG.plans[s.plan].fast?', our priority turnaround':''}.</p>
     <section class="ob-card"><h2 class="ob-st">Pickup day</h2>
       <div class="ob-days">${[1,2,3,4,5,6].map(d=>{ const dt=nextDateFor(d); return `<button type="button" class="ob-day ${d===s.day?'on':''}" aria-pressed="${d===s.day}" data-ob="day" data-v="${d}"><b>${DOW[d]}</b><span>${dt.getDate()} ${MON[dt.getMonth()]}</span></button>`; }).join('')}</div>
       <h2 class="ob-st" style="margin-top:22px">Time window</h2>
       <div class="ob-wins">${CONFIG.windows.map((w,i)=>`<button type="button" class="ob-chip ${i===s.window?'on':''}" aria-pressed="${i===s.window}" data-ob="win" data-v="${i}">${w}</button>`).join('')}</div>
-      <div class="ob-sched"><p class="ob-help" style="margin:0 0 10px">Your first month</p>${ds.map((d,i)=>`<div class="ob-si"><span class="ob-sd">${DOW[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}</span><span>Pickup ${i+1}</span><span class="ob-sb">Back by ${DOW[addDays(d,2).getDay()]} ${addDays(d,2).getDate()} ${MON[addDays(d,2).getMonth()]}</span></div>`).join('')}</div></section>
+      <div class="ob-sched"><p class="ob-help" style="margin:0 0 10px">Your first month</p>${ds.map((d,i)=>`<div class="ob-si"><span class="ob-sd">${DOW[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}</span><span>Pickup ${i+1}</span><span class="ob-sb">Back by ${DOW[addDays(d,retDays(s.plan)).getDay()]} ${addDays(d,retDays(s.plan)).getDate()} ${MON[addDays(d,retDays(s.plan)).getMonth()]}</span></div>`).join('')}</div></section>
     <section class="ob-card"><h2 class="ob-st">How you like your clothes</h2><p class="ob-help">We wash everything: T-shirts, jeans, coloured clothes, gym wear, shirts, dresses, towels and bedding. Whites, colours and darks are always washed apart, and your load is never mixed with anyone else's.</p>
       <div class="ob-pref"><div><b>Everyday wear</b><span>T-shirts, jeans, shorts, gym wear</span></div>${obSeg('everyday',['Folded','On hangers'],s.everyday)}</div>
       <div class="ob-pref"><div><b>Shirts, blouses and dresses</b><span>Work and occasion wear</span></div>${obSeg('shirts',['On hangers','Folded'],s.shirts)}</div>
@@ -1644,7 +1647,7 @@ function viewDashboardV2(){
     : `<section class="d-hero" aria-label="Next pickup">
       <div class="d-hl"><p class="d-k">${u.status==='paused'&&!next?'Plan paused':next?'Next pickup'+(next.type!=='regular'?' · '+typeName(next.type):''):'Nothing booked'}</p>
         <h2 class="d-h">${next?fmt(next.date):u.status==='paused'?'Resume any time':'Book a pickup'}</h2>
-        <p class="d-s">${next?`${CONFIG.windows[next.window]} · ${esc(u.addresses[next.address]?.label||'Home')}, ${esc(addrLine(u,next.address))}`:'Your rider comes to your door, counts every piece with you, and brings it back in 48 hours.'}</p>
+        <p class="d-s">${next?`${CONFIG.windows[next.window]} · ${esc(u.addresses[next.address]?.label||'Home')}, ${esc(addrLine(u,next.address))}`:'Your rider comes to your door, counts every piece with you, and brings it back in '+retHours(u.plan)+' hours.'}</p>
         <div class="d-btns">${next?`<a class="d-btn" href="#/app/schedule">Reschedule</a>${next.type==='regular'?`<button class="d-btn2" data-act="skip" data-id="${next.id}">Skip this one</button>`:`<button class="d-btn2" data-act="cancel-order" data-id="${next.id}">Cancel</button>`}`:`<a class="d-btn" href="#/app/schedule">Schedule a pickup</a>`}</div></div>
       <div class="d-hm"><video src="img/hero-wm.mp4" poster="img/hero-wm.jpg" autoplay muted loop playsinline aria-hidden="true"></video></div></section>`;
   return shell('app', `
@@ -1900,7 +1903,7 @@ function viewTerms(){
     ['Who we are',`<p>Washday is a laundry subscription service with pickup and delivery in Lagos, Nigeria${CONFIG.rc?` (${esc(CONFIG.rc)})`:''}. In these terms, "we" and "us" mean Washday, and "you" means the person who holds the account.</p><p>You must be at least 18 years old to open an account and pay for a plan.</p>`],
     ['Your plan and billing',`<ul><li>Plans are billed monthly in advance through Paystack, by card, bank transfer or USSD. Riders never collect cash.</li><li>Your plan renews automatically on the same date each month until you cancel.</li><li>Each plan includes a number of pickups and items per month: Fresh Start (${P.fresh.pickups} pickup, ${P.fresh.items} items), Weekly Fresh (${P.weekly.pickups} pickups, ${P.weekly.items} items) and Full House (${P.household.pickups} pickups, ${P.household.items} items).</li><li>Items above your monthly allowance are washed anyway and charged at ${n(CONFIG.extraItem)} each on your next bill. You see the count on WhatsApp before your rider leaves.</li><li>Unused pickups and items do not roll over to the next month.</li><li>Duvets, curtains, dry cleaning and express returns are priced separately, as shown on our pricing page.</li><li>We will give you at least 30 days' notice before changing the price of your plan.</li></ul>`],
     ['Founding members',`<p>If you joined at the founding-member price, you agree to stay on your plan for your first 3 months. After that you can pause, change or cancel like any other member. If you cancel within the first 3 months, the founding discount for the months you used may be charged back.</p>`],
-    ['Pickups and delivery',`<ul><li>You choose a regular pickup day and a two-hour window between 7am and 8pm, Monday to Saturday.</li><li>You can move a single pickup from your account up to 12 hours before it is due.</li><li>Our standard return time is 48 hours from pickup. Express return is 24 hours for an extra charge.</li><li>Someone needs to be available to hand over and receive your bag. If no one is available after your rider has waited 10 minutes and tried to call you, the pickup may count as used.</li><li>We currently serve all of Lagos Mainland. We may decline addresses outside our service area.</li></ul>`],
+    ['Pickups and delivery',`<ul><li>You choose a regular pickup day and a two-hour window between 7am and 8pm, Monday to Saturday.</li><li>You can move a single pickup from your account up to 12 hours before it is due.</li><li>Our standard return time is 72 hours from pickup. Full House members get priority 48-hour return. Express return is 24 hours, for an extra charge per pickup.</li><li>Someone needs to be available to hand over and receive your bag. If no one is available after your rider has waited 10 minutes and tried to call you, the pickup may count as used.</li><li>We currently serve all of Lagos Mainland. We may decline addresses outside our service area.</li></ul>`],
     ['Counting and tagging',`<p>Your rider counts every item with you at pickup and sends the list on WhatsApp. Each item is tagged to you and counted again at our studio and before delivery. If you disagree with a count, tell us at the door or within 48 hours of delivery. After that, the count on the list is treated as correct.</p>`],
     ['What we do not accept',`<p>For the safety of our staff and other customers' clothes, we do not accept:</p><ul><li>Items soiled with blood, vomit, faeces or other bodily fluids, or with chemicals, paint or oil</li><li>Leather, suede, fur and items labelled "do not wash" and "do not dry clean"</li><li>Wedding gowns and heavily beaded or sequinned pieces, unless we agree in advance</li><li>Rugs, carpets, shoes and bags</li></ul><p>Please empty all pockets. We are not responsible for cash, jewellery, phones or other things left in clothing.</p>`],
     ['Care and condition of your clothes',`<p>We follow the care label on each item. Before washing, we check for stains, tears and loose buttons, and photograph any damage we find. We tell you about it before we start.</p><p>Some things are outside our control. Stains that are permanent, dyes that are not colourfast, and fabric that is already worn may not come out perfectly. We will always tell you if a stain could not be removed.</p>`],
