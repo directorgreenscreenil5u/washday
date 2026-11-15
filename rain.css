@@ -1861,26 +1861,9 @@ button.b-bill:hover{background:#FAFAFB}
 .rc-btn{all:unset;box-sizing:border-box;cursor:pointer;display:block;width:100%;text-align:center;margin-top:20px;padding:16px 20px;border-radius:999px;font-size:16px;font-weight:600;color:#fff}
 .rc-note{margin:10px 0 0;text-align:center;font-size:12.5px;color:#86868B}
 
-/* ===== v43 · Liquid glass buttons ===== */
-.btn-dark,.btn-blue,.ah-btn,.ob-next,.d-btn,.d-cta,.b-btn,.rc-btn,.pt-cta.on,.px-cta,.anav .btn-dark{
-  position:relative;isolation:isolate;overflow:hidden;color:#fff!important;
-  background:linear-gradient(180deg,rgba(255,255,255,.34) 0%,rgba(255,255,255,.08) 46%,rgba(255,255,255,0) 54%,rgba(255,255,255,.10) 100%),rgba(35,64,232,.86)!important;
-  -webkit-backdrop-filter:blur(14px) saturate(180%);backdrop-filter:blur(14px) saturate(180%);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 -1px 1px rgba(255,255,255,.22),inset 0 0 0 1px rgba(255,255,255,.16),0 6px 18px rgba(35,64,232,.28),0 1px 2px rgba(20,30,90,.2)!important;
-  transition:transform .25s cubic-bezier(.16,1,.3,1),box-shadow .25s,background .25s!important}
-.btn-dark::after,.btn-blue::after,.ah-btn::after,.ob-next::after,.d-btn::after,.d-cta::after,.b-btn::after,.rc-btn::after,.pt-cta.on::after,.px-cta::after{
-  content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;
-  background:radial-gradient(120% 80% at 30% -20%,rgba(255,255,255,.45),rgba(255,255,255,0) 55%),linear-gradient(110deg,transparent 30%,rgba(255,255,255,.28) 45%,transparent 60%);
-  background-size:100% 100%,250% 100%;background-position:0 0,120% 0;transition:background-position .9s cubic-bezier(.16,1,.3,1)}
-.btn-dark:hover::after,.btn-blue:hover::after,.ah-btn:hover::after,.ob-next:hover::after,.d-btn:hover::after,.d-cta:hover::after,.b-btn:hover::after,.rc-btn:hover::after,.pt-cta.on:hover::after,.px-cta:hover::after{background-position:0 0,-60% 0}
-.btn-dark:hover,.btn-blue:hover,.ah-btn:hover,.ob-next:hover,.d-btn:hover,.d-cta:hover,.b-btn:hover,.rc-btn:hover,.pt-cta.on:hover,.px-cta:hover{transform:translateY(-1px);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -1px 1px rgba(255,255,255,.25),inset 0 0 0 1px rgba(255,255,255,.2),0 10px 26px rgba(35,64,232,.36),0 1px 2px rgba(20,30,90,.2)!important}
-.btn-dark:active,.btn-blue:active,.ah-btn:active,.ob-next:active,.d-btn:active,.d-cta:active,.b-btn:active,.rc-btn:active,.pt-cta.on:active,.px-cta:active{transform:scale(.97)}
-.btn-light,.btn-soft,.d-btn2,.b-btn2,.pt-cta:not(.on),.ob-back,.ah-link{
-  -webkit-backdrop-filter:blur(16px) saturate(180%);backdrop-filter:blur(16px) saturate(180%)}
-.btn-light,.btn-soft,.d-btn2,.b-btn2,.pt-cta:not(.on){
-  background:linear-gradient(180deg,rgba(255,255,255,.85),rgba(255,255,255,.55))!important;color:#1D1D1F!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,1),inset 0 0 0 1px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.06)!important;transition:transform .25s cubic-bezier(.16,1,.3,1),box-shadow .25s!important}
-.btn-light:hover,.btn-soft:hover,.d-btn2:hover,.b-btn2:hover,.pt-cta:not(.on):hover{transform:translateY(-1px);box-shadow:inset 0 1px 0 #fff,inset 0 0 0 1px rgba(0,0,0,.08),0 8px 20px rgba(0,0,0,.09)!important}
-.b-btn:disabled{opacity:.45;transform:none}
-
-.rwm{font-size:clamp(56px,19vw,320px)!important;text-align:center}
+/* ===== v44 · Clean solid buttons (no glass) ===== */
+.ah-btn,.ob-next,.d-cta,.b-btn,.rc-btn,.pt-cta.on,.px-cta{background:#2340E8;color:#fff;transition:background .2s,transform .2s}
+.ah-btn:hover,.ob-next:hover,.d-cta:hover,.b-btn:hover,.rc-btn:hover,.pt-cta.on:hover,.px-cta:hover{background:#1B32CF}
+.ah-btn:active,.ob-next:active,.d-cta:active,.b-btn:active,.rc-btn:active,.px-cta:active{transform:scale(.98)}
+.d-btn{background:#1D1D1F;color:#fff}.d-btn:hover{background:#000}
+.rc-btn{background:#1D1D1F}.rc-btn:hover{background:#000}
