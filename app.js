@@ -416,7 +416,7 @@ function viewHome(){
     <h1 class="ah-h1">Laundry, handled.</h1>
     <p class="ah-sub">Picked up. Cleaned. Back in 48 hours.</p>
     <div class="ah-ctas"><a class="ah-btn" href="#/home/plans">Choose a plan</a><a class="ah-link" href="#/home/how">Learn more <span aria-hidden="true">›</span></a></div>
-    <div class="ah-media"><video class="ah-vid" src="${IMG.heroVid}" poster="${IMG.heroPoster}" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video><div class="wm-lcd" aria-hidden="true"><span class="wm-lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span><span class="wm-digits"><span class="wm-ghost">8:88</span><span class="wm-time">0<i>:</i>47</span></span></div><span class="wm-led" aria-hidden="true"></span></div>
+    <div class="ah-media"><video class="ah-vid" src="${IMG.heroVid}" poster="${IMG.heroPoster}" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>${wmOverlay()}</div>
   </section>
 
   <section id="services" class="wrap section">
@@ -797,13 +797,13 @@ function viewDashboardOld(){
 /* ---------- Schedule ---------- */
 function stepper(key,val){ return `<div style="display:flex;align-items:center;gap:6px;background:var(--bg);border-radius:999px;padding:5px"><button type="button" class="chip" style="width:40px;height:40px;padding:0;border-radius:50%;border:0" data-act="sch-step" data-k="${key}" data-n="-1" aria-label="Fewer">−</button><span aria-live="polite" style="min-width:40px;text-align:center;font-size:18px;font-weight:700">${val}</span><button type="button" class="chip" style="width:40px;height:40px;padding:0;border-radius:50%;border:0" data-act="sch-step" data-k="${key}" data-n="1" aria-label="More">+</button></div>`; }
 function slotLoad(date){ const l=[0,0,0,0,0,0]; DB.orders.filter(o=>o.date===date && o.status===0 && !o.cancelled).forEach(o=>l[o.window]++); return l; }
+const SCH_QTY=[['duvet','Duvet or comforter','Washed on its own, folded into its own bag.',CONFIG.duvet],['curtain','Curtains','Per panel. Hooks removed and refitted on request.',CONFIG.curtain],['dry','Suits and native attire','Dry cleaned, per piece.',CONFIG.dryCleanItem]];
 function schedCost(s){
   const lines=[]; let total=0;
   if (s.type==='move') lines.push(['Plan pickup','Included']);
   if (s.type==='extra'){ const c=CONFIG.extraPickup*s.bags; lines.push([`Extra pickup × ${s.bags}`, naira(c)]); total+=c; }
   if (s.type==='dry'){ const c=CONFIG.dryCleanItem*s.dryItems; lines.push([`Dry cleaning × ${s.dryItems}`, naira(c)]); total+=c; }
-  if (s.extras.includes('duvet')){ lines.push(['Duvet', naira(CONFIG.duvet)]); total+=CONFIG.duvet; }
-  if (s.extras.includes('dry')) lines.push(['Dry cleaning items','Priced at pickup']);
+  const Q=s.qty||{}; SCH_QTY.forEach(function(x){ const n=Q[x[0]]||0; if(n>0){ const c=n*x[3]; lines.push([`${x[1].split(' or ')[0]} × ${n}`, naira(c)]); total+=c; } });
   if (s.extras.includes('express')){ lines.push(['Express return', naira(CONFIG.express)]); total+=CONFIG.express; }
   return {lines,total};
 }
@@ -812,7 +812,7 @@ function viewSchedule(){
   if (!UI.sch){
     const t = UI.schedType || (upcoming ? 'move' : 'extra');
     const base = upcoming && t==='move' ? parse(upcoming.date) : nextDateFor(u.pickupDay);
-    UI.sch = { type:t, date: iso(base), window: upcoming && t==='move' ? upcoming.window : u.window, address:0, bags:1, extras:[], note:'', month: base.getMonth(), year: base.getFullYear(), done:null, dryItems:2 };
+    UI.sch = { type:t, date: iso(base), window: upcoming && t==='move' ? upcoming.window : u.window, address:0, bags:1, extras:[], qty:{duvet:0,curtain:0,dry:0}, note:'', month: base.getMonth(), year: base.getFullYear(), done:null, dryItems:2 };
     UI.schedType = null;
   }
   const s = UI.sch;
@@ -836,7 +836,8 @@ function viewSchedule(){
     cells.push(`<button type="button" class="${k===s.date?'on':''} ${reg?'reg':''}" ${dis?'disabled':''} aria-pressed="${k===s.date}" aria-label="${fmtL(dt)}${dis?', unavailable':''}" data-act="sch-date" data-d="${k}">${d}</button>`); }
   const canPrev = new Date(s.year,s.month,1) > new Date(min.getFullYear(),min.getMonth(),1); const canNext = new Date(s.year,s.month+1,1) <= max;
   const load = slotLoad(s.date);
-  const extrasList = s.type==='dry' ? [['express','Express return','Back within 24 hours instead of 48.',CONFIG.express]] : [['duvet','Duvet or comforter','Washed on its own, returned in a zip bag.',CONFIG.duvet],['dry','Dry cleaning items','Tell the rider which items at pickup.',CONFIG.dryCleanItem],['express','Express return','Back within 24 hours instead of 48.',CONFIG.express]];
+  const extrasList = [['express','Express return','Back within 24 hours instead of 48.',CONFIG.express]]; if(!s.qty) s.qty={duvet:0,curtain:0,dry:0};
+  const qtyRows = s.type==='dry' ? '' : `<div class="sq">${SCH_QTY.map(x=>{ const n=s.qty[x[0]]||0; return `<div class="sq-row ${n?'on':''}"><div class="sq-t"><b>${x[1]}</b><span>${x[2]}</span></div><span class="sq-p">${naira(x[3])}<small> each</small></span><div class="sq-step"><button type="button" data-act="sch-qty" data-x="${x[0]}" data-n="-1" ${n?'':'disabled'} aria-label="Fewer">−</button><output aria-live="polite">${n}</output><button type="button" data-act="sch-qty" data-x="${x[0]}" data-n="1" aria-label="More">+</button></div></div>`; }).join('')}</div>`;
   const cost = schedCost(s);
   return shell('app/schedule', `
     <a href="#/app" class="small" style="font-weight:600;text-decoration:none">← Dashboard</a>
@@ -865,22 +866,28 @@ function viewSchedule(){
           </div>
           ${s.type==='dry' ? `<div class="between" style="padding-top:20px;border-top:1px solid #EDF2F6"><div><h2 class="cardh">How many items?</h2><p class="small soft" style="margin-top:4px">${naira(CONFIG.dryCleanItem)} per item.</p></div>${stepper('dryItems',s.dryItems)}</div>` :
           `<div class="between" style="padding-top:20px;border-top:1px solid #EDF2F6"><div><h2 class="cardh">How many bags?</h2><p class="small soft" style="margin-top:4px">One ${CONFIG.brand} bag holds about ${p.kg} kg.</p></div>${stepper('bags',s.bags)}</div>`}
-          <div style="padding-top:20px;border-top:1px solid #EDF2F6"><h2 class="cardh" style="margin-bottom:14px">Add extras</h2>
-            <div style="display:flex;flex-direction:column;gap:10px">${extrasList.map(x=>{ const on=s.extras.includes(x[0]); return `<button type="button" class="choice ${on?'on':''}" role="checkbox" aria-checked="${on}" data-act="sch-extra" data-x="${x[0]}" style="display:flex;gap:14px;align-items:center;padding:14px 16px"><span style="flex:none;width:22px;height:22px;border-radius:7px;border:2px solid ${on?'var(--ink)':'#C9DCEA'};background:${on?'var(--ink)':'#fff'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800">${on?'✓':''}</span><span style="flex:1"><b style="display:block">${x[1]}</b><span class="xs muted">${x[2]}</span></span><b class="small">${x[0]==='dry'?naira(x[3])+' / item':(x[0]==='express'?'+':'')+naira(x[3])}</b></button>`; }).join('')}</div>
+          <div style="padding-top:20px;border-top:1px solid #EDF2F6"><h2 class="cardh" style="margin-bottom:14px">Add extras</h2>${qtyRows}
+            <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px">${extrasList.map(x=>{ const on=s.extras.includes(x[0]); return `<button type="button" class="choice ${on?'on':''}" role="checkbox" aria-checked="${on}" data-act="sch-extra" data-x="${x[0]}" style="display:flex;gap:14px;align-items:center;padding:14px 16px"><span style="flex:none;width:22px;height:22px;border-radius:7px;border:2px solid ${on?'var(--ink)':'#C9DCEA'};background:${on?'var(--ink)':'#fff'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800">${on?'✓':''}</span><span style="flex:1"><b style="display:block">${x[1]}</b><span class="xs muted">${x[2]}</span></span><b class="small">${x[0]==='dry'?naira(x[3])+' / item':(x[0]==='express'?'+':'')+naira(x[3])}</b></button>`; }).join('')}</div>
           </div>
           <label class="field" style="padding-top:20px;border-top:1px solid #EDF2F6">Note for the rider (optional)<textarea class="input" rows="2" data-bind-sch="note" placeholder="e.g. Bag will be with security at the gate">${esc(s.note)}</textarea></label>
         </section>
       </div>
-      <aside class="card-dark" aria-label="Summary" style="flex:1 1 300px;min-width:0;position:sticky;top:16px">
-        <h2 class="cardh">Summary</h2>
-        <div style="margin-top:20px;display:flex;flex-direction:column;gap:16px;font-size:15px">
-          ${[['Type',types.find(t=>t[0]===s.type)[1]],['When',fmtL(s.date)+', '+CONFIG.windows[s.window]],['Where',esc(u.addresses[s.address].label)+' · '+esc(addrLine(u,s.address))],[s.type==='dry'?'Items':'Bags', s.type==='dry'?s.dryItems:`${s.bags} (about ${s.bags*p.kg} kg)`],['Back by',fmt(addDays(parse(s.date),s.extras.includes('express')?1:2))+', same window']].map(r=>`<div><p class="xs" style="color:#B9CCD8">${r[0]}</p><p style="font-weight:600;margin-top:4px">${r[1]}</p></div>`).join('')}
+      <aside class="rc-wrap" aria-label="Summary">
+        <div class="rc">
+          <div class="rc-head"><span class="rc-logo">${LOGO()}<b>washday</b></span><span class="rc-no">PICKUP SLIP</span></div>
+          <p class="rc-date">${fmtL(today())} · ${String(new Date().getHours()).padStart(2,'0')}:${String(new Date().getMinutes()).padStart(2,'0')}</p>
+          <div class="rc-cut"></div>
+          ${[['Service',({move:'Plan pickup',extra:'Extra pickup',dry:'Dry cleaning'})[s.type]||'Pickup'],['Pickup',fmt(s.date)],['Window',CONFIG.windows[s.window]],['Address',esc(u.addresses[s.address].label)+', '+esc(u.addresses[s.address].area||'')],[s.type==='dry'?'Items':'Bags', s.type==='dry'?s.dryItems:s.bags],['Back by',fmt(addDays(parse(s.date),s.extras.includes('express')?1:2))]].map(r=>`<div class="rc-ln"><span>${r[0]}</span><i></i><b>${r[1]}</b></div>`).join('')}
+          <div class="rc-cut"></div>
+          ${cost.lines.length?cost.lines.map(l=>`<div class="rc-ln"><span>${l[0]}</span><i></i><b>${l[1]}</b></div>`).join(''):`<div class="rc-ln"><span>${plan(u).name} pickup</span><i></i><b>Included</b></div>`}
+          <div class="rc-tot"><span>${cost.total?'TOTAL':'TOTAL'}</span><b>${naira(cost.total)}</b></div>
+          <div class="rc-cut"></div>
+          <p class="rc-foot">Every piece counted at your door.<br>Extra clothes ${naira(CONFIG.extraItem)} each.</p>
+          <div class="rc-bar" aria-hidden="true"></div>
+          <p class="rc-ref">WD-${String(DB.seq||1000).padStart(4,'0')}-${s.date.replace(/-/g,'').slice(2)}</p>
         </div>
-        <div style="height:1px;background:rgba(255,255,255,.15);margin:22px 0"></div>
-        <div style="display:flex;flex-direction:column;gap:10px;font-size:15px">${cost.lines.map(l=>`<div class="between"><span>${l[0]}</span><b>${l[1]}</b></div>`).join('')}<div class="between" style="font-size:17px;font-weight:700;padding-top:6px"><span>${cost.total?'Charged now':'Total'}</span><span>${naira(cost.total)}</span></div></div>
-        <p class="xs" style="color:#B9CCD8;margin-top:14px">Over ${p.kg} kg per bag is billed at ${naira(CONFIG.overweightPerKg)} per kg after weighing at your door.</p>
-        <button class="btn btn-white btn-lg btn-block" style="margin-top:22px" data-act="sch-confirm">${s.type==='move'&&!cost.total?'Move pickup':cost.total?'Pay and book':'Confirm pickup'}</button>
-        <p class="xs" style="color:#B9CCD8;text-align:center;margin-top:10px">Free to change up to 12 hours before.</p>
+        <button class="rc-btn" data-act="sch-confirm">${s.type==='move'&&!cost.total?'Move pickup':cost.total?'Pay '+naira(cost.total)+' and book':'Confirm pickup'}</button>
+        <p class="rc-note">Free to change up to 12 hours before.</p>
       </aside>
     </div>`);
 }
@@ -1110,6 +1117,7 @@ document.addEventListener('click', e=>{
     'sch-win': ()=>{ UI.sch.window=+t.dataset.w; rerender(); },
     'sch-addr': ()=>{ UI.sch.address=+t.dataset.i; rerender(); },
     'sch-step': ()=>{ const k=t.dataset.k; UI.sch[k]=Math.max(1,Math.min(k==='bags'?4:20, UI.sch[k]+(+t.dataset.n))); rerender(); },
+    'sch-qty': ()=>{ const x=t.dataset.x; const q=UI.sch.qty||(UI.sch.qty={}); q[x]=Math.max(0,Math.min(20,(q[x]||0)+(+t.dataset.n))); rerender(); },
     'sch-extra': ()=>{ const x=t.dataset.x; const ex=UI.sch.extras; UI.sch.extras = ex.includes(x)? ex.filter(y=>y!==x) : ex.concat(x); rerender(); },
     'sch-confirm': ()=> confirmSchedule(),
     'sch-reset': ()=>{ UI.sch=null; rerender(); },
@@ -1230,7 +1238,7 @@ function confirmSchedule(){
     return cost.total ? payModal(cost.total, u.payment.type, apply) : apply();
   }
   payModal(cost.total, u.payment.type, ()=>{
-    const o=newOrder(u,{type:s.type,date:s.date,window:s.window,address:s.address,bags:s.type==='dry'?s.dryItems:s.bags,extras:s.extras.slice(),note,cost:cost.total});
+    const o=newOrder(u,{type:s.type,date:s.date,window:s.window,address:s.address,bags:s.type==='dry'?s.dryItems:s.bags,extras:s.extras.slice().concat(SCH_QTY.filter(x=>(s.qty||{})[x[0]]>0).map(x=>x[0]+' ×'+s.qty[x[0]])),note,cost:cost.total});
     DB.orders.push(o); u.bills.unshift({date:iso(today()),kind:'extra',desc:`${typeName(s.type)} ${o.id}`,amount:cost.total,status:'Paid'}); save(); s.done=o.id; rerender(); window.scrollTo(0,0);
   });
 }
@@ -1239,7 +1247,10 @@ function pickupModal(o){ modal(`<form data-form="pickup" data-id="${o.id}" style
 function countModal(o){ modal(`<form data-form="count" data-id="${o.id}" style="display:flex;flex-direction:column;gap:14px"><h2 class="cardh" style="font-size:24px">Tag and count ${o.id}</h2><label class="field">Number of items<input class="input" name="items" type="number" min="1"></label><label class="field">Anything to flag? (optional)<input class="input" name="flag" placeholder="Stain on blue shirt collar"></label><div class="row" style="gap:10px"><button class="btn btn-dark">Save count</button><button type="button" class="btn btn-light" data-act="modal-close">Cancel</button></div></form>`); }
 
 route();
-(function(){ let m=47; setInterval(function(){ m = m<=1 ? 47 : m-1; document.querySelectorAll('.wm-time').forEach(function(el){ el.innerHTML = '0<i>:</i>'+String(m).padStart(2,'0'); }); },60000); })();
+var WM_M=47;
+function wmTime(){ return '0<i>:</i>'+String(WM_M).padStart(2,'0'); }
+function wmOverlay(){ return '<div class="wm-lcd" aria-hidden="true"><span class="wm-lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span><span class="wm-digits"><span class="wm-ghost">8:88</span><span class="wm-time">'+wmTime()+'</span></span></div><span class="wm-led" aria-hidden="true"></span>'; }
+(function(){ setInterval(function(){ WM_M = WM_M<=1 ? 59 : WM_M-1; document.querySelectorAll('.wm-time').forEach(function(el){ el.innerHTML = wmTime(); el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick'); }); },1500); })();
 (function(){
   function setStep(root,i){ const n=TRK.length; i=((i%n)+n)%n; root.dataset.step=i; const t=TRK[i];
     root.querySelectorAll('.trk-step').forEach((el,k)=>{ el.classList.toggle('on',k===i); el.classList.toggle('done',k<i); });
@@ -1467,14 +1478,20 @@ document.addEventListener('scroll',function(e){ const t=e.target; if(!t.classLis
     var rv=real.querySelector('video'), cv=cl.querySelector('video');
     if(cv){ try{ cv.muted=true; if(rv) cv.currentTime=rv.currentTime||0; var q=cv.play(); if(q&&q.catch) q.catch(function(){}); }catch(e){} }
     ov.appendChild(cl);
-    var T0='translate('+tx+'px,'+ty+'px) scale('+S+')';
-    film.style.transition='none';
-    film.animate([{transform:'scale(1)'},{transform:'scale(1.05)'}],{duration:650,easing:'ease-in',fill:'forwards'});
-    cl.animate([{opacity:0,transform:T0},{opacity:1,transform:T0}],{duration:620,easing:'ease-in-out',fill:'forwards'}).onfinish=function(){
-      var hb=getComputedStyle(document.querySelector('.ahero')).backgroundColor||'#F2F1F4'; ov.style.transition='background-color .6s ease'; ov.style.background=hb; film.style.visibility='hidden'; var vg=ov.querySelector('.i3-vig'); if(vg) vg.style.visibility='hidden'; ov.style.cursor='default';
+    var Sm=Math.min(S,Math.max(2,1600/r.width*1.1)), T0='translate('+(cx-r.left-Sm*dx)+'px,'+(cy-r.top-Sm*dy)+'px) scale('+Sm+')';
+    var hb=getComputedStyle(document.querySelector('.ahero')).backgroundColor||'rgb(242, 241, 244)';
+    film.style.transition='none'; film.style.transformOrigin=cx+'px '+cy+'px'; var pR=Math.min(ri*1.04,cy,vh-cy,cx,vw-cx)-2, pm='radial-gradient(circle at '+cx+'px '+cy+'px, #000 '+(pR*0.9)+'px, transparent '+pR+'px)'; film.style.webkitMaskImage=pm; film.style.maskImage=pm;
+    /* 1. camera pulls back from the drum (film shrinks to where the hero drum will sit) */
+    film.animate([{transform:'scale(1)'},{transform:'scale('+Math.min(1,rh*Sm*0.98/pR)+')'}],{duration:900,easing:'cubic-bezier(.55,0,.35,1)',fill:'forwards'});
+    var vg=ov.querySelector('.i3-vig'); if(vg) vg.animate([{opacity:getComputedStyle(vg).opacity},{opacity:0}],{duration:600,fill:'forwards'});
+    /* 2. lights come up: the real machine fades in exactly over the drum */
+    setTimeout(function(){ ov.style.transition='background-color .7s ease'; ov.style.background=hb; },650);
+    cl.animate([{opacity:0,transform:T0},{opacity:1,transform:T0}],{duration:650,delay:650,easing:'ease-in-out',fill:'forwards'}).onfinish=function(){
+      film.style.visibility='hidden'; ov.style.cursor='default';
       root.style.overflowY='auto'; var r2=real.getBoundingClientRect(), T1='translate('+(r2.left-r.left)+'px,'+(r2.top-r.top)+'px) scale('+(r2.width/r.width)+')';
-      var pull=cl.animate([{transform:T0},{transform:T1}],{duration:1700,easing:'cubic-bezier(.7,0,.2,1)',fill:'forwards'});
-      setTimeout(function(){ ov.style.background=hb.replace(/^rgb\((.*)\)$/,'rgba($1, 0)'); root.classList.add('intro-reveal'); root.classList.remove('intro-on'); },1400);
+      /* 3. settle into the hero */
+      var pull=cl.animate([{transform:T0},{transform:T1}],{duration:1300,easing:'cubic-bezier(.45,0,.2,1)',fill:'forwards'});
+      setTimeout(function(){ ov.style.background=hb.replace(/^rgb\((.*)\)$/,'rgba($1, 0)'); root.classList.add('intro-reveal'); root.classList.remove('intro-on'); },1050);
       pull.onfinish=function(){ root.style.overflowY=''; try{ if(rv&&cv) rv.currentTime=cv.currentTime; }catch(e){} root.classList.remove('i3-hide'); requestAnimationFrame(function(){ ov.remove(); }); setTimeout(function(){ root.classList.remove('intro-reveal'); },1600); };
     }; }
   var t=setTimeout(end,4300); ov.addEventListener('click',function(){ clearTimeout(t); end(); });
@@ -1726,7 +1743,7 @@ function viewDashboard(){
   const clothes=orders.filter(o=>!o.cancelled&&parse(o.date)>=c.start&&parse(o.date)<=c.end).reduce((s,o)=>s+(o.items||0),0);
   const hr=new Date().getHours(); const greet=hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
   const acts=activity(u); const steps=['Picked up','Tagged','Washing','Packed','Delivered'], map=[1,2,3,4,6];
-  const vid=`<div class="d-hm"><video src="img/hero-wm.mp4" poster="img/hero-wm.jpg" autoplay muted loop playsinline aria-hidden="true"></video></div>`;
+  const vid=`<div class="d-hm"><div class="d-wm"><video class="ah-vid" src="img/hero-wm.mp4" poster="img/hero-wm.jpg" autoplay muted loop playsinline aria-hidden="true"></video>${wmOverlay()}</div></div>`;
   const hero=active?`<section class="d-hero"><div class="d-hl"><p class="d-k">In progress</p><h2 class="d-h">${STATUSES[active.status]}</h2><p class="d-s">Back ${fmt(returnDate(active))}${active.items?` · ${active.items} clothes`:''}</p>
       <ol class="d-track">${map.map((st,i)=>{ const cls=active.status>=st?'done':(active.status===st-1||(st===6&&active.status===5))?'now':''; return `<li class="${cls}"><i></i><span>${steps[i]}</span></li>`; }).join('')}</ol>
       <div class="d-btns"><a class="d-btn" href="#/app/track/${active.id}">Track</a></div></div>${vid}</section>`
