@@ -686,7 +686,7 @@ function viewSubscribeOld(){
 }
 
 /* ---------- App shell ---------- */
-function shell(active, inner){
+function shellOld(active, inner){
   const u = me(); const p = plan(u);
   const items = [['app','Dashboard',I.home],['app/schedule','Schedule pickup',I.cal],['app/orders','Orders',I.list],['app/billing','Plan &amp; billing',I.card]];
   const initials = u.name.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();
@@ -726,7 +726,7 @@ function activity(u){
 }
 
 /* ---------- Dashboard ---------- */
-function viewDashboard(){
+function viewDashboardOld(){
   const u = me(); const p = plan(u); const c = cycleOf(u); const orders = myOrders();
   const active = orders.filter(o=>o.status>=1 && o.status<6 && !o.cancelled).sort((a,b)=>a.date.localeCompare(b.date))[0];
   const next = orders.filter(o=>o.status===0 && !o.cancelled).sort((a,b)=>a.date.localeCompare(b.date))[0];
@@ -1009,9 +1009,9 @@ function viewBilling(){
       <div style="flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:16px">
         <section class="card" aria-label="Payment method"><h2 class="cardh">Payment method</h2>
           <div style="margin-top:16px;background:linear-gradient(135deg,#1F6FB2,#0B1D2A);color:#fff;border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:18px">
-            <div class="between xs" style="color:#C3D4DE"><span>${u.payment.type==='card'?'Card':u.payment.type==='transfer'?'Bank transfer':'USSD'}</span><span>Paystack</span></div>
-            <p style="font-size:20px;font-weight:600;letter-spacing:.12em">${u.payment.type==='card'?'•••• '+u.payment.last4:u.payment.type==='transfer'?'Dedicated account':'Bank USSD code'}</p>
-            <p class="xs" style="color:#C3D4DE">${u.payment.type==='card'?'Charged automatically each month':'We remind you 3 days before renewal'}</p>
+            <div class="between xs" style="color:#C3D4DE"><span>${u.payment.type==='paystack'?'Card, transfer or USSD':u.payment.type==='card'?'Card':u.payment.type==='transfer'?'Bank transfer':'USSD'}</span><span>Paystack</span></div>
+            <p style="font-size:20px;font-weight:600;letter-spacing:.12em">${u.payment.type==='paystack'?'Paystack':u.payment.type==='card'?'•••• '+u.payment.last4:u.payment.type==='transfer'?'Dedicated account':'Bank USSD code'}</p>
+            <p class="xs" style="color:#C3D4DE">${u.payment.type==='card'||u.payment.type==='paystack'?'Billed monthly through Paystack':'We remind you 3 days before renewal'}</p>
           </div>
           <button class="btn btn-soft btn-block" style="margin-top:14px" data-act="pay-method">Change payment method</button>
         </section>
@@ -1587,3 +1587,75 @@ document.addEventListener('click',function(e){ const b=e.target.closest('[data-o
       function(){ b.classList.remove('busy'); toast('Allow location access, or type your address.'); },{enableHighAccuracy:true,timeout:10000}); return; }
   else return;
   rerender(); });
+
+/* ===== Customer app v2: shell + dashboard ===== */
+function shell(active, inner){
+  const u=me(); const p=plan(u);
+  const items=[['app','Home',I.home],['app/schedule','Schedule',I.cal],['app/orders','Orders',I.list],['app/billing','Plan & billing',I.card]];
+  const initials=u.name.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();
+  return `<div class="ws">
+    <aside class="ws-side">
+      <a class="ws-logo" href="#/">${LOGO()}<span>washday</span></a>
+      <nav aria-label="Account">${items.map(i=>`<a href="#/${i[0]}" class="${active===i[0]?'on':''}" ${active===i[0]?'aria-current="page"':''}>${i[2]}<span>${i[1]}</span></a>`).join('')}</nav>
+      <div class="ws-foot">
+        <a class="ws-help" href="https://wa.me/${CONFIG.whatsapp}" target="_blank" rel="noopener">${I.chat}<span><b>Need help?</b>Chat with us on WhatsApp</span></a>
+        <div class="ws-me"><span class="ws-av">${esc(initials)}</span><div><b>${esc(u.name)}</b><span>${p?p.name:'No plan'}${u.status&&u.status!=='active'?' · '+u.status:''}</span></div><button data-act="logout" aria-label="Log out">${I.out}</button></div>
+      </div>
+    </aside>
+    <header class="ws-top"><a class="ws-logo" href="#/">${LOGO()}<span>washday</span></a><span class="ws-av">${esc(initials)}</span></header>
+    <main class="ws-main">${inner}</main>
+    <nav class="ws-tabs" aria-label="App">${items.map(i=>`<a href="#/${i[0]}" class="${active===i[0]?'on':''}">${i[2]}<span>${i[1].split(' ')[0]}</span></a>`).join('')}</nav>
+  </div>`;
+}
+function dRing(v,max,label){ const pc=max?Math.min(1,v/max):0, r=34, c=2*Math.PI*r; return `<svg class="d-ring" viewBox="0 0 80 80" aria-label="${label}"><circle cx="40" cy="40" r="${r}" fill="none" stroke="#ECEDF2" stroke-width="7"/><circle cx="40" cy="40" r="${r}" fill="none" stroke="#2340E8" stroke-width="7" stroke-linecap="round" stroke-dasharray="${(c*pc).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 40 40)"/></svg>`; }
+function viewDashboard(){
+  const u=me(); const p=plan(u); const c=cycleOf(u); const orders=myOrders();
+  const active=orders.filter(o=>o.status>=1&&o.status<6&&!o.cancelled).sort((a,b)=>a.date.localeCompare(b.date))[0];
+  const upcoming=orders.filter(o=>o.status===0&&!o.cancelled).sort((a,b)=>a.date.localeCompare(b.date));
+  const next=upcoming[0];
+  const inCycle=cycleRegular(u); const used=inCycle.filter(o=>o.status>=1).length; const booked=inCycle.filter(o=>o.status===0).length;
+  const clothes=orders.filter(o=>!o.cancelled&&parse(o.date)>=c.start&&parse(o.date)<=c.end).reduce((s,o)=>s+(o.items||0),0);
+  const hr=new Date().getHours(); const greet=hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
+  const acts=activity(u); const addr=u.addresses&&u.addresses[0]; const pr=u.prefs||{};
+  const steps=['Picked up','Tagged','Washing','Packed','Delivered'], map=[1,2,3,4,6];
+  const hero = active ? `<section class="d-hero" aria-label="Order in progress">
+      <div class="d-hl"><p class="d-k">In progress · ${active.id}</p><h2 class="d-h">${STATUSES[active.status]}</h2><p class="d-s">Back by <b>${fmt(returnDate(active))}, ${CONFIG.windows[active.window]}</b>${active.items?` · ${active.items} clothes counted`:''}</p>
+        <ol class="d-track">${map.map((st,i)=>{ const cls=active.status>=st?'done':(active.status===st-1||(st===6&&active.status===5))?'now':''; return `<li class="${cls}"><i></i><span>${steps[i]}</span></li>`; }).join('')}</ol>
+        <div class="d-btns"><a class="d-btn" href="#/app/track/${active.id}">Track order</a></div></div>
+      <div class="d-hm"><video src="img/hero-wm.mp4" poster="img/hero-wm.jpg" autoplay muted loop playsinline aria-hidden="true"></video></div></section>`
+    : `<section class="d-hero" aria-label="Next pickup">
+      <div class="d-hl"><p class="d-k">${u.status==='paused'&&!next?'Plan paused':next?'Next pickup'+(next.type!=='regular'?' · '+typeName(next.type):''):'Nothing booked'}</p>
+        <h2 class="d-h">${next?fmt(next.date):u.status==='paused'?'Resume any time':'Book a pickup'}</h2>
+        <p class="d-s">${next?`${CONFIG.windows[next.window]} · ${esc(u.addresses[next.address]?.label||'Home')}, ${esc(addrLine(u,next.address))}`:'Your rider comes to your door, counts every piece with you, and brings it back in 48 hours.'}</p>
+        <div class="d-btns">${next?`<a class="d-btn" href="#/app/schedule">Reschedule</a>${next.type==='regular'?`<button class="d-btn2" data-act="skip" data-id="${next.id}">Skip this one</button>`:`<button class="d-btn2" data-act="cancel-order" data-id="${next.id}">Cancel</button>`}`:`<a class="d-btn" href="#/app/schedule">Schedule a pickup</a>`}</div></div>
+      <div class="d-hm"><video src="img/hero-wm.mp4" poster="img/hero-wm.jpg" autoplay muted loop playsinline aria-hidden="true"></video></div></section>`;
+  return shell('app', `
+    <div class="d-head"><div><p class="d-date">${fmtL(today())}</p><h1 class="d-h1">${greet}, ${esc(u.name.split(' ')[0])}</h1></div><a class="d-cta" href="#/app/schedule">${I.plus}<span>Schedule pickup</span></a></div>
+    ${u.status==='cancelled'?`<div class="d-banner">Your plan is cancelled and ends on ${fmtY(c.end)}. <a href="#/app/billing">Restart it</a></div>`:''}
+    ${hero}
+    <div class="d-stats">
+      <section class="d-stat">${dRing(clothes,p.items,'Clothes used')}<div><p class="d-k">Clothes this month</p><p class="d-big">${clothes}<small> of ${p.items}</small></p><p class="d-sm">${Math.max(0,p.items-clothes)} left · extras ${naira(CONFIG.extraItem)} each</p></div></section>
+      <section class="d-stat">${dRing(used+booked,p.pickups,'Pickups')}<div><p class="d-k">Pickups</p><p class="d-big">${used}<small> of ${p.pickups} used</small></p><p class="d-sm">${booked?booked+' booked':'None booked'} · ${p.pickups} deliveries included</p></div></section>
+      <section class="d-stat d-plan"><div><p class="d-k">${p.name}</p><p class="d-big">${naira(p.price)}<small>/mo</small></p><p class="d-sm">Renews ${fmt(c.renew)} · <a href="#/app/billing">Manage</a></p></div></section>
+    </div>
+    <div class="d-grid">
+      <section class="d-card"><div class="d-ch"><h2>Coming up</h2><a href="#/app/schedule">Book extra</a></div>
+        ${upcoming.length?`<ul class="d-list">${upcoming.slice(0,4).map(o=>{ const d=parse(o.date); return `<li><span class="d-cal"><b>${d.getDate()}</b><i>${MON[d.getMonth()]}</i></span><div><b>${typeName(o.type)}</b><span>${DOW_L[d.getDay()]}, ${CONFIG.windows[o.window]}</span></div><em>Back ${fmt(returnDate(o))}</em></li>`; }).join('')}</ul>`:'<p class="d-empty">Nothing scheduled. Book a pickup and it shows here.</p>'}</section>
+      <section class="d-card"><div class="d-ch"><h2>Activity</h2></div>
+        ${acts.length?`<ol class="d-feed">${acts.slice(0,5).map(a=>`<li><i></i><div><b>${esc(a.t)}</b><span>${fmtTime(a.at)}</span></div></li>`).join('')}</ol>`:'<p class="d-empty">Updates about your laundry will appear here: pickup, count, wash, delivery.</p>'}</section>
+    </div>
+    <div class="d-grid">
+      <section class="d-card"><div class="d-ch"><h2>Recent orders</h2><a href="#/app/orders">View all</a></div>
+        ${orders.length?`<ul class="d-orders">${orders.slice(0,5).map(o=>`<li><a href="#/app/track/${o.id}"><b>${o.id}</b><span>${fmt(o.date)} · ${typeName(o.type)}${o.items?` · ${o.items} clothes`:''}</span>${statusPill(o)}</a></li>`).join('')}</ul>`:'<p class="d-empty">No orders yet.</p>'}</section>
+      <section class="d-card"><div class="d-ch"><h2>Your preferences</h2><a href="#/app/billing">Edit</a></div>
+        <dl class="d-prefs">
+          <div><dt>Address</dt><dd>${addr?esc(addr.street)+(addr.building?', '+esc(addr.building):'')+', '+esc(addr.area):'Not set'}</dd></div>
+          <div><dt>Pickup day</dt><dd>${u.pickupDay!=null?DOW_L[u.pickupDay]+'s, '+CONFIG.windows[u.window||0]:'Not set'}</dd></div>
+          <div><dt>Everyday wear</dt><dd>${esc(pr.everyday||'Folded')}</dd></div>
+          <div><dt>Shirts</dt><dd>${esc(pr.shirts||'On hangers')}</dd></div>
+          ${u.plan==='fresh'?'':`<div><dt>Ironing</dt><dd>${esc(pr.iron||'Everything')}</dd></div>`}
+          <div><dt>Detergent</dt><dd>${esc(pr.detergent||'Standard')}${pr.softener===false?'':' · softener'}</dd></div>
+        </dl></section>
+    </div>
+    <section class="d-refer"><div><h2>Give a free pickup, get one</h2><p>When a friend subscribes with your code, you both get a free pickup.</p></div><div class="d-code"><b>${esc(u.referral||'WASH-'+u.phone.slice(-4))}</b><button data-act="copy" data-v="${esc(u.referral||'')}">Copy</button></div></section>`);
+}
