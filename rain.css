@@ -1314,3 +1314,7 @@ html.intro-media .ahero .ah-media{visibility:visible}
 #intro3.go .i3-tag{opacity:1}
 #intro3 .i3-skip{position:absolute;bottom:22px;left:0;right:0;text-align:center;font-size:12px;color:rgba(255,255,255,.4);letter-spacing:.06em;opacity:0;transition:opacity .6s 1s}
 #intro3.go .i3-skip{opacity:1}
+/* v31 · intro ends by opening the drum door into the site */
+#intro3.iris .i3-brand,#intro3.iris .i3-tag,#intro3.iris .i3-skip{opacity:0!important;transition:opacity .28s ease!important}
+#intro3.iris .i3-vig{opacity:.6;transition:opacity .4s}
+@media (max-width:640px){.hl-card.c0 .hl-img{object-position:64% 50%}}
