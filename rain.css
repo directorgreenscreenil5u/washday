@@ -2296,3 +2296,36 @@ a.d-plan:hover .d-chev{transform:translateX(4px)}
 @media (max-width:560px){.ws-main>.grid{grid-template-columns:1fr 1fr!important;gap:10px!important}.ws-main>.grid .stat{padding:16px}.ws-main>.grid .stat b{font-size:24px}}
 .pt-fast{color:#2340E8;font-weight:600}
 .pt-badge{display:inline-flex;align-items:center;gap:4px;margin-top:8px;padding:4px 10px;border-radius:999px;background:#EEF1FF;color:#2340E8;font-size:12px;font-weight:600;white-space:nowrap}
+
+/* ===== v56 · talk to a person ===== */
+.sp-top{position:relative}
+.sp-human{all:unset;cursor:pointer;margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:999px;background:#1D1D1F;color:#fff;font-size:13.5px;font-weight:600;white-space:nowrap}
+.sp-human svg{width:16px;height:16px}
+.sp-human:hover{background:#000}
+.sp-top>div{min-width:0}
+.hp-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.hp-b{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 16px;border-radius:999px;font-size:14px;font-weight:600;text-decoration:none!important;transition:transform .2s cubic-bezier(.2,.9,.3,1.4),filter .2s}
+.hp-b svg{width:17px;height:17px}
+.hp-b:hover{transform:translateY(-1px);filter:brightness(1.05)}
+.hp-wa{background:#25D366;color:#fff!important}
+.hp-call{background:#2340E8;color:#fff!important}
+.hp-done{background:#F2F2F5;color:#1D1D1F}
+.sp-m .hp-btns{margin-top:8px}
+.hp-card .hp-sub{margin:0;font-size:14px;line-height:1.5;color:#6E6E73}
+.hp-card .hp-btns{margin-top:14px}.hp-card .hp-b{flex:1;padding:13px 16px}
+.hp-ask{all:unset;cursor:pointer;display:block;margin-top:12px;font-size:13.5px;font-weight:500;color:#2340E8}
+.hp-ask:hover{text-decoration:underline}
+.sp-wait{display:flex;align-items:center;gap:8px;margin:0 16px;padding:10px 14px;border-radius:14px;background:#FFF6E5;color:#8A5300;font-size:13.5px;font-weight:500}
+.hp-dot{width:8px;height:8px;border-radius:50%;background:#FF9F0A;flex:none;box-shadow:0 0 0 0 rgba(255,159,10,.6);animation:hpPulse 1.6s infinite}
+@keyframes hpPulse{70%{box-shadow:0 0 0 8px rgba(255,159,10,0)}100%{box-shadow:0 0 0 0 rgba(255,159,10,0)}}
+.sp-quick button[data-q="Talk to a person"]{background:#1D1D1F;color:#fff;box-shadow:none}
+.hp-queue{margin-top:16px;padding:20px 22px;border-radius:22px;background:#FFF8EC;box-shadow:0 0 0 1px #FFE2B0}
+.hp-qh{display:flex;align-items:center;gap:10px}.hp-qh h2{margin:0;font-size:17px;font-weight:600;color:#1D1D1F}
+.hp-qi{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-top:12px;padding:14px 16px;border-radius:16px;background:#fff}
+.hp-qi b{font-size:15px}.hp-qi span{display:block;font-size:13px;color:#86868B}.hp-qi p{margin:6px 0 0;font-size:14px;color:#424245}
+.hp-qa{display:flex;gap:8px;flex-wrap:wrap}.hp-qa .hp-b{padding:9px 14px;font-size:13px}
+@media (max-width:560px){.sp-human span{display:none}.sp-human{padding:9px}}
+.ws.dark .sp-human{background:#F5F5F7;color:#000}
+.ws.dark .hp-card .hp-sub{color:#98989D}
+.ws.dark .sp-wait{background:rgba(255,159,10,.14);color:#FFB340}
+.ws.dark .sp-quick button[data-q="Talk to a person"]{background:#F5F5F7!important;color:#000!important}
