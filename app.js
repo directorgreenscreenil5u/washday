@@ -853,7 +853,7 @@ function viewSchedule(){
     cells.push(`<button type="button" class="${k===s.date?'on':''} ${reg?'reg':''}" ${dis?'disabled':''} aria-pressed="${k===s.date}" aria-label="${fmtL(dt)}${dis?', unavailable':''}" data-act="sch-date" data-d="${k}">${d}</button>`); }
   const canPrev = new Date(s.year,s.month,1) > new Date(min.getFullYear(),min.getMonth(),1); const canNext = new Date(s.year,s.month+1,1) <= max;
   const load = slotLoad(s.date);
-  const extrasList = [['express','Express return','Back within 24 hours instead of 48.',CONFIG.express]]; if(!s.qty) s.qty={duvet:0,curtain:0,dry:0};
+  const extrasList = [['express','Express return','Back within 24 hours.',CONFIG.express]]; if(!s.qty) s.qty={duvet:0,curtain:0,dry:0};
   const qtyRows = s.type==='dry' ? '' : `<div class="sq">${SCH_QTY.map(x=>{ const n=s.qty[x[0]]||0; return `<div class="sq-row ${n?'on':''}"><div class="sq-t"><b>${x[1]}</b><span>${x[2]}</span></div><span class="sq-p">${naira(x[3])}<small> each</small></span><div class="sq-step"><button type="button" data-act="sch-qty" data-x="${x[0]}" data-n="-1" ${n?'':'disabled'} aria-label="Fewer">−</button><output aria-live="polite">${n}</output><button type="button" data-act="sch-qty" data-x="${x[0]}" data-n="1" aria-label="More">+</button></div></div>`; }).join('')}</div>`;
   const cost = schedCost(s);
   return shell('app/schedule', `
