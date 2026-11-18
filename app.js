@@ -219,14 +219,14 @@ function pxDetail(n){ const k=prPick(n), p=CONFIG.plans[k], over=Math.max(0,n-p.
 function pzTable(){ const K=PLAN_KEYS, P=K.map(k=>CONFIG.plans[k]), hl=1;
   const Y='<svg class="pt-y" viewBox="0 0 20 20" aria-label="Included"><path d="M5 10.5l3.2 3.2L15 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>', N='<span class="pt-n" aria-label="Not included">–</span>';
   const has=(p,f)=>p.extra.includes(f);
-  const rows=[['Clothes a month',P.map(p=>`<b>${p.items}</b>`)],['Pickups a month',P.map(p=>p.pickups)],['Deliveries a month',P.map(p=>p.pickups)],['Wash, dry and fold',P.map(()=>Y)],['Ironing',K.map(k=>k==='fresh'?N:Y)],['Every item tagged and counted',P.map(()=>Y)],['Return time',P.map(p=>p.fast?'<b class="pt-fast">48 hours · priority</b>':'72 hours')],['Live order tracking',P.map(p=>has(p,'Live order tracking')?Y:N)],['Priority pickup slots',P.map(p=>has(p,'Priority pickup windows')?Y:N)],['Extra clothes',P.map(()=>`${naira(CONFIG.extraItem)} each`)]];
+  const rows=[['Clothes a month',P.map(p=>`<b>${p.items}</b>`)],['Pickups a month, each delivered back',P.map(p=>p.pickups)],['Wash, dry and fold',P.map(()=>Y)],['Ironing',K.map(k=>k==='fresh'?N:Y)],['Every item tagged and counted',P.map(()=>Y)],['Return time',P.map(p=>p.fast?'<b class="pt-fast">48 hours · priority</b>':'72 hours')],['Live order tracking',P.map(p=>has(p,'Live order tracking')?Y:N)],['Priority pickup slots',P.map(p=>has(p,'Priority pickup windows')?Y:N)]];
   const cell=(i,html,cls)=>`<div class="pt-c ${i===hl?'pt-hl':''} ${cls||''}">${html}</div>`;
   return `<div class="pt" role="table" aria-label="Compare plans">
-    <div class="pt-r pt-head" role="row"><div class="pt-l"></div>${P.map((p,i)=>cell(i,`${i===hl?'<span class="pt-pop">Most popular</span>':''}<p class="pt-name">${p.name}</p><p class="pt-price">${naira(p.price)}<span>/mo</span></p><p class="pt-per">${naira(Math.round(p.price/p.items))} per item</p>${p.fast?'<span class="pt-badge">⚡ 48-hour return</span>':''}`,'top')).join('')}</div>
+    <div class="pt-r pt-head" role="row"><div class="pt-l"></div>${P.map((p,i)=>cell(i,`${i===hl?'<span class="pt-pop">Most popular</span>':''}<p class="pt-name">${p.name}</p><p class="pt-price">${naira(p.price)}<span>/mo</span></p><p class="pt-per">${naira(Math.round(p.price/p.items))} per item</p>${isFounding()?`<p class="pt-fd">${naira(Math.round(p.price*(1-CONFIG.foundingDiscount)))} first month<br>for founding members</p>`:''}${p.fast?'<span class="pt-badge">⚡ 48-hour return</span>':''}`,'top')).join('')}</div>
     ${rows.map(r=>`<div class="pt-r" role="row"><div class="pt-l" role="rowheader">${r[0]}</div>${r[1].map((v,i)=>cell(i,v)).join('')}</div>`).join('')}
     <div class="pt-r pt-foot" role="row"><div class="pt-l"></div>${K.map((k,i)=>cell(i,`<button class="btn pt-cta ${i===hl?'on':''}" data-act="pick-plan" data-plan="${k}">Choose<span class="pt-cn"> ${P[i].name}</span></button>`,'bot')).join('')}</div>
   </div>
-  <p class="pt-note">Pickup and delivery always included. Pause or change your plan any month.</p>`; }
+  <p class="pt-note">Pickup and delivery always included. Pause or change your plan any month. Extra clothes ${naira(CONFIG.extraItem)} each.${isFounding()?` Founding prices end ${fmtY(parse(CONFIG.foundingDeadline))}.`:''}</p>`; }
 function pzFit(k,n){ const p=CONFIG.plans[k], over=Math.max(0,n-p.items); return over?`${n} items · +${naira(over*CONFIG.extraItem)} for ${over} extra`:`Fits your ${n} items`; }
 function pzCard(k,n){ const p=CONFIG.plans[k], on=prPick(n)===k, per=Math.round(p.price/p.items);
   const rows=[['Clothes',`${p.items} items`],['Pickups',`${p.pickups} a month`],['Deliveries',`${p.pickups} a month`],['Care',k==='fresh'?'Wash, dry, fold':'Wash, iron, hang'],['Updates',p.extra.includes('Live order tracking')?'Live tracking':'WhatsApp'],['Pickup slots',p.extra.includes('Priority pickup windows')?'Priority':'Standard'],['Back in',p.fast?'48 hours, priority':'72 hours']];
@@ -260,7 +260,7 @@ function planCard(k, feat){
   const tick = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`;
   const disc = isFounding() ? Math.round(p.price*(1-CONFIG.foundingDiscount)) : 0;
   return `<article class="pcard ${feat?'feat':''}">
-    <div class="pc-img"><img class="photo" src="${IMG[p.img]}" alt="" loading="lazy">${p.tag?`<span class="pc-badge">${p.tag}</span>`:''}</div>
+    <div class="pc-img"><img loading="lazy" decoding="async" class="photo" src="${IMG[p.img]}" alt="" loading="lazy">${p.tag?`<span class="pc-badge">${p.tag}</span>`:''}</div>
     <div class="pc-body">
       <div class="pc-top"><h3>${p.name}</h3><span class="pc-cad">${cad}</span></div>
       <p class="pc-blurb">${p.blurb}</p>
@@ -434,12 +434,12 @@ function viewHome(){
   const open = CONFIG.areas.filter(a=>a.open).map(a=>a.name);
   const marqItems = ['◐ All of Lagos Mainland','Back in 72 hours','Every item tagged','48-hour priority on Full House','Paystack','◓ Lagos Island · soon','WhatsApp updates'];
   return `
-  ${isFounding()?`<div class="annc">Founding members get ${Math.round(CONFIG.foundingDiscount*100)}% off.<a href="#/subscribe">Claim yours</a></div>`:''}
+  ${isFounding()?`<div class="annc">Founding members get ${Math.round(CONFIG.foundingDiscount*100)}% off their first month.<a href="#/subscribe">Claim yours</a></div>`:''}
   ${siteHeader()}
   <main>
   <section class="ahero">
     <h1 class="ah-h1">Never do laundry again.</h1>
-    <p class="ah-sub">Picked up at your door. Back in 72 hours, pressed and counted.</p>
+    <p class="ah-sub">Picked up at your door. Back in 72 hours, clean and counted.</p>
     <div class="ah-ctas"><a class="ah-btn" href="#/home/plans">Choose a plan</a><a class="ah-link" href="#/home/how">Learn more <span aria-hidden="true">›</span></a></div>
     <div class="ah-media"><video class="ah-vid" src="${IMG.heroVid}" poster="${IMG.heroPoster}" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>${wmOverlay()}</div>
   </section>
@@ -448,7 +448,7 @@ function viewHome(){
     <div class="svx-head"><h2 class="h2">Everything your wardrobe needs.</h2><p class="lead">One subscription. Four services. Zero trips to the laundry man.</p></div>
     <div class="svx-tabs" role="tablist">${Object.entries(SVC3).map(([k,v])=>`<button role="tab" class="${tab===k?'on':''}" aria-selected="${tab===k}" data-act="svc2" data-t="${k}"><span class="svx-ti">${SI[v.ti]}</span>${v.label}</button>`).join('')}</div>
     ${(()=>{ const V=SVC3[tab]||SVC3.wash; return `<div class="svx-panel">
-      <div class="svx-media"><img src="${IMG[V.img]}" alt="${V.label}"></div>
+      <div class="svx-media"><img loading="lazy" decoding="async" src="${IMG[V.img]}" alt="${V.label}"></div>
       <div class="svx-body">
         <p class="svx-eyebrow">${V.label}</p>
         <h3 class="svx-h">${V.head}</h3>
@@ -462,9 +462,9 @@ function viewHome(){
   <section id="how" class="wrap section">
     <div class="lt">
       <div class="lt-head">
-        <p class="lt-eyebrow">Live tracking</p>
+        <p class="lt-eyebrow">Order tracking</p>
         <h2 class="lt-h">Watch your laundry<br>come home.</h2>
-        <p class="lt-lead">From your door to the machine and back. You see every step.</p>
+        <p class="lt-lead">Follow every step on your phone, from pickup to delivery.<span class="lt-soon">Live rider map coming soon</span></p>
       </div>
       <div class="lt-stage2">
         <div class="lt-ph">
@@ -506,7 +506,7 @@ function viewHome(){
       </div>
       <div class="hl ${UI.hlSeen?'seen':''}">
         <div class="hl-track">${HL.map((h,i)=>`<figure class="hl-card c${i} ${(UI.hl||0)===i?'on':''}">
-          <div class="hl-media"><img class="hl-img" src="${h[0]}" alt="${h[5]}" loading="lazy"><div class="hl-shade"></div>
+          <div class="hl-media"><img loading="lazy" decoding="async" class="hl-img" src="${h[0]}" alt="${h[5]}" loading="lazy"><div class="hl-shade"></div>
             <div class="hl-ui" aria-hidden="true">${HLUI[i]}</div>
           </div>
           <figcaption class="hl-cap"><p><b>${h[1]}</b> ${h[2]}</p></figcaption>
@@ -537,7 +537,7 @@ function viewHome(){
   <section id="uses" class="wrap section">
     <div style="text-align:center;margin-bottom:36px"><span class="tag">Who it's for</span><h2 class="h2">Made for Lagos life</h2></div>
     <div style="display:flex;flex-direction:column;gap:20px">
-      ${USES.map((x,i)=>`<div class="stack" style="top:${100+i*18}px"><div class="ucard"><div><h3 style="font-family:var(--display);font-size:30px;font-weight:500;letter-spacing:-.03em">${x[1]}</h3><p class="muted" style="margin-top:12px;font-size:16px;max-width:420px;line-height:1.6">${x[2]}</p>${x[3]==='quote'?`<button class="ulink" data-act="quote">Request a quote ${ARR}</button>`:`<button class="ulink" data-act="pick-plan" data-plan="${x[3]}">See ${CONFIG.plans[x[3]].name} ${ARR}</button>`}</div><div class="img"><img class="photo" src="${IMG[x[0]]}" alt="" loading="lazy"></div></div></div>`).join('')}
+      ${USES.map((x,i)=>`<div class="stack" style="top:${100+i*18}px"><div class="ucard"><div><h3 style="font-family:var(--display);font-size:30px;font-weight:500;letter-spacing:-.03em">${x[1]}</h3><p class="muted" style="margin-top:12px;font-size:16px;max-width:420px;line-height:1.6">${x[2]}</p>${x[3]==='quote'?`<button class="ulink" data-act="quote">Request a quote ${ARR}</button>`:`<button class="ulink" data-act="pick-plan" data-plan="${x[3]}">See ${CONFIG.plans[x[3]].name} ${ARR}</button>`}</div><div class="img"><img loading="lazy" decoding="async" class="photo" src="${IMG[x[0]]}" alt="" loading="lazy"></div></div></div>`).join('')}
     </div>
   </section>
 
@@ -608,7 +608,8 @@ function viewAuth(){
         <p class="demo-note">Demo mode: your code is <b>${UI.otp}</b>. In production this is sent by SMS or WhatsApp.</p>
         <p class="small soft" style="text-align:center">Didn't get it? <button type="button" class="linkbtn" data-act="auth-resend">Resend code</button></p>
       </form>`}
-      <p class="xs soft" style="text-align:center;margin-top:36px">By continuing you agree to our <a href="#/terms">Terms</a> and <a href="#/privacy">Privacy policy</a>. <a href="#/">Back to home</a></p>
+      <p class="xs soft" style="text-align:center;margin-top:20px"><button type="button" class="linkbtn" data-act="demo-login">Just looking? Open a demo account</button></p>
+      <p class="xs soft" style="text-align:center;margin-top:20px">By continuing you agree to our <a href="#/terms">Terms</a> and <a href="#/privacy">Privacy policy</a>. <a href="#/">Back to home</a></p>
     </div></div>
   </div>`;
 }
@@ -624,7 +625,7 @@ function viewSubscribeOld(){
   let body = '';
   if (s.step===0) body = `<h1 class="flowh1">Choose your plan</h1><p class="muted" style="margin-top:8px">You can change or pause it any time from your account.</p>
     <div style="display:flex;flex-direction:column;gap:12px;margin-top:28px">
-      ${PLAN_KEYS.map(k=>{ const q=CONFIG.plans[k]; const on=k===s.plan; return `<button type="button" class="choice ${on?'on':''}" aria-pressed="${on}" data-act="sub-plan" data-plan="${k}" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:14px">${radio(on)}<span style="width:76px;height:76px;border-radius:14px;overflow:hidden;flex:none"><img class="photo" src="${IMG[q.img]}" alt=""></span><span style="flex:1 1 200px"><span style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b style="font-family:var(--display);font-size:20px;font-weight:600">${q.name}</b>${q.tag?`<span class="pill pill-amber">${q.tag}</span>`:''}</span><span class="muted" style="display:block;margin-top:4px;font-size:14px">${q.items} items a month · ${q.pickups} pickups · ${q.service.toLowerCase()}</span></span><span style="text-align:right;padding-right:8px"><b style="display:block;font-family:var(--display);font-size:24px;font-weight:500;letter-spacing:-.02em">${naira(q.price)}</b><span class="xs soft">per month</span></span></button>`; }).join('')}
+      ${PLAN_KEYS.map(k=>{ const q=CONFIG.plans[k]; const on=k===s.plan; return `<button type="button" class="choice ${on?'on':''}" aria-pressed="${on}" data-act="sub-plan" data-plan="${k}" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:14px">${radio(on)}<span style="width:76px;height:76px;border-radius:14px;overflow:hidden;flex:none"><img loading="lazy" decoding="async" class="photo" src="${IMG[q.img]}" alt=""></span><span style="flex:1 1 200px"><span style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b style="font-family:var(--display);font-size:20px;font-weight:600">${q.name}</b>${q.tag?`<span class="pill pill-amber">${q.tag}</span>`:''}</span><span class="muted" style="display:block;margin-top:4px;font-size:14px">${q.items} items a month · ${q.pickups} pickups · ${q.service.toLowerCase()}</span></span><span style="text-align:right;padding-right:8px"><b style="display:block;font-family:var(--display);font-size:24px;font-weight:500;letter-spacing:-.02em">${naira(q.price)}</b><span class="xs soft">per month</span></span></button>`; }).join('')}
     </div>
     <div style="margin-top:18px;background:var(--sky);border-radius:18px;padding:14px 18px;font-size:15px;display:flex;gap:12px;align-items:center;color:var(--blue)">${I.alert}<span style="color:var(--ink)">Need uniforms or linen for a business or estate? <button type="button" class="linkbtn" data-act="quote" style="font-size:15px">Request a quote</button> instead.</span></div>`;
   if (s.step===1) body = `<h1 class="flowh1">Where should we pick up?</h1><p class="muted" style="margin-top:8px">We currently serve ${openAreas.map(a=>a.name).join(' and ')}.</p>
@@ -677,7 +678,7 @@ function viewSubscribeOld(){
         </div>
       </main>
       <aside class="card-b" aria-label="Summary" style="flex:1 1 300px;min-width:0;padding:14px 14px 24px">
-        <div style="border-radius:18px;overflow:hidden;height:180px;position:relative"><img class="photo" src="${IMG[p.img]}" alt=""><span class="pill" style="position:absolute;left:12px;top:12px;background:rgba(255,255,255,.9)">${p.name}</span></div>
+        <div style="border-radius:18px;overflow:hidden;height:180px;position:relative"><img loading="lazy" decoding="async" class="photo" src="${IMG[p.img]}" alt=""><span class="pill" style="position:absolute;left:12px;top:12px;background:rgba(255,255,255,.9)">${p.name}</span></div>
         <div style="padding:20px 12px 0">
           <h2 class="cardh">Summary</h2>
           <div style="margin-top:16px;display:flex;flex-direction:column;gap:12px;font-size:15px">
@@ -710,7 +711,7 @@ function shellOld(active, inner){
       <a class="logo" href="#/" style="color:#fff;padding:0 8px">${LOGO('#4C93D1')}<span>${CONFIG.brand}</span></a>
       <nav aria-label="Account">${items.map(i=>`<a href="#/${i[0]}" class="${active===i[0]?'on':''}" ${active===i[0]?'aria-current="page"':''}>${i[2]}${i[1]}</a>`).join('')}</nav>
       <div style="margin-top:auto;display:flex;flex-direction:column;gap:14px">
-        <div style="border-radius:18px;overflow:hidden;position:relative;height:150px"><img class="photo" src="${IMG.rider}" alt=""><div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,rgba(11,29,42,.85))"></div><div style="position:absolute;left:14px;right:14px;bottom:12px"><p style="font-size:14px;font-weight:600">Need help?</p><a href="https://wa.me/${CONFIG.whatsapp}" target="_blank" rel="noopener" style="color:#fff;font-size:13px">Chat on WhatsApp →</a></div></div>
+        <div style="border-radius:18px;overflow:hidden;position:relative;height:150px"><img loading="lazy" decoding="async" class="photo" src="${IMG.rider}" alt=""><div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,rgba(11,29,42,.85))"></div><div style="position:absolute;left:14px;right:14px;bottom:12px"><p style="font-size:14px;font-weight:600">Need help?</p><a href="https://wa.me/${CONFIG.whatsapp}" target="_blank" rel="noopener" style="color:#fff;font-size:13px">Chat on WhatsApp →</a></div></div>
         <div style="display:flex;align-items:center;gap:12px;padding:0 8px">
           <span style="width:40px;height:40px;border-radius:50%;background:var(--orange);color:var(--ink);font-weight:700;display:flex;align-items:center;justify-content:center;flex:none">${esc(initials)}</span>
           <div style="flex:1;min-width:0"><p style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(u.name)}</p><p style="font-size:12px;color:#C3D4DE">${p.name}${u.status!=='active'?' · '+u.status:''}</p></div>
@@ -762,7 +763,7 @@ function viewDashboardOld(){
       </div>
     </section>` : `
     <section style="flex:2 1 480px;min-width:0;position:relative;border-radius:24px;overflow:hidden;min-height:300px;display:flex;align-items:flex-end;color:#fff" aria-label="Active order">
-      <img class="photo" src="${IMG.folded}" alt="" style="position:absolute;inset:0"><div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(11,29,42,.85),rgba(11,29,42,.2))"></div>
+      <img loading="lazy" decoding="async" class="photo" src="${IMG.folded}" alt="" style="position:absolute;inset:0"><div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(11,29,42,.85),rgba(11,29,42,.2))"></div>
       <div style="position:relative;padding:28px;max-width:460px"><p class="small" style="color:#C7D5DF">No laundry with us right now</p><h2 class="apph1" style="font-size:30px;margin-top:6px">${next?'Your next pickup is booked.':'Nothing scheduled yet.'}</h2><p style="margin-top:8px;color:#DCE7EF">When your rider collects your bag, you'll see every step here.</p>
       <div class="row" style="margin-top:20px;gap:10px"><a class="btn btn-white" href="#/app/schedule">Schedule a pickup</a>${orders.length?'<a class="btn btn-ghost" href="#/app/orders">Past orders</a>':''}</div></div>
     </section>`;
@@ -804,7 +805,7 @@ function viewDashboardOld(){
         <div style="margin-top:8px">${orders.slice(0,4).map(o=>`<a href="#/app/track/${o.id}" style="display:flex;gap:16px;align-items:center;padding:16px 0;border-bottom:1px solid #EDF2F6;text-decoration:none;color:var(--ink);flex-wrap:wrap"><b style="width:90px">${o.id}</b><span class="muted small" style="flex:1;min-width:150px">${fmt(o.date)} · ${typeName(o.type)}${o.items?` · ${o.items} items`:''}${o.kg?` · ${o.kg} kg`:''}</span>${statusPill(o)}</a>`).join('') || '<p class="muted small" style="padding:14px 0">No orders yet.</p>'}</div>
       </section>
       <section style="flex:1 1 300px;min-width:0;position:relative;border-radius:24px;overflow:hidden;color:#fff;min-height:260px;display:flex;flex-direction:column;justify-content:flex-end" aria-label="Refer a friend">
-        <img class="photo" src="${IMG.woman}" alt="" style="position:absolute;inset:0"><div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,29,42,.1),rgba(11,29,42,.85))"></div>
+        <img loading="lazy" decoding="async" class="photo" src="${IMG.woman}" alt="" style="position:absolute;inset:0"><div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,29,42,.1),rgba(11,29,42,.85))"></div>
         <div style="position:relative;padding:24px"><h2 class="cardh" style="font-size:22px">Give a free pickup, get one</h2><p style="margin-top:6px;font-size:14px;color:#DCE7EF">When a friend subscribes with your code, you both get one free pickup.</p>
         <div style="margin-top:16px;display:flex;gap:8px;align-items:center;background:#fff;border-radius:999px;padding:6px 6px 6px 18px;color:var(--ink)"><b style="flex:1;letter-spacing:.08em">${esc(u.referral)}</b><button class="btn btn-dark btn-sm" data-act="copy" data-v="${esc(u.referral)}">Copy</button></div></div>
       </section>
@@ -835,7 +836,7 @@ function viewSchedule(){
   if (s.done){
     const o = DB.orders.find(x=>x.id===s.done);
     return shell('app/schedule', `<section class="card" aria-live="polite" style="max-width:640px;margin:40px auto 0;text-align:center;padding:0;overflow:hidden">
-      <div style="height:200px"><img class="photo" src="${IMG.rider}" alt=""></div>
+      <div style="height:200px"><img loading="lazy" decoding="async" class="photo" src="${IMG.rider}" alt=""></div>
       <div style="padding:40px 32px">
       <h1 class="apph1">Pickup booked</h1>
       <p class="muted" style="margin-top:10px;font-size:16px">${o.id} · ${fmtL(o.date)}, ${CONFIG.windows[o.window]} at ${esc(addrLine(u,o.address))}. We'll send your rider's name on WhatsApp the evening before.</p>
@@ -931,7 +932,7 @@ function viewTrack(id){
       <p class="xs soft" style="margin-top:12px">We reply within 24 hours. Lost or damaged items are paid back on our published scale.</p>`}</section>`:''}
     ${o.cancelled?`<div class="demo-note" style="margin-top:20px;font-size:14px">This pickup was cancelled.</div>`:`
     <section style="margin-top:20px;position:relative;border-radius:24px;overflow:hidden;padding:28px 32px" class="between" aria-label="Current status">
-      <img class="photo" src="${IMG.hero}" alt="" style="position:absolute;inset:0;object-position:60% 40%"><div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(241,247,252,.95) 0%,rgba(241,247,252,.75) 50%,rgba(241,247,252,.1) 100%)"></div>
+      <img loading="lazy" decoding="async" class="photo" src="${IMG.hero}" alt="" style="position:absolute;inset:0;object-position:60% 40%"><div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(241,247,252,.95) 0%,rgba(241,247,252,.75) 50%,rgba(241,247,252,.1) 100%)"></div>
       <div style="display:flex;gap:18px;align-items:center;position:relative"><span class="ibox" style="width:64px;height:64px;border-radius:20px;background:#fff;color:var(--blue)">${[I.cal,I.bag,I.tag,I.clock,I.check,I.van,I.check][o.status]}</span><div><p class="small" style="color:var(--ink2)">Now</p><p class="apph1" style="font-size:30px">${STATUSES[o.status]}</p><p class="small" style="color:var(--ink2);margin-top:2px">${STATUS_HELP[o.status]}</p></div></div>
       <div class="glass" style="padding:16px 20px;border-radius:18px;position:relative"><p class="xs" style="color:var(--ink2)">${o.status===6?'Delivered':o.status===0?'Pickup window':'Delivery window'}</p><p style="font-size:18px;font-weight:700;margin-top:4px">${o.status===0?fmt(o.date):fmt(back)} · ${CONFIG.windows[o.window]}</p></div>
     </section>`}
@@ -994,7 +995,7 @@ function viewBillingOld(){
       <div style="flex:999 1 520px;min-width:0;display:flex;flex-direction:column;gap:16px">
         <section class="card-dark" aria-label="Current plan" style="padding:0;overflow:hidden">
           <div style="display:flex;flex-wrap:wrap">
-            <div style="flex:1 1 220px;min-height:200px;position:relative"><img class="photo" src="${IMG[p.img]}" alt="" style="position:absolute;inset:0"></div>
+            <div style="flex:1 1 220px;min-height:200px;position:relative"><img loading="lazy" decoding="async" class="photo" src="${IMG[p.img]}" alt="" style="position:absolute;inset:0"></div>
             <div style="flex:2 1 360px;padding:28px 32px">
               <div class="row" style="gap:8px;align-items:center"><p class="small" style="color:#B9CCD8">Current plan</p>${u.founding?'<span class="pill pill-amber">Founding member</span>':''}${u.status!=='active'?`<span class="pill" style="background:#fff;color:var(--ink)">${u.status==='paused'?'Paused':'Cancelled'}</span>`:''}${u.pauseMonth&&u.status==='active'?`<span class="pill" style="background:#fff;color:var(--ink)">Pausing ${MON_L[Number(u.pauseMonth.slice(5))-1]}</span>`:''}${u.pendingPlan?`<span class="pill" style="background:#fff;color:var(--ink)">Switching to ${CONFIG.plans[u.pendingPlan].name} on ${fmt(c.renew)}</span>`:''}</div>
               <p class="apph1" style="font-size:36px;margin-top:8px;color:#fff">${p.name} · ${naira(p.price)}<span style="font-size:16px;color:#B9CCD8"> / month</span></p>
@@ -1008,7 +1009,7 @@ function viewBillingOld(){
         </section>
         ${B.panel==='change'?`<section class="card" style="border:2px solid var(--ink)" aria-label="Change plan">
           <div class="between"><h2 class="cardh" style="font-size:22px">Change your plan</h2>${close}</div>
-          <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:18px">${PLAN_KEYS.map(k=>{const q=CONFIG.plans[k];const on=B.pick===k;return `<button class="choice ${on?'on':''}" aria-pressed="${on}" data-act="bill-pick" data-k="${k}" style="padding:12px"><span style="display:block;height:96px;border-radius:12px;overflow:hidden;margin-bottom:12px"><img class="photo" src="${IMG[q.img]}" alt=""></span><span class="between" style="padding:0 6px"><b style="font-family:var(--display);font-size:18px">${q.name}</b>${k===u.plan?'<span class="xs" style="color:var(--blue);font-weight:700">CURRENT</span>':''}</span><b style="display:block;font-size:20px;margin-top:4px;padding:0 6px">${naira(q.price)}</b><span class="xs muted" style="display:block;margin-top:4px;padding:0 6px 6px">${q.items} items a month</span></button>`;}).join('')}</div>
+          <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:18px">${PLAN_KEYS.map(k=>{const q=CONFIG.plans[k];const on=B.pick===k;return `<button class="choice ${on?'on':''}" aria-pressed="${on}" data-act="bill-pick" data-k="${k}" style="padding:12px"><span style="display:block;height:96px;border-radius:12px;overflow:hidden;margin-bottom:12px"><img loading="lazy" decoding="async" class="photo" src="${IMG[q.img]}" alt=""></span><span class="between" style="padding:0 6px"><b style="font-family:var(--display);font-size:18px">${q.name}</b>${k===u.plan?'<span class="xs" style="color:var(--blue);font-weight:700">CURRENT</span>':''}</span><b style="display:block;font-size:20px;margin-top:4px;padding:0 6px">${naira(q.price)}</b><span class="xs muted" style="display:block;margin-top:4px;padding:0 6px 6px">${q.items} items a month</span></button>`;}).join('')}</div>
           <div class="between" style="margin-top:18px"><p class="small muted" style="max-width:520px">${B.pick===u.plan?'This is your current plan.':CONFIG.plans[B.pick].price>p.price?`Upgrade starts now. You pay ${naira(Math.round((CONFIG.plans[B.pick].price-p.price)*Math.max(0,(c.renew-today())/(c.renew-c.start))))} for the rest of this cycle.`:`Downgrade starts on your next billing date, ${fmt(c.renew)}.`}</p><button class="btn btn-dark" data-act="bill-apply">Confirm change</button></div>
         </section>`:''}
         ${B.panel==='pause'?`<section class="card" style="border:2px solid var(--orange)" aria-label="Pause plan">
@@ -1348,7 +1349,7 @@ function viewScan(arg){
   const right = !code ? `<div class="ts-empty"><span class="ts-eico">${SI.camera}</span><h2 class="cardh">Scan a tag to start</h2><p class="muted">Point the camera at a Washday QR tag, or type the code printed under it. New tags get registered to a customer. Tags already in use show the item they belong to.</p></div>`
    : T ? `<div class="ts-item">
         <div class="between" style="align-items:flex-start"><div><p class="xs soft">Tag</p><h2 class="apph1" style="font-size:28px">${esc(code)}</h2></div><span class="pill ${T.out?'pill-green':'pill-blue'}">${T.out?'Counted out':'In the studio'}</span></div>
-        <div class="ts-card">${T.photo?`<img src="${T.photo}" alt="">`:`<span class="ts-ph">${SI.hanger||SI.tag}</span>`}<div><b>${esc(T.type)}${T.color?' · '+esc(T.color):''}</b><span>${esc(DB.users[T.phone]?.name||'Customer')} · 0${T.phone}</span>${T.order?`<span>Order ${esc(T.order)}</span>`:''}${T.note?`<span class="ts-note">${esc(T.note)}</span>`:''}</div></div>
+        <div class="ts-card">${T.photo?`<img loading="lazy" decoding="async" src="${T.photo}" alt="">`:`<span class="ts-ph">${SI.hanger||SI.tag}</span>`}<div><b>${esc(T.type)}${T.color?' · '+esc(T.color):''}</b><span>${esc(DB.users[T.phone]?.name||'Customer')} · 0${T.phone}</span>${T.order?`<span>Order ${esc(T.order)}</span>`:''}${T.note?`<span class="ts-note">${esc(T.note)}</span>`:''}</div></div>
         <ol class="ts-tl"><li class="done"><b>Registered</b><span>${fmtTime(T.at)}</span></li><li class="${T.out?'done':''}"><b>Counted out</b><span>${T.out?fmtTime(T.out):'Not yet'}</span></li></ol>
         <div class="row" style="gap:8px;margin-top:18px">${T.out?'':`<button class="btn btn-dark" data-act="tag-out">${SI.check}Mark counted out</button>`}<button class="btn btn-light" data-act="tag-next">Scan next tag</button><button class="btn btn-ghost" style="color:var(--red)" data-act="tag-unlink">Unlink tag</button></div>
       </div>`
@@ -1379,7 +1380,7 @@ function viewScan(arg){
         <div class="between" style="flex-wrap:wrap;gap:12px"><div><h2 class="cardh">Customer directory</h2><p class="muted small">Every tagged item, filed under its owner.</p></div>
           <select class="input" style="max-width:320px" data-act="noop" id="dirSel"><option value="">Choose a customer</option>${custOpts(dir)}</select></div>
         ${dir?`<div class="ts-sum"><div><b>${items.length}</b><span>items registered to ${esc(du?.name||'this customer')}</span></div>${Object.keys(counts).map(function(k){return `<span class="ts-chip">${counts[k]} ${esc(k)}</span>`;}).join('')}</div>
-        <div class="tablebox" style="margin-top:12px"><table><thead><tr><th>Tag</th><th>Item</th><th>Order</th><th>Notes</th><th>Status</th><th></th></tr></thead><tbody>${items.map(function(t){return `<tr><td><b>${t.code}</b></td><td>${t.photo?`<img class="ts-thumb" src="${t.photo}" alt="">`:''}${esc(t.type)}${t.color?` <span class="soft">· ${esc(t.color)}</span>`:''}</td><td>${esc(t.order||'—')}</td><td class="small muted">${esc(t.note||'—')}</td><td><span class="pill ${t.out?'pill-green':'pill-blue'}">${t.out?'Counted out':'In the studio'}</span></td><td style="text-align:right"><button class="linkbtn" data-act="tag-open" data-c="${t.code}">Open</button></td></tr>`;}).join('')||'<tr><td colspan="6" class="muted" style="text-align:center;padding:24px">No items tagged for this customer yet.</td></tr>'}</tbody></table></div>`
+        <div class="tablebox" style="margin-top:12px"><table><thead><tr><th>Tag</th><th>Item</th><th>Order</th><th>Notes</th><th>Status</th><th></th></tr></thead><tbody>${items.map(function(t){return `<tr><td><b>${t.code}</b></td><td>${t.photo?`<img loading="lazy" decoding="async" class="ts-thumb" src="${t.photo}" alt="">`:''}${esc(t.type)}${t.color?` <span class="soft">· ${esc(t.color)}</span>`:''}</td><td>${esc(t.order||'—')}</td><td class="small muted">${esc(t.note||'—')}</td><td><span class="pill ${t.out?'pill-green':'pill-blue'}">${t.out?'Counted out':'In the studio'}</span></td><td style="text-align:right"><button class="linkbtn" data-act="tag-open" data-c="${t.code}">Open</button></td></tr>`;}).join('')||'<tr><td colspan="6" class="muted" style="text-align:center;padding:24px">No items tagged for this customer yet.</td></tr>'}</tbody></table></div>`
         :'<p class="muted" style="padding:24px 0 6px">Choose a customer to see every item registered to them.</p>'}
       </section>
     </main></div>`;
@@ -1458,7 +1459,7 @@ document.addEventListener('scroll',function(e){ const t=e.target; if(!t.classLis
 
 /* Opening intro v3: cinematic drum film, logo, then match-cut into the hero machine */
 (function(){
-  try{ var h=location.hash||''; if(h && !/^#\/?$/.test(h)) return; if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return; }catch(e){ return; }
+  try{ var h=location.hash||''; if(h && !/^#\/?$/.test(h)) return; if(localStorage.getItem('wd_intro')) return; localStorage.setItem('wd_intro','1'); if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return; }catch(e){ return; }
   window.scrollTo(0,0);
   var root=document.documentElement; root.classList.add('intro-on');
   var ov=document.createElement('div'); ov.id='intro3'; ov.setAttribute('aria-hidden','true');
@@ -1762,7 +1763,7 @@ function viewDashboard(){
       <div class="d-btns"><a class="d-btn" href="#/app/track/${active.id}">Track</a></div></div>${vid}</section>`
     :`<section class="d-hero"><div class="d-hl"><p class="d-k">${next?'Next pickup':u.status==='paused'?'Paused':'Nothing booked'}</p><h2 class="d-h">${next?fmt(next.date):'Book a pickup'}</h2>${next?`<p class="d-s">${CONFIG.windows[next.window]}</p>`:''}
       <div class="d-btns">${next?`<a class="d-btn" href="#/app/schedule">Reschedule</a>${next.type==='regular'?`<button class="d-btn2" data-act="skip" data-id="${next.id}">Skip</button>`:''}`:`<a class="d-btn" href="#/app/schedule">Schedule</a>`}</div></div>${vid}</section>`;
-  return shell('app', `
+  return shell('app', `${u.isDemo?'<div class="d-demo">You are viewing a demo account with sample data. <button class="linkbtn" data-act="logout">Leave demo</button></div>':''}
     <div class="d-head"><div><p class="d-date">${fmtL(today())}</p><h1 class="d-h1">${greet}, ${esc(u.name.split(' ')[0])}</h1></div><a class="d-cta" href="#/app/schedule">${I.plus}<span>Schedule</span></a></div>
     ${u.status==='cancelled'?`<div class="d-banner">Plan ends ${fmtY(c.end)}. <a href="#/app/billing">Restart</a></div>`:''}
     ${hero}
@@ -1812,7 +1813,7 @@ function viewCustomers(){
     const open=C.sel===u.phone;
     return `<div class="cu-row ${open?'open':''}" data-hay="${esc(hay)}"><button class="cu-main" data-cu="sel" data-p="${u.phone}"><span class="cu-av">${esc(ini)}</span><span class="cu-who"><b>${esc(u.name||'Unnamed')}</b><span>0${u.phone}</span></span><span class="cu-addr">${esc(custAddr(u))||'<i>No address</i>'}</span><span class="cu-meta">${u.plan?`<em class="cu-plan">${plan(u).name}</em>`:'<em class="cu-walk">No plan yet</em>'}<small>${used} item${used===1?'':'s'} · ${tg.length-used} spare tag${tg.length-used===1?'':'s'}</small></span><span class="cu-chev">›</span></button>
       ${open?`<div class="cu-detail"><div class="cu-acts"><button class="b-btn" data-cu="more" data-p="${u.phone}">Print more tags</button><button class="b-btn2" data-cr="open" data-p="${u.phone}">Add credit${credit(u)?' · '+naira(credit(u)):''}</button><a class="b-btn2" href="#/scan" data-cu="scan" data-p="${u.phone}">Open in tag station</a></div>
-        ${tg.filter(t=>!t.reserved).length?`<div class="cu-items">${tg.filter(t=>!t.reserved).map(t=>`<div class="cu-it">${t.photo?`<img src="${t.photo}" alt="">`:'<span class="cu-ph"></span>'}<div><b>${esc(t.type)}${t.color?' · '+esc(t.color):''}</b><span>${t.code} · ${t.out?'Counted out':'In studio'}</span></div></div>`).join('')}</div>`:'<p class="cu-empty">No items registered yet. Tags are ready to scan at pickup.</p>'}
+        ${tg.filter(t=>!t.reserved).length?`<div class="cu-items">${tg.filter(t=>!t.reserved).map(t=>`<div class="cu-it">${t.photo?`<img loading="lazy" decoding="async" src="${t.photo}" alt="">`:'<span class="cu-ph"></span>'}<div><b>${esc(t.type)}${t.color?' · '+esc(t.color):''}</b><span>${t.code} · ${t.out?'Counted out':'In studio'}</span></div></div>`).join('')}</div>`:'<p class="cu-empty">No items registered yet. Tags are ready to scan at pickup.</p>'}
         ${tg.filter(t=>t.reserved).length?`<p class="cu-spare">Spare tags: ${tg.filter(t=>t.reserved).map(t=>t.code).join(', ')}</p>`:''}</div>`:''}</div>`; }).join('');
   return `<div class="ws-staff">
     ${staffBar('customers')}
@@ -1869,7 +1870,7 @@ function staffLogin(title,sub,cta){
         <label class="field">Staff PIN<input class="input" name="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="••••"></label>
         ${UI.staffErr?'<p class="err" role="alert">That PIN is not right. Try again.</p>':''}
         <button class="btn btn-dark btn-lg btn-block">${esc(cta)} ${ARROW}</button>
-        <p class="xs soft" style="text-align:center">Demo PIN ${CONFIG.staffPin}. Each staff member gets their own login before launch.</p>
+        
       </form>
       <p class="xs soft" style="text-align:center;margin-top:36px">For Washday staff only. <a href="#/">Back to home</a></p>
     </div></div>
@@ -1891,7 +1892,7 @@ function siteFooter(){ return `<footer class="rfoot">
         <div style="display:flex;flex-direction:column;gap:12px"><b style="font-weight:600">Legal</b><a href="#/terms">Terms of service</a><a href="#/privacy">Privacy policy</a><a href="#/guarantee">Damage and loss guarantee</a></div>
       </div>
     </div>
-    <div class="between" style="margin-top:48px;padding-top:20px;border-top:1px solid var(--line2);font-size:14px;color:var(--muted)"><span>© ${new Date().getFullYear()} ${CONFIG.brand}${CONFIG.rc?' · '+esc(CONFIG.rc):''}. Lagos, Nigeria.</span><span>Payments secured by Paystack</span></div>
+    <div class="between" style="margin-top:48px;padding-top:20px;border-top:1px solid var(--line2);font-size:14px;color:var(--muted)"><span>© ${new Date().getFullYear()} ${CONFIG.brand}${CONFIG.rc?' · '+esc(CONFIG.rc):''}. Lagos, Nigeria.</span>${CONFIG.paystackKey?'<span>Payments secured by Paystack</span>':''}</div>
     <div class="rwm" aria-hidden="true">washday</div>
   </footer>`; }
 
@@ -1974,6 +1975,7 @@ setInterval(function(){ var t=document.querySelector('.lg-tabs a.on'); if(t&&!t.
 
 /* ===== v51 · demo history, profile sheet, dark mode ===== */
 function demoFill(u){
+  if(u&&!u.isDemo){ demoClean(u); return; }
   if(!u||!u.plan||u.demo) return; if(DB.orders.some(o=>o.phone===u.phone&&o.status>0)){ u.demo=1; return; }
   u.demo=1; const T=today(), H=36e5;
   const at=(d,h)=>{ const x=parse(iso(d)); x.setHours(h,Math.floor(Math.random()*50)); return x.getTime(); };
@@ -2130,3 +2132,21 @@ document.addEventListener('click',function(e){ const b=e.target.closest('[data-c
   if(b.dataset.cr==='amt'){ const i=document.getElementById('crAmt'); if(i) i.value=b.dataset.n; return; }
   if(b.dataset.cr==='save'){ const n=parseInt(String((document.getElementById('crAmt')||{}).value||'').replace(/\D/g,''),10); if(!n){ toast('Enter an amount'); return; } addCredit(u,n,(document.getElementById('crWhy')||{}).value||'Credit'); $('#modal').innerHTML=''; rerender(); toast(naira(n)+' credit added for '+u.name.split(' ')[0],true); }
 },true);
+
+/* ===== v58 · demo account only; clean sample data from real accounts ===== */
+function demoClean(u){
+  if(!u||!u.demo||u.demoCleaned) return;
+  DB.orders=DB.orders.filter(o=>!(o.phone===u.phone&&Object.prototype.hasOwnProperty.call(o,'list')));
+  const L=u.creditLog||[]; const fake=L.filter(e=>/^Goodwill credit · ink mark/.test(e.desc||''));
+  if(fake.length){ u.credit=Math.max(0,(u.credit||0)-fake.reduce((a,e)=>a+e.amt,0)); u.creditLog=L.filter(e=>fake.indexOf(e)<0); }
+  u.bills=(u.bills||[]).filter(b=>!/, (this|last) month$/.test(b.desc||''));
+  u.demoCleaned=1; save();
+}
+document.addEventListener('click',function(e){ const b=e.target.closest('[data-act="demo-login"]'); if(!b) return; e.preventDefault(); e.stopPropagation();
+  const ph='8000000000';
+  if(!DB.users[ph]) DB.users[ph]={phone:ph,name:'Demo Customer',email:'demo@washday.ng',plan:'weekly',status:'active',isDemo:true,cycleStart:iso(addDays(today(),-10)),joined:iso(addDays(today(),-40)),pickupDay:2,window:1,
+    addresses:[{label:'Home',area:'Lagos Mainland',street:'24 Herbert Macaulay Way',building:'Flat 2',landmark:'Opposite the filling station',notes:''}],bills:[],notifs:{whatsapp:true,email:true},prefs:{},created:Date.now()};
+  DB.session=ph; save(); UI={}; location.hash='#/app'; toast('Demo account: sample data, nothing is real',true); },true);
+(function(){ try{ const u=me(); if(u&&!u.isDemo) demoClean(u); }catch(e){} })();
+/* shared gradient for the logo, so it shows even when an earlier copy is hidden */
+(function(){ try{ document.body.insertAdjacentHTML('afterbegin','<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="wdIc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4A63FF"/><stop offset="1" stop-color="#1B32CF"/></linearGradient></defs></svg>'); }catch(e){} })();
